@@ -186,6 +186,7 @@ typedef struct EngineContext
     int fpsLimit;
     bool shouldShowFPS;
     bool isAutoSaveON;
+    bool shouldHideCursorInGameFullscreen;
 
     Logs logs;
 

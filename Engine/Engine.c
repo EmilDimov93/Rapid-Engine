@@ -117,6 +117,8 @@ EngineContext InitEngineContext()
     eng.resizingWindow = RESIZING_WINDOW_NONE;
     eng.isWindowMoving = false;
 
+    eng.shouldHideCursorInGameFullscreen = true;
+
     return eng;
 }
 
@@ -638,6 +640,9 @@ bool DrawSettingsMenu(EngineContext *eng, InterpreterContext *intp)
 
         DrawTextEx(eng->font, "Show Hitboxes", (Vector2){eng->screenWidth / 4 + 200, 350}, 28, 1, WHITE);
         DrawSlider((Vector2){eng->screenWidth * 3 / 4 - 70, 355}, &intp->shouldShowHitboxes, eng->mousePos);
+
+        DrawTextEx(eng->font, "Hide Mouse Cursor in Fullscreen", (Vector2){eng->screenWidth / 4 + 200, 400}, 28, 1, WHITE);
+        DrawSlider((Vector2){eng->screenWidth * 3 / 4 - 70, 405}, &eng->shouldHideCursorInGameFullscreen, eng->mousePos);
         break;
     case SETTINGS_MODE_KEYBINDS:
         break;
@@ -1566,8 +1571,13 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
     CountingSortByLayer(eng);
 
     // Top bar background
-    DrawCircleSector((Vector2){eng->screenWidth - 150, 0}, 50, 90, 180, 8, (Color){35, 35, 35, 255});
-    DrawRectangle(eng->screenWidth - 150, 0, 150, 50, (Color){35, 35, 35, 255});
+    DrawCircleSector((Vector2){eng->screenWidth - 150, 1}, 50, 90, 180, 8, (Color){40, 40, 40, 255});
+
+    DrawCircleLines(eng->screenWidth - 150, 1, 50, WHITE);
+
+    DrawRectangle(eng->screenWidth - 150, 0, 150, 50, (Color){40, 40, 40, 255});
+
+    DrawLine(eng->screenWidth - 150, 50, eng->screenWidth, 50, WHITE);
 
     DrawUIElements(eng, graph, cgEd, intp, runtimeGraph);
 
@@ -1694,12 +1704,16 @@ bool HandleUICollisions(EngineContext *eng, GraphContext *graph, InterpreterCont
 
     if (eng->isWindowMoving)
     {
-        if (IsMouseButtonUp(MOUSE_LEFT_BUTTON))
-        {
-            eng->isWindowMoving = false;
-        }
         Vector2 screenMousePos = { GetWindowPosition().x + eng->mousePos.x, GetWindowPosition().y + eng->mousePos.y };
         SetWindowPosition(screenMousePos.x - eng->screenWidth + 175, screenMousePos.y - 25);
+        if (IsMouseButtonUp(MOUSE_LEFT_BUTTON))
+        {
+            if(screenMousePos.y - 25 < 10){
+                SetWindowPosition(0, 0);
+                //MaximizeWindow(); //not working
+            }
+            eng->isWindowMoving = false;
+        }
     }
 
     static Vector2 totalWindowResizeDelta;
@@ -1878,59 +1892,78 @@ void ContextChangePerFrame(EngineContext *eng)
     }
 }
 
-int GetEngineMouseCursor(EngineContext *eng, CGEditorContext *cgEd)
+void SetEngineMouseCursor(EngineContext *eng, CGEditorContext *cgEd)
 {
+    if(!(eng->viewportMode == VIEWPORT_GAME_SCREEN && eng->shouldHideCursorInGameFullscreen && eng->isGameFullscreen)){
+        ShowCursor();
+    }
+
     if (eng->isAnyMenuOpen)
     {
-        return MOUSE_CURSOR_ARROW;
+        SetMouseCursor(MOUSE_CURSOR_ARROW);
+        return;
     }
 
     if (eng->resizingWindow == RESIZING_WINDOW_EAST || eng->resizingWindow == RESIZING_WINDOW_WEST)
     {
-        return MOUSE_CURSOR_RESIZE_EW;
+        SetMouseCursor(MOUSE_CURSOR_RESIZE_EW);
+        return;
     }
     else if (eng->resizingWindow == RESIZING_WINDOW_NORTH || eng->resizingWindow == RESIZING_WINDOW_SOUTH)
     {
-        return MOUSE_CURSOR_RESIZE_NS;
+        SetMouseCursor(MOUSE_CURSOR_RESIZE_NS);
+        return;
     }
 
     if (eng->draggingResizeButtonID == 1 || eng->draggingResizeButtonID == 3)
     {
-        return MOUSE_CURSOR_RESIZE_NS;
+        SetMouseCursor(MOUSE_CURSOR_RESIZE_NS);
+        return;
     }
     else if (eng->draggingResizeButtonID == 2)
     {
-        return MOUSE_CURSOR_RESIZE_EW;
+        SetMouseCursor(MOUSE_CURSOR_RESIZE_EW);
+        return;
     }
 
-    if (eng->isViewportFocused)
+    if (eng->isViewportFocused || eng->isGameFullscreen)
     {
         switch (eng->viewportMode)
         {
         case VIEWPORT_CG_EDITOR:
-            return cgEd->cursor;
+            SetMouseCursor(cgEd->cursor);
+            return;
         case VIEWPORT_GAME_SCREEN:
-            // return intp->cursor;
-            return MOUSE_CURSOR_ARROW;
+            if(eng->shouldHideCursorInGameFullscreen && eng->isGameFullscreen){
+                HideCursor();
+                return;
+            }
+            SetMouseCursor(MOUSE_CURSOR_ARROW);
+            return;
         case VIEWPORT_HITBOX_EDITOR:
-            return MOUSE_CURSOR_CROSSHAIR;
+           SetMouseCursor(MOUSE_CURSOR_CROSSHAIR);
+            return;
         default:
             eng->viewportMode = VIEWPORT_CG_EDITOR;
-            return cgEd->cursor;
+            SetMouseCursor(cgEd->cursor);
+            return;
         }
     }
 
     if (eng->isSaveButtonHovered && eng->viewportMode != VIEWPORT_CG_EDITOR)
     {
-        return MOUSE_CURSOR_NOT_ALLOWED;
+        SetMouseCursor(MOUSE_CURSOR_NOT_ALLOWED);
+        return;
     }
 
     if (eng->hoveredUIElementIndex != -1)
     {
-        return MOUSE_CURSOR_POINTING_HAND;
+        SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+        return;
     }
 
-    return MOUSE_CURSOR_ARROW;
+    SetMouseCursor(MOUSE_CURSOR_ARROW);
+    return;
 }
 
 int GetEngineFPS(EngineContext *eng, CGEditorContext *cgEd, InterpreterContext *intp)
@@ -2081,7 +2114,7 @@ int main()
             eng.delayFrames = false;
         }
 
-        SetMouseCursor(GetEngineMouseCursor(&eng, &cgEd));
+        SetEngineMouseCursor(&eng, &cgEd);
 
         SetTargetFPS(GetEngineFPS(&eng, &cgEd, &intp));
 
