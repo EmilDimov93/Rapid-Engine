@@ -2004,7 +2004,9 @@ int main()
     InitWindow(1600, 1000, "RapidEngine");
     SetTargetFPS(140);
     SetExitKey(KEY_NULL);
-    // Image icon = LoadImage("re.png"); SetWindowIcon(icon); UnloadImage(icon); // Set title bar icon
+    Image icon = LoadImage("icon.png"); 
+    SetWindowIcon(icon); 
+    UnloadImage(icon);
     char fileName[MAX_FILE_NAME];
     strmac(fileName, MAX_FILE_NAME, "%s", developerMode ? "Tetris" : HandleProjectManager());
 
