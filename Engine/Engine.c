@@ -840,7 +840,7 @@ void DrawUIElements(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
         case UI_ACTION_MOVE_WINDOW:
             eng->isViewportFocused = false;
             DrawCircleSector((Vector2){eng->screenWidth - 152, 7}, 38, 90, 180, 8, (Color){200, 200, 200, 200});
-            if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
+            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
             {
                 eng->isWindowMoving = true;
             }
@@ -1698,14 +1698,12 @@ bool HandleUICollisions(EngineContext *eng, GraphContext *graph, InterpreterCont
         {
             eng->isWindowMoving = false;
         }
-        else
-        {
-            SetWindowPosition(GetWindowPosition().x + GetMouseDelta().x, GetWindowPosition().y + GetMouseDelta().y);
-        }
+        Vector2 screenMousePos = { GetWindowPosition().x + eng->mousePos.x, GetWindowPosition().y + eng->mousePos.y };
+        SetWindowPosition(screenMousePos.x - eng->screenWidth + 175, screenMousePos.y - 25);
     }
 
     static Vector2 totalWindowResizeDelta;
-    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !eng->isWindowMoving)
     {
         if (CheckCollisionPointLine(eng->mousePos, (Vector2){0, 10}, (Vector2){eng->screenWidth, 10}, 10.0f))
         {
@@ -1737,7 +1735,8 @@ bool HandleUICollisions(EngineContext *eng, GraphContext *graph, InterpreterCont
         {
         case RESIZING_WINDOW_NORTH:
             eng->screenHeight -= totalWindowResizeDelta.y;
-            if(eng->screenHeight <= 1){
+            if (eng->screenHeight <= 1)
+            {
                 eng->screenHeight = MIN_WINDOW_HEIGHT;
             }
             SetWindowSize(eng->screenWidth, eng->screenHeight);
@@ -1745,21 +1744,24 @@ bool HandleUICollisions(EngineContext *eng, GraphContext *graph, InterpreterCont
             break;
         case RESIZING_WINDOW_SOUTH:
             eng->screenHeight += totalWindowResizeDelta.y;
-            if(eng->screenHeight <= 1){
+            if (eng->screenHeight <= 1)
+            {
                 eng->screenHeight = MIN_WINDOW_HEIGHT;
             }
             SetWindowSize(eng->screenWidth, eng->screenHeight);
             break;
         case RESIZING_WINDOW_EAST:
             eng->screenWidth += totalWindowResizeDelta.x;
-            if(eng->screenWidth <= 1){
+            if (eng->screenWidth <= 1)
+            {
                 eng->screenWidth = MIN_WINDOW_WIDTH;
             }
             SetWindowSize(eng->screenWidth, eng->screenHeight);
             break;
         case RESIZING_WINDOW_WEST:
             eng->screenWidth -= totalWindowResizeDelta.x;
-            if(eng->screenWidth <= 1){
+            if (eng->screenWidth <= 1)
+            {
                 eng->screenWidth = MIN_WINDOW_WIDTH;
             }
             SetWindowSize(eng->screenWidth, eng->screenHeight);
@@ -2004,8 +2006,8 @@ int main()
     InitWindow(1600, 1000, "RapidEngine");
     SetTargetFPS(140);
     SetExitKey(KEY_NULL);
-    Image icon = LoadImage("icon.png"); 
-    SetWindowIcon(icon); 
+    Image icon = LoadImage("icon.png");
+    SetWindowIcon(icon);
     UnloadImage(icon);
     char fileName[MAX_FILE_NAME];
     strmac(fileName, MAX_FILE_NAME, "%s", developerMode ? "Tetris" : HandleProjectManager());
@@ -2093,7 +2095,7 @@ int main()
             eng.screenWidth - (eng.isGameFullscreen ? 0 : eng.sideBarWidth),
             eng.screenHeight - (eng.isGameFullscreen ? 0 : eng.bottomBarHeight)};
 
-        if (eng.showSaveWarning == 1 || eng.showSettingsMenu)
+        if (eng.showSaveWarning == 1 || eng.showSettingsMenu || eng.resizingWindow != RESIZING_WINDOW_NONE)
         {
             eng.isViewportFocused = false;
         }
