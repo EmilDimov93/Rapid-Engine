@@ -12,7 +12,8 @@
 #define MENU_BORDER_THICKNESS 3
 #define SUBMENU_WIDTH 250
 
-typedef struct {
+typedef struct
+{
     Rectangle bounds;
     bool editing;
     char text[256];
@@ -83,14 +84,18 @@ void FreeEditorContext(CGEditorContext *cgEd)
 
     UnloadFont(cgEd->font);
 
-    if(cgEd->graph){
+    if (cgEd->graph)
+    {
         FreeGraphContext(cgEd->graph);
     }
 }
 
 void AddToLogFromEditor(CGEditorContext *cgEd, char *message, int level)
 {
-    if (cgEd->logMessageCount >= MAX_LOG_MESSAGES){return;}
+    if (cgEd->logMessageCount >= MAX_LOG_MESSAGES)
+    {
+        return;
+    }
 
     strmac(cgEd->logMessages[cgEd->logMessageCount], MAX_LOG_MESSAGE_SIZE, "%s", message);
     cgEd->logMessageLevels[cgEd->logMessageCount] = level;
@@ -171,8 +176,17 @@ void DrawCurvedWire(Vector2 outputPos, Vector2 inputPos, float thickness, Color 
     DrawLineEx(inputPos, (Vector2){inputPos.x + 12, inputPos.y}, thickness, color);
 }
 
-void HandleVarTextBox(CGEditorContext *cgEd, Rectangle bounds, char *text, int index, GraphContext *graph)
+void HandleVarNameTextBox(CGEditorContext *cgEd, Rectangle bounds, char *text, int index, GraphContext *graph)
 {
+    if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_V))
+    {
+        const char *clipboard = GetClipboardText();
+        if (clipboard)
+        {
+            strmac(text, MAX_VARIABLE_NAME_SIZE, "%s%s", text, clipboard);
+        }
+    }
+
     bounds.width = MeasureTextEx(cgEd->font, text, 16, 2).x + 25;
 
     DrawRectangleRounded((Rectangle){bounds.x, bounds.y - 20, 56, bounds.height}, 0.4f, 4, DARKGRAY);
@@ -182,7 +196,7 @@ void HandleVarTextBox(CGEditorContext *cgEd, Rectangle bounds, char *text, int i
     DrawRectangleRoundedLinesEx(bounds, 0.6f, 4, 2, DARKGRAY);
 
     bool showCursor = ((int)(GetTime() * 2) % 2) == 0;
-    char buffer[130];
+    char buffer[MAX_VARIABLE_NAME_SIZE];
     strmac(buffer, sizeof(buffer), "%s%s", text, showCursor ? "_" : " ");
     DrawTextEx(cgEd->font, buffer, (Vector2){bounds.x + 5, bounds.y + 8}, 16, 2, BLACK);
 
@@ -193,7 +207,7 @@ void HandleVarTextBox(CGEditorContext *cgEd, Rectangle bounds, char *text, int i
     if (key > 0)
     {
         int len = strlen(text);
-        if (len < 127 && key >= 32 && key <= 125)
+        if (len < MAX_VARIABLE_NAME_SIZE && key >= 32 && key <= 125)
         {
             text[len] = (char)key;
             text[len + 1] = '\0';
@@ -203,16 +217,43 @@ void HandleVarTextBox(CGEditorContext *cgEd, Rectangle bounds, char *text, int i
         }
     }
 
-    if (IsKeyPressed(KEY_BACKSPACE))
+    static float backspaceTimer = 0;
+    static bool backspaceHeld = false;
+    if (IsKeyDown(KEY_BACKSPACE))
     {
-        int len = strlen(text);
-        if (len > 0)
+        if (!backspaceHeld)
         {
-            text[len - 1] = '\0';
-            hasNameChanged = true;
-            cgEd->hasChanged = true;
-            cgEd->hasChangedInLastFrame = true;
+            int len = strlen(text);
+            if (len > 0)
+            {
+                text[len - 1] = '\0';
+                hasNameChanged = true;
+                cgEd->hasChanged = true;
+                cgEd->hasChangedInLastFrame = true;
+            }
+            backspaceTimer = 0.5f;
+            backspaceHeld = true;
         }
+        else
+        {
+            backspaceTimer -= GetFrameTime();
+            if (backspaceTimer <= 0)
+            {
+                int len = strlen(text);
+                if (len > 0)
+                {
+                    text[len - 1] = '\0';
+                    hasNameChanged = true;
+                    cgEd->hasChanged = true;
+                    cgEd->hasChangedInLastFrame = true;
+                }
+                backspaceTimer = 0.05f;
+            }
+        }
+    }
+    else
+    {
+        backspaceHeld = false;
     }
 
     if (hasNameChanged)
@@ -254,10 +295,12 @@ const char *AddEllipsis(Font font, const char *text, float fontSize, float maxWi
 
     for (int c = 1; c <= len; c++)
     {
-        if (showEnd){
+        if (showEnd)
+        {
             strmac(temp, c, "%s", text + len - c);
         }
-        else{
+        else
+        {
             strmac(temp, c, "%s", text);
         }
 
@@ -332,10 +375,12 @@ void HandleLiteralNodeField(CGEditorContext *cgEd, GraphContext *graph, int curr
         {
             if (type == PIN_FIELD_BOOL)
             {
-                if (strcmp(graph->pins[currPinIndex].textFieldValue, "false") == 0 || strcmp(graph->pins[currPinIndex].textFieldValue, "") == 0){
+                if (strcmp(graph->pins[currPinIndex].textFieldValue, "false") == 0 || strcmp(graph->pins[currPinIndex].textFieldValue, "") == 0)
+                {
                     strmac(graph->pins[currPinIndex].textFieldValue, 4, "true");
                 }
-                else{
+                else
+                {
                     strmac(graph->pins[currPinIndex].textFieldValue, 5, "false");
                 }
             }
@@ -408,6 +453,33 @@ void HandleLiteralNodeField(CGEditorContext *cgEd, GraphContext *graph, int curr
 
     if (cgEd->nodeFieldPinFocused == currPinIndex)
     {
+        if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_V))
+        {
+            const char *clipboard = GetClipboardText();
+            if (clipboard)
+            {
+                bool validClipboard = true;
+                for (int i = 0; i < strlen(clipboard); i++)
+                {
+                    bool validSymbol =
+                        (type == PIN_FIELD_NUM && clipboard[i] >= '0' && clipboard[i] <= '9') ||
+                        (type == PIN_FIELD_STRING && clipboard[i] >= 32 && clipboard[i] <= 126) ||
+                        (type == PIN_FIELD_COLOR &&
+                         ((clipboard[i] >= '0' && clipboard[i] <= '9') || (clipboard[i] >= 'a' && clipboard[i] <= 'f') || (clipboard[i] >= 'A' && clipboard[i] <= 'F')));
+
+                    if (!validSymbol)
+                    {
+                        validClipboard = false;
+                    }
+                }
+
+                if (validClipboard)
+                {
+                    strmac(graph->pins[currPinIndex].textFieldValue, MAX_VARIABLE_NAME_SIZE, "%s%s", graph->pins[currPinIndex].textFieldValue, clipboard);
+                }
+            }
+        }
+
         int key = GetCharPressed();
         while (key > 0)
         {
@@ -443,18 +515,47 @@ void HandleLiteralNodeField(CGEditorContext *cgEd, GraphContext *graph, int curr
             key = GetCharPressed();
         }
 
-        if (IsKeyPressed(KEY_BACKSPACE))
+        static float backspaceTimer = 0;
+        static bool backspaceHeld = false;
+        if (IsKeyDown(KEY_BACKSPACE))
         {
-            size_t len = strlen(graph->pins[currPinIndex].textFieldValue);
-            if (len > 0)
+            if (!backspaceHeld)
             {
-                if (type == PIN_FIELD_NUM &&
-                    graph->pins[currPinIndex].textFieldValue[len - 1] == 46)
+                size_t len = strlen(graph->pins[currPinIndex].textFieldValue);
+                if (len > 0)
                 {
-                    graph->pins[currPinIndex].isFloat = false;
+                    if (type == PIN_FIELD_NUM &&
+                        graph->pins[currPinIndex].textFieldValue[len - 1] == 46)
+                    {
+                        graph->pins[currPinIndex].isFloat = false;
+                    }
+                    graph->pins[currPinIndex].textFieldValue[len - 1] = '\0';
                 }
-                graph->pins[currPinIndex].textFieldValue[len - 1] = '\0';
+                backspaceTimer = 0.5f;
+                backspaceHeld = true;
             }
+            else
+            {
+                backspaceTimer -= GetFrameTime();
+                if (backspaceTimer <= 0)
+                {
+                    size_t len = strlen(graph->pins[currPinIndex].textFieldValue);
+                    if (len > 0)
+                    {
+                        if (type == PIN_FIELD_NUM &&
+                            graph->pins[currPinIndex].textFieldValue[len - 1] == 46)
+                        {
+                            graph->pins[currPinIndex].isFloat = false;
+                        }
+                        graph->pins[currPinIndex].textFieldValue[len - 1] = '\0';
+                    }
+                    backspaceTimer = 0.05f;
+                }
+            }
+        }
+        else
+        {
+            backspaceHeld = false;
         }
 
         if (IsKeyPressed(KEY_ENTER))
@@ -848,7 +949,7 @@ void DrawNodes(CGEditorContext *cgEd, GraphContext *graph)
             }
             else if (cgEd->editingNodeNameIndex == i)
             {
-                HandleVarTextBox(cgEd, textBoxRect, graph->nodes[cgEd->editingNodeNameIndex].name, cgEd->editingNodeNameIndex, graph);
+                HandleVarNameTextBox(cgEd, textBoxRect, graph->nodes[cgEd->editingNodeNameIndex].name, cgEd->editingNodeNameIndex, graph);
                 cgEd->delayFrames = true;
 
                 if (CheckCollisionPointRec(cgEd->mousePos, textBoxRect))
@@ -1197,8 +1298,8 @@ const char *DrawNodeMenu(CGEditorContext *cgEd, RenderTexture2D view)
 
         Rectangle menuRect = {cgEd->menuPosition.x, cgEd->menuPosition.y + searchBarHeight + 10, MENU_WIDTH, menuHeight - searchBarHeight - 10};
         cgEd->submenuPosition.x = (cgEd->menuPosition.x + MENU_WIDTH + SUBMENU_WIDTH > cgEd->screenWidth)
-                                        ? (cgEd->menuPosition.x - SUBMENU_WIDTH)
-                                        : (cgEd->menuPosition.x + MENU_WIDTH - 15);
+                                      ? (cgEd->menuPosition.x - SUBMENU_WIDTH)
+                                      : (cgEd->menuPosition.x + MENU_WIDTH - 15);
         cgEd->submenuPosition.y = cgEd->menuPosition.y + searchBarHeight + 7;
         cgEd->hoveredItem = 0;
         cgEd->createNodeMenuFirstFrame = false;
@@ -1249,8 +1350,8 @@ const char *DrawNodeMenu(CGEditorContext *cgEd, RenderTexture2D view)
             {
                 cgEd->hoveredItem = listIndex;
                 cgEd->submenuPosition.x = (cgEd->menuPosition.x + MENU_WIDTH + SUBMENU_WIDTH > cgEd->screenWidth)
-                                                ? (cgEd->menuPosition.x - SUBMENU_WIDTH)
-                                                : (cgEd->menuPosition.x + MENU_WIDTH - 15);
+                                              ? (cgEd->menuPosition.x - SUBMENU_WIDTH)
+                                              : (cgEd->menuPosition.x + MENU_WIDTH - 15);
                 cgEd->submenuPosition.y = itemRect.y - 3;
             }
 
@@ -1315,10 +1416,12 @@ const char *DrawNodeMenu(CGEditorContext *cgEd, RenderTexture2D view)
     Rectangle searchRect = {cgEd->menuPosition.x + 5, cgEd->menuPosition.y + 5, MENU_WIDTH - 10, searchBarHeight};
     DrawRectangleRec(searchRect, DARKGRAY);
     char buff[MAX_SEARCH_BAR_FIELD_SIZE];
-    if (cgEd->nodeMenuSearch[0] == '\0'){
+    if (cgEd->nodeMenuSearch[0] == '\0')
+    {
         strmac(buff, 6, "Search");
     }
-    else{
+    else
+    {
         strmac(buff, MAX_SEARCH_BAR_FIELD_SIZE, cgEd->nodeMenuSearch);
     }
     DrawTextEx(cgEd->font, buff, (Vector2){searchRect.x + 5, searchRect.y + 5}, 20, 0, WHITE);
@@ -1361,7 +1464,7 @@ void HandleDragging(CGEditorContext *cgEd, GraphContext *graph)
         cgEd->cameraOffset.y += Vector2Scale(GetMouseDelta(), 1.0f / cgEd->zoom).y;
         for (int i = 0; i < graph->nodeCount; i++)
         {
-            
+
             graph->nodes[i].position.x += delta.x;
             graph->nodes[i].position.y += delta.y;
         }
