@@ -119,6 +119,8 @@ EngineContext InitEngineContext()
 
     eng.shouldHideCursorInGameFullscreen = true;
 
+    eng.isSettingsButtonHovered = false;
+
     return eng;
 }
 
@@ -698,6 +700,7 @@ void CountingSortByLayer(EngineContext *eng)
 void DrawUIElements(EngineContext *eng, GraphContext *graph, CGEditorContext *cgEd, InterpreterContext *intp, RuntimeGraphContext *runtimeGraph)
 {
     eng->isSaveButtonHovered = false;
+    eng->isSettingsButtonHovered = false;
     char temp[256];
     if (eng->hoveredUIElementIndex != -1 && !eng->isAnyMenuOpen)
     {
@@ -837,6 +840,7 @@ void DrawUIElements(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
             break;
         case UI_ACTION_OPEN_SETTINGS:
             eng->isViewportFocused = false;
+            eng->isSettingsButtonHovered = true;
             if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
             {
                 eng->showSettingsMenu = true;
@@ -1062,7 +1066,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
         {
             strmac(eng->uiElements[eng->uiElementCount - 1].text.string, MAX_FILE_PATH, "Save");
         }
-
+        
         if (eng->viewportMode == VIEWPORT_GAME_SCREEN)
         {
             AddUIElement(eng, (UIElement){
@@ -1590,9 +1594,10 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
     DrawLineEx((Vector2){eng->screenWidth - 85, 25}, (Vector2){eng->screenWidth - 65, 25}, 2, WHITE);
 
     Rectangle src = {0, 0, eng->settingsGear.width, eng->settingsGear.height};
-    Rectangle dst = {eng->screenWidth - 140, 12, 30, 30};
-    Vector2 origin = {0, 0};
-    DrawTexturePro(eng->settingsGear, src, dst, origin, 0.0f, WHITE);
+    Rectangle dst = {eng->screenWidth - 125, 27, 30, 30};
+    Vector2 origin = {dst.width / 2.0f, dst.height / 2.0f};
+    float rotation = eng->isSettingsButtonHovered ? sinf(GetTime() * 3.0f) * 100.0f : 0.0f;
+    DrawTexturePro(eng->settingsGear, src, dst, origin, rotation, WHITE);
 
     DrawTexture(eng->resizeButton, eng->screenWidth / 2 - 10, eng->screenHeight - eng->bottomBarHeight - 10, WHITE);
     DrawTexturePro(eng->resizeButton, (Rectangle){0, 0, 20, 20}, (Rectangle){eng->sideBarWidth, (eng->screenHeight - eng->bottomBarHeight) / 2, 20, 20}, (Vector2){10, 10}, 90.0f, WHITE);
@@ -1704,13 +1709,14 @@ bool HandleUICollisions(EngineContext *eng, GraphContext *graph, InterpreterCont
 
     if (eng->isWindowMoving)
     {
-        Vector2 screenMousePos = { GetWindowPosition().x + eng->mousePos.x, GetWindowPosition().y + eng->mousePos.y };
+        Vector2 screenMousePos = {GetWindowPosition().x + eng->mousePos.x, GetWindowPosition().y + eng->mousePos.y};
         SetWindowPosition(screenMousePos.x - eng->screenWidth + 175, screenMousePos.y - 25);
         if (IsMouseButtonUp(MOUSE_LEFT_BUTTON))
         {
-            if(screenMousePos.y - 25 < 10){
+            if (screenMousePos.y - 25 < 10)
+            {
                 SetWindowPosition(0, 0);
-                //MaximizeWindow(); //not working
+                // MaximizeWindow(); //not working
             }
             eng->isWindowMoving = false;
         }
@@ -1789,6 +1795,15 @@ bool HandleUICollisions(EngineContext *eng, GraphContext *graph, InterpreterCont
         eng->resizingWindow = RESIZING_WINDOW_NONE;
     }
 
+    if (eng->sideBarMiddleY >= eng->screenHeight - eng->bottomBarHeight - 60 - eng->sideBarHalfSnap * 40)
+    {
+        eng->sideBarMiddleY = eng->screenHeight - eng->bottomBarHeight - 60 - eng->sideBarHalfSnap * 40;
+    }
+    else if (eng->sideBarMiddleY <= 5)
+    {
+        eng->sideBarMiddleY = 5;
+    }
+
     if (eng->draggingResizeButtonID != 0)
     {
         if (IsMouseButtonUp(MOUSE_LEFT_BUTTON))
@@ -1840,15 +1855,6 @@ bool HandleUICollisions(EngineContext *eng, GraphContext *graph, InterpreterCont
         default:
             break;
         }
-
-        if (eng->sideBarMiddleY >= eng->screenHeight - eng->bottomBarHeight - 60 - eng->sideBarHalfSnap * 40)
-        {
-            eng->sideBarMiddleY = eng->screenHeight - eng->bottomBarHeight - 60 - eng->sideBarHalfSnap * 40;
-        }
-        else if (eng->sideBarMiddleY <= 5)
-        {
-            eng->sideBarMiddleY = 5;
-        }
     }
 
     for (int i = 0; i < eng->uiElementCount; i++)
@@ -1894,7 +1900,8 @@ void ContextChangePerFrame(EngineContext *eng)
 
 void SetEngineMouseCursor(EngineContext *eng, CGEditorContext *cgEd)
 {
-    if(!(eng->viewportMode == VIEWPORT_GAME_SCREEN && eng->shouldHideCursorInGameFullscreen && eng->isGameFullscreen)){
+    if (!(eng->viewportMode == VIEWPORT_GAME_SCREEN && eng->shouldHideCursorInGameFullscreen && eng->isGameFullscreen))
+    {
         ShowCursor();
     }
 
@@ -1934,14 +1941,15 @@ void SetEngineMouseCursor(EngineContext *eng, CGEditorContext *cgEd)
             SetMouseCursor(cgEd->cursor);
             return;
         case VIEWPORT_GAME_SCREEN:
-            if(eng->shouldHideCursorInGameFullscreen && eng->isGameFullscreen){
+            if (eng->shouldHideCursorInGameFullscreen && eng->isGameFullscreen)
+            {
                 HideCursor();
                 return;
             }
             SetMouseCursor(MOUSE_CURSOR_ARROW);
             return;
         case VIEWPORT_HITBOX_EDITOR:
-           SetMouseCursor(MOUSE_CURSOR_CROSSHAIR);
+            SetMouseCursor(MOUSE_CURSOR_CROSSHAIR);
             return;
         default:
             eng->viewportMode = VIEWPORT_CG_EDITOR;

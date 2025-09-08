@@ -188,6 +188,8 @@ typedef struct EngineContext
     bool isAutoSaveON;
     bool shouldHideCursorInGameFullscreen;
 
+    bool isSettingsButtonHovered;
+
     Logs logs;
 
 } EngineContext;
