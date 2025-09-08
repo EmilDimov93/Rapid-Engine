@@ -12,6 +12,9 @@ const double doubleClickThreshold = 0.3;
 
 #define MAX_LAYER_COUNT 100
 
+#define MIN_WINDOW_WIDTH 200
+#define MIN_WINDOW_HEIGHT 200
+
 typedef enum
 {
     UI_ACTION_NO_COLLISION_ACTION,
@@ -24,6 +27,7 @@ typedef enum
     UI_ACTION_CLOSE_WINDOW,
     UI_ACTION_MINIMIZE_WINDOW,
     UI_ACTION_OPEN_SETTINGS,
+    UI_ACTION_MOVE_WINDOW,
     UI_ACTION_RESIZE_BOTTOM_BAR,
     UI_ACTION_RESIZE_SIDE_BAR,
     UI_ACTION_RESIZE_SIDE_BAR_MIDDLE,
@@ -113,6 +117,15 @@ typedef enum{
     VIEWPORT_HITBOX_EDITOR
 }ViewportMode;
 
+typedef enum
+{
+    RESIZING_WINDOW_NONE,
+    RESIZING_WINDOW_NORTH,
+    RESIZING_WINDOW_SOUTH,
+    RESIZING_WINDOW_EAST,
+    RESIZING_WINDOW_WEST
+}ResizingWindowSide;
+
 typedef struct EngineContext
 {
     int screenWidth;
@@ -150,6 +163,9 @@ typedef struct EngineContext
 
     Vector2 mousePos;
     int draggingResizeButtonID;
+
+    ResizingWindowSide resizingWindow;
+    bool isWindowMoving;
 
     char *currentPath;
     char *projectPath;
