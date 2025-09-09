@@ -1716,7 +1716,6 @@ bool HandleUICollisions(EngineContext *eng, GraphContext *graph, InterpreterCont
             if (screenMousePos.y - 25 < 10)
             {
                 SetWindowPosition(0, 0);
-                // MaximizeWindow(); //not working
             }
             eng->isWindowMoving = false;
         }
@@ -1725,19 +1724,19 @@ bool HandleUICollisions(EngineContext *eng, GraphContext *graph, InterpreterCont
     static Vector2 totalWindowResizeDelta;
     if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !eng->isWindowMoving)
     {
-        if (CheckCollisionPointLine(eng->mousePos, (Vector2){0, 10}, (Vector2){eng->screenWidth, 10}, 10.0f))
+        if (CheckCollisionPointLine(eng->mousePos, (Vector2){0, 5}, (Vector2){eng->screenWidth, 5}, 10.0f))
         {
             eng->resizingWindow = RESIZING_WINDOW_NORTH;
         }
-        else if (CheckCollisionPointLine(eng->mousePos, (Vector2){0, eng->screenHeight - 10}, (Vector2){eng->screenWidth, eng->screenHeight - 10}, 10.0f))
+        else if (CheckCollisionPointLine(eng->mousePos, (Vector2){0, eng->screenHeight - 5}, (Vector2){eng->screenWidth, eng->screenHeight - 5}, 10.0f))
         {
             eng->resizingWindow = RESIZING_WINDOW_SOUTH;
         }
-        else if (CheckCollisionPointLine(eng->mousePos, (Vector2){eng->screenWidth - 10, 0}, (Vector2){eng->screenWidth - 10, eng->screenHeight}, 10.0f))
+        else if (CheckCollisionPointLine(eng->mousePos, (Vector2){eng->screenWidth - 5, 0}, (Vector2){eng->screenWidth - 5, eng->screenHeight}, 10.0f))
         {
             eng->resizingWindow = RESIZING_WINDOW_EAST;
         }
-        else if (CheckCollisionPointLine(eng->mousePos, (Vector2){10, 0}, (Vector2){10, eng->screenHeight}, 10.0f))
+        else if (CheckCollisionPointLine(eng->mousePos, (Vector2){5, 0}, (Vector2){5, eng->screenHeight}, 10.0f))
         {
             eng->resizingWindow = RESIZING_WINDOW_WEST;
         }

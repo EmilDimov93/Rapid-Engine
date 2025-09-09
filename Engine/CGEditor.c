@@ -4,7 +4,6 @@
 #include <ctype.h>
 #include <math.h>
 #include "raymath.h"
-#include "rlgl.h"
 
 #define MENU_WIDTH 270
 #define MENU_ITEM_HEIGHT 40
