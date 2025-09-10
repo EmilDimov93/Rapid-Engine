@@ -38,7 +38,8 @@ InterpreterContext InitInterpreterContext()
 
 void FreeRuntimeGraphContext(RuntimeGraphContext *rg)
 {
-    if (!rg) return;
+    if (!rg)
+        return;
 
     if (rg->nodes)
     {
@@ -118,7 +119,8 @@ void FreeInterpreterContext(InterpreterContext *intp)
     *intp = InitInterpreterContext();
     intp->projectPath = projectPath;
 
-    if(intp->runtimeGraph){
+    if (intp->runtimeGraph)
+    {
         FreeRuntimeGraphContext(intp->runtimeGraph);
     }
 }
@@ -452,7 +454,8 @@ RuntimeGraphContext ConvertToRuntimeGraph(GraphContext *graph, InterpreterContex
                 intp->values[intp->valueCount].type = VAL_COLOR;
                 intp->values[intp->valueCount].isVariable = false;
                 intp->values[intp->valueCount].name = strmac(NULL, MAX_VARIABLE_NAME_SIZE, srcNode->name);
-                if (node->outputPins[0]){
+                if (node->outputPins[0])
+                {
                     node->outputPins[0]->valueIndex = intp->valueCount;
                 }
                 intp->valueCount++;
@@ -1453,13 +1456,15 @@ bool CheckCollisionPolyCircle(Hitbox *h, Vector2 centerPos, Vector2 spriteSize, 
         transformed[i].y = centerPos.y + h->offset.y * scaleY + h->polygonHitbox.vertices[i].y * scaleY;
     }
 
-    if (CheckCollisionPointPoly(circlePos, transformed, h->polygonHitbox.count)){
+    if (CheckCollisionPointPoly(circlePos, transformed, h->polygonHitbox.count))
+    {
         return true;
     }
 
     for (int i = 0; i < h->polygonHitbox.count; i++)
     {
-        if (CheckCollisionPointCircle(transformed[i], circlePos, circleRadius)){
+        if (CheckCollisionPointCircle(transformed[i], circlePos, circleRadius))
+        {
             return true;
         }
     }
@@ -1468,7 +1473,8 @@ bool CheckCollisionPolyCircle(Hitbox *h, Vector2 centerPos, Vector2 spriteSize, 
     {
         Vector2 a = transformed[i];
         Vector2 b = transformed[(i + 1) % h->polygonHitbox.count];
-        if (CheckCollisionCircleLine(circlePos, circleRadius, a, b)){
+        if (CheckCollisionCircleLine(circlePos, circleRadius, a, b))
+        {
             return true;
         }
     }
@@ -1710,6 +1716,13 @@ void HandleForces(InterpreterContext *intp)
 
 bool HandleGameScreen(InterpreterContext *intp, RuntimeGraphContext *graph, Vector2 mousePos, Rectangle screenBoundary)
 {
+    ClearBackground(BLACK);
+
+    if (IsKeyPressed(KEY_P))
+    {
+        intp->isPaused = !intp->isPaused;
+    }
+
     if (intp->isPaused)
     {
         DrawComponents(intp);
@@ -1780,6 +1793,7 @@ bool HandleGameScreen(InterpreterContext *intp, RuntimeGraphContext *graph, Vect
 
     if (intp->loopNodeIndex == -1)
     {
+        printf("a\n");
         AddToLogFromInterpreter(intp, (Value){.type = VAL_STRING, .string = "No loop node found{I211}"}, LOG_LEVEL_ERROR);
         return false;
     }

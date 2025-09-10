@@ -103,6 +103,7 @@ EngineContext InitEngineContext()
     eng.isGameFullscreen = false;
 
     eng.isSaveButtonHovered = false;
+    eng.isBuildButtonHovered = false;
 
     eng.isAutoSaveON = false;
     eng.autoSaveTimer = 0.0f;
@@ -196,6 +197,25 @@ void AddToLog(EngineContext *eng, const char *newLine, int level)
     eng->delayFrames = true;
 }
 
+char *LogLevelToString(LogLevel level)
+{
+    switch (level)
+    {
+    case LOG_LEVEL_NORMAL:
+        return "INFO";
+    case LOG_LEVEL_WARNING:
+        return "WARNING";
+    case LOG_LEVEL_ERROR:
+        return "ERROR";
+    case LOG_LEVEL_SUCCESS:
+        return "SAVE";
+    case LOG_LEVEL_DEBUG:
+        return "DEBUG";
+    default:
+        return "UNKNOWN";
+    }
+}
+
 void EmergencyExit(EngineContext *eng, CGEditorContext *cgEd, InterpreterContext *intp)
 {
     time_t timestamp = time(NULL);
@@ -206,83 +226,17 @@ void EmergencyExit(EngineContext *eng, CGEditorContext *cgEd, InterpreterContext
     {
         for (int i = 0; i < eng->logs.count; i++)
         {
-            char *level;
-            switch (eng->logs.entries[i].level)
-            {
-            case LOG_LEVEL_NORMAL:
-                level = "INFO";
-                break;
-            case LOG_LEVEL_WARNING:
-                level = "WARNING";
-                break;
-            case LOG_LEVEL_ERROR:
-                level = "ERROR";
-                break;
-            case LOG_LEVEL_SUCCESS:
-                level = "SAVE";
-                break;
-            case LOG_LEVEL_DEBUG:
-                level = "DEBUG";
-                break;
-            default:
-                level = "UNKNOWN";
-                break;
-            }
-            fprintf(logFile, "[ENGINE %s] %s\n", level, eng->logs.entries[i].message);
+            fprintf(logFile, "[ENGINE %s] %s\n", LogLevelToString(eng->logs.entries[i].level), eng->logs.entries[i].message);
         }
 
         for (int i = 0; i < cgEd->logMessageCount; i++)
         {
-            char *level;
-            switch (cgEd->logMessageLevels[i])
-            {
-            case LOG_LEVEL_NORMAL:
-                level = "INFO";
-                break;
-            case LOG_LEVEL_WARNING:
-                level = "WARNING";
-                break;
-            case LOG_LEVEL_ERROR:
-                level = "ERROR";
-                break;
-            case LOG_LEVEL_SUCCESS:
-                level = "SAVE";
-                break;
-            case LOG_LEVEL_DEBUG:
-                level = "DEBUG";
-                break;
-            default:
-                level = "UNKNOWN";
-                break;
-            }
-            fprintf(logFile, "[CGEDITOR %s] %s %s\n", level, TextFormat("%02d:%02d:%02d", tm_info->tm_hour, tm_info->tm_min, tm_info->tm_sec), cgEd->logMessages[i]);
+            fprintf(logFile, "[CGEDITOR %s] %s %s\n", LogLevelToString(cgEd->logMessageLevels[i]), TextFormat("%02d:%02d:%02d", tm_info->tm_hour, tm_info->tm_min, tm_info->tm_sec), cgEd->logMessages[i]);
         }
 
         for (int i = 0; i < intp->logMessageCount; i++)
         {
-            char *level;
-            switch (intp->logMessageLevels[i])
-            {
-            case LOG_LEVEL_NORMAL:
-                level = "INFO";
-                break;
-            case LOG_LEVEL_WARNING:
-                level = "WARNING";
-                break;
-            case LOG_LEVEL_ERROR:
-                level = "ERROR";
-                break;
-            case LOG_LEVEL_SUCCESS:
-                level = "SAVE";
-                break;
-            case LOG_LEVEL_DEBUG:
-                level = "DEBUG";
-                break;
-            default:
-                level = "UNKNOWN";
-                break;
-            }
-            fprintf(logFile, "[INTERPRETER %s] %s %s\n", level, TextFormat("%02d:%02d:%02d", tm_info->tm_hour, tm_info->tm_min, tm_info->tm_sec), intp->logMessages[i]);
+            fprintf(logFile, "[INTERPRETER %s] %s %s\n", LogLevelToString(intp->logMessageLevels[i]), TextFormat("%02d:%02d:%02d", tm_info->tm_hour, tm_info->tm_min, tm_info->tm_sec), intp->logMessages[i]);
         }
 
         fprintf(logFile, "\nTo submit a crash report, please email support@rapidengine.eu");
@@ -306,28 +260,22 @@ void EmergencyExit(EngineContext *eng, CGEditorContext *cgEd, InterpreterContext
     exit(1);
 }
 
-char *SetProjectFolderPath(const char *fileName)
+char *SetProjectFolderPath(EngineContext *eng, const char *fileName)
 {
     if (!fileName)
     {
-        return NULL;
+        AddToLog(eng, "Failed to get working directory{E226}", LOG_LEVEL_ERROR);
+        EmergencyExit(eng, &(CGEditorContext){0}, &(InterpreterContext){0});
     }
 
     char cwd[MAX_FILE_PATH];
     if (!GetCWD(cwd, sizeof(cwd)))
     {
-        return NULL;
+        AddToLog(eng, "Failed to get working directory{E226}", LOG_LEVEL_ERROR);
+        EmergencyExit(eng, &(CGEditorContext){0}, &(InterpreterContext){0});
     }
 
-    char *projectPath = malloc(MAX_FILE_PATH);
-    if (!projectPath)
-    {
-        return NULL;
-    }
-
-    strmac(projectPath, MAX_FILE_PATH, "%s%cProjects%c%s", cwd, PATH_SEPARATOR, PATH_SEPARATOR, fileName);
-
-    return projectPath;
+    return strmac(NULL, MAX_FILE_PATH, "%s%cProjects%c%s", cwd, PATH_SEPARATOR, PATH_SEPARATOR, fileName);
 }
 
 FileType GetFileType(const char *folderPath, const char *fileName)
@@ -362,7 +310,7 @@ void PrepareCGFilePath(EngineContext *eng, const char *projectName)
 
     if (!GetCWD(cwd, sizeof(cwd)))
     {
-        // AddToLog
+        AddToLog(eng, "Failed to get working directory{E226}", LOG_LEVEL_ERROR);
         EmergencyExit(eng, &(CGEditorContext){0}, &(InterpreterContext){0});
     }
 
@@ -700,6 +648,7 @@ void CountingSortByLayer(EngineContext *eng)
 void DrawUIElements(EngineContext *eng, GraphContext *graph, CGEditorContext *cgEd, InterpreterContext *intp, RuntimeGraphContext *runtimeGraph)
 {
     eng->isSaveButtonHovered = false;
+    eng->isBuildButtonHovered = false;
     eng->isSettingsButtonHovered = false;
     char temp[256];
     if (eng->hoveredUIElementIndex != -1 && !eng->isAnyMenuOpen)
@@ -758,11 +707,20 @@ void DrawUIElements(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
             }
             break;
         case UI_ACTION_BUILD_GRAPH:
+            eng->isBuildButtonHovered = true;
+            if (cgEd->hasChanged)
+            {
+                break;
+            }
             if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
             {
                 if (cgEd->hasChanged)
                 {
                     AddToLog(eng, "Project not saved!{I102}", LOG_LEVEL_WARNING);
+                    break;
+                }
+                if (eng->viewportMode != VIEWPORT_CG_EDITOR)
+                {
                     break;
                 }
                 *runtimeGraph = ConvertToRuntimeGraph(graph, intp);
@@ -1066,7 +1024,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
         {
             strmac(eng->uiElements[eng->uiElementCount - 1].text.string, MAX_FILE_PATH, "Save");
         }
-        
+
         if (eng->viewportMode == VIEWPORT_GAME_SCREEN)
         {
             AddUIElement(eng, (UIElement){
@@ -1079,7 +1037,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                                   .text = {.string = "Stop", .textPos = {eng->sideBarWidth - 62, eng->sideBarMiddleY + 20}, .textSize = 20, .textSpacing = 2, .textColor = WHITE},
                               });
         }
-        else if (eng->wasBuilt)
+        else if (eng->wasBuilt && eng->viewportMode == VIEWPORT_CG_EDITOR)
         {
             AddUIElement(eng, (UIElement){
                                   .name = "RunButton",
@@ -1097,10 +1055,10 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                                   .name = "BuildButton",
                                   .shape = UIRectangle,
                                   .type = UI_ACTION_BUILD_GRAPH,
-                                  .rect = {.pos = {eng->sideBarWidth - 70, eng->sideBarMiddleY + 15}, .recSize = {64, 30}, .roundness = 0.2f, .roundSegments = 8, .hoverColor = Fade(WHITE, 0.6f)},
+                                  .rect = {.pos = {eng->sideBarWidth - 70, eng->sideBarMiddleY + 15}, .recSize = {64, 30}, .roundness = 0.2f, .roundSegments = 8, .hoverColor = (!cgEd->hasChanged ? Fade(WHITE, 0.6f) : (Color){0, 0, 0, 0})},
                                   .color = (Color){70, 70, 70, 200},
                                   .layer = 1,
-                                  .text = {.string = "Build", .textPos = {eng->sideBarWidth - 64, eng->sideBarMiddleY + 20}, .textSize = 20, .textSpacing = 2, .textColor = WHITE},
+                                  .text = {.string = "Build", .textPos = {eng->sideBarWidth - 64, eng->sideBarMiddleY + 20}, .textSize = 20, .textSpacing = 2, .textColor = (!cgEd->hasChanged ? WHITE : GRAY)},
                               });
         }
 
@@ -1671,7 +1629,7 @@ bool HandleUICollisions(EngineContext *eng, GraphContext *graph, InterpreterCont
         {
             AddToLog(eng, "Project not saved!{I102}", LOG_LEVEL_WARNING);
         }
-        else
+        else if (eng->viewportMode == VIEWPORT_CG_EDITOR)
         {
             *runtimeGraph = ConvertToRuntimeGraph(graph, intp);
             intp->runtimeGraph = runtimeGraph;
@@ -1957,7 +1915,7 @@ void SetEngineMouseCursor(EngineContext *eng, CGEditorContext *cgEd)
         }
     }
 
-    if (eng->isSaveButtonHovered && eng->viewportMode != VIEWPORT_CG_EDITOR)
+    if ((eng->isSaveButtonHovered && eng->viewportMode != VIEWPORT_CG_EDITOR) || (eng->isBuildButtonHovered && cgEd->hasChanged))
     {
         SetMouseCursor(MOUSE_CURSOR_NOT_ALLOWED);
         return;
@@ -2011,7 +1969,7 @@ int GetEngineFPS(EngineContext *eng, CGEditorContext *cgEd, InterpreterContext *
 
 void SetEngineZoom(EngineContext *eng, CGEditorContext *cgEd)
 {
-    if (eng->viewportMode != VIEWPORT_CG_EDITOR) // zoom only for CG cgEd
+    if (eng->viewportMode != VIEWPORT_CG_EDITOR)
     {
         eng->zoom = 1.0f;
         cgEd->zoom = 1.0f;
@@ -2064,7 +2022,7 @@ int main()
     InterpreterContext intp = InitInterpreterContext();
     RuntimeGraphContext runtimeGraph = {0};
 
-    eng.currentPath = SetProjectFolderPath(fileName);
+    eng.currentPath = SetProjectFolderPath(&eng, fileName);
 
     eng.files = LoadDirectoryFilesEx(eng.currentPath, NULL, false);
     if (!eng.files.paths || eng.files.count <= 0)
@@ -2213,15 +2171,23 @@ int main()
         }
         case VIEWPORT_GAME_SCREEN:
         {
-            if (IsKeyPressed(KEY_P))
-            {
-                intp.isPaused = !intp.isPaused;
-            }
             BeginTextureMode(eng.viewportTex);
-            ClearBackground(BLACK);
 
             eng.isGameRunning = HandleGameScreen(&intp, &runtimeGraph, mouseInViewportTex, viewportRecInViewportTex);
 
+            EndTextureMode();
+
+            if (intp.newLogMessage)
+            {
+                for (int i = 0; i < intp.logMessageCount; i++)
+                {
+                    AddToLog(&eng, intp.logMessages[i], intp.logMessageLevels[i]);
+                }
+
+                intp.newLogMessage = false;
+                intp.logMessageCount = 0;
+                eng.delayFrames = true;
+            }
             if (!eng.isGameRunning)
             {
                 eng.viewportMode = VIEWPORT_CG_EDITOR;
@@ -2229,16 +2195,6 @@ int main()
                 eng.wasBuilt = false;
                 FreeInterpreterContext(&intp);
             }
-            if (intp.newLogMessage)
-            {
-                for (int i = 0; i < intp.logMessageCount; i++)
-                    AddToLog(&eng, intp.logMessages[i], intp.logMessageLevels[i]);
-
-                intp.newLogMessage = false;
-                intp.logMessageCount = 0;
-                eng.delayFrames = true;
-            }
-            EndTextureMode();
 
             break;
         }
@@ -2263,13 +2219,13 @@ int main()
                     int newWidth, newHeight;
                     if (img.width >= img.height)
                     {
-                        newWidth = 500;
-                        newHeight = (int)((float)img.height * 500 / img.width);
+                        newWidth = eng.viewportWidth * 2 / 5;
+                        newHeight = (int)((float)img.height * newWidth / img.width);
                     }
                     else
                     {
-                        newHeight = 500;
-                        newWidth = (int)((float)img.width * 500 / img.height);
+                        newHeight = eng.viewportHeight * 2 / 5;
+                        newWidth = (int)((float)img.width * newHeight / img.height);
                     }
 
                     float scaleX = (float)newWidth / (float)img.width;
@@ -2280,11 +2236,7 @@ int main()
                     Texture2D tex = LoadTextureFromImage(img);
                     UnloadImage(img);
 
-                    Vector2 texPos = (Vector2){
-                        eng.viewportTex.texture.width / 2.0f,
-                        eng.viewportTex.texture.height / 2.0f};
-
-                    hbEd = InitHitboxEditor(tex, texPos, (Vector2){scaleX, scaleY});
+                    hbEd = InitHitboxEditor(tex, (Vector2){eng.viewportTex.texture.width / 2.0f, eng.viewportTex.texture.height / 2.0f}, (Vector2){scaleX, scaleY});
 
                     for (int i = 0; i < graph.pinCount; i++)
                     {
@@ -2309,6 +2261,15 @@ int main()
                     eng.viewportMode = VIEWPORT_CG_EDITOR;
                     eng.delayFrames = true;
                     break;
+                }
+
+                if (hbEd.hasChanged)
+                {
+                    cgEd.hasChangedInLastFrame = true;
+                    cgEd.hasChanged = true;
+                    eng.wasBuilt = false;
+                    hbEd.hasChanged = false;
+                    eng.delayFrames = true;
                 }
             }
 

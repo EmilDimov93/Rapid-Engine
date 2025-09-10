@@ -21,6 +21,7 @@ typedef struct {
     HitboxEditorLastActionType lastActionType;
     int lastActionVerticeIndex;
     Vector2 lastActionVertice;
+    bool hasChanged;
 } HitboxEditorContext;
 
 HitboxEditorContext InitHitboxEditor(Texture2D tex, Vector2 pos, Vector2 scale);

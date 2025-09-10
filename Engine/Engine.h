@@ -149,6 +149,7 @@ typedef struct EngineContext
     bool isViewportFocused;
     bool isAnyMenuOpen;
     bool isSaveButtonHovered;
+    bool isBuildButtonHovered;
     int showSaveWarning;
     bool showSettingsMenu;
     bool shouldCloseWindow;

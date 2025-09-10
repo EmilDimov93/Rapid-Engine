@@ -53,6 +53,7 @@ bool UpdateHitboxEditor(HitboxEditorContext *hbEd, Vector2 mouseLocal, GraphCont
     {
         hbEd->poly.count = 0;
         hbEd->poly.isClosed = false;
+        hbEd->hasChanged = true;
     }
     if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_Z))
     {
@@ -63,6 +64,7 @@ bool UpdateHitboxEditor(HitboxEditorContext *hbEd, Vector2 mouseLocal, GraphCont
             {
                 hbEd->poly.count--;
                 hbEd->poly.isClosed = false;
+                hbEd->hasChanged = true;
             }
             break;
         case HBED_LAST_ACTION_TYPE_DELETE:
@@ -72,10 +74,12 @@ bool UpdateHitboxEditor(HitboxEditorContext *hbEd, Vector2 mouseLocal, GraphCont
                 hbEd->poly.vertices[j] = hbEd->poly.vertices[j - 1];
             }
             hbEd->poly.vertices[hbEd->lastActionVerticeIndex] = hbEd->lastActionVertice;
+            hbEd->hasChanged = true;
             break;
         case HBED_LAST_ACTION_TYPE_MOVE:
             hbEd->poly.vertices[hbEd->lastActionVerticeIndex].x -= hbEd->lastActionVertice.x;
             hbEd->poly.vertices[hbEd->lastActionVerticeIndex].y -= hbEd->lastActionVertice.y;
+            hbEd->hasChanged = true;
             break;
         }
 
@@ -107,6 +111,7 @@ bool UpdateHitboxEditor(HitboxEditorContext *hbEd, Vector2 mouseLocal, GraphCont
                         hbEd->lastActionType = HBED_LAST_ACTION_TYPE_MOVE;
                         hbEd->lastActionVerticeIndex = i;
                         hbEd->lastActionVertice = (Vector2){0, 0};
+                        hbEd->hasChanged = true;
                     }
                     else if (IsMouseButtonPressed(MOUSE_RIGHT_BUTTON))
                     {
@@ -118,6 +123,7 @@ bool UpdateHitboxEditor(HitboxEditorContext *hbEd, Vector2 mouseLocal, GraphCont
                             hbEd->poly.vertices[j] = hbEd->poly.vertices[j + 1];
                         }
                         hbEd->poly.count--;
+                        hbEd->hasChanged = true;
                     }
                 }
             }
@@ -162,6 +168,8 @@ bool UpdateHitboxEditor(HitboxEditorContext *hbEd, Vector2 mouseLocal, GraphCont
                 hbEd->lastActionVerticeIndex = hbEd->poly.count;
                 hbEd->lastActionVertice = rel;
             }
+
+            hbEd->hasChanged = true;
         }
     }
 
