@@ -738,7 +738,7 @@ void DrawUIElements(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
             break;
         case UI_ACTION_BUILD_GRAPH:
             eng->isBuildButtonHovered = true;
-            if (cgEd->hasChanged)
+            if (cgEd->hasChanged || eng->viewportMode != VIEWPORT_CG_EDITOR)
             {
                 break;
             }
@@ -1083,10 +1083,10 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                               .name = "BuildButton",
                               .shape = UIRectangle,
                               .type = UI_ACTION_BUILD_GRAPH,
-                              .rect = {.pos = {eng->sideBarWidth - 70, eng->sideBarMiddleY + 15}, .recSize = {64, 30}, .roundness = 0.2f, .roundSegments = 8, .hoverColor = (!cgEd->hasChanged ? Fade(WHITE, 0.2f) : (Color){0, 0, 0, 0})},
+                              .rect = {.pos = {eng->sideBarWidth - 70, eng->sideBarMiddleY + 15}, .recSize = {64, 30}, .roundness = 0.2f, .roundSegments = 8, .hoverColor = ((!cgEd->hasChanged && eng->viewportMode == VIEWPORT_CG_EDITOR) ? Fade(WHITE, 0.2f) : (Color){0, 0, 0, 0})},
                               .color = (Color){70, 70, 70, 200},
                               .layer = 1,
-                              .text = {.string = "Build", .textPos = {eng->sideBarWidth - 64, eng->sideBarMiddleY + 20}, .textSize = 20, .textSpacing = 2, .textColor = (!cgEd->hasChanged ? WHITE : GRAY)},
+                              .text = {.string = "Build", .textPos = {eng->sideBarWidth - 64, eng->sideBarMiddleY + 20}, .textSize = 20, .textSpacing = 2, .textColor = ((!cgEd->hasChanged && eng->viewportMode == VIEWPORT_CG_EDITOR) ? WHITE : GRAY)},
                           });
     }
 
@@ -2007,7 +2007,7 @@ void SetEngineMouseCursor(EngineContext *eng, CGEditorContext *cgEd)
         }
     }
 
-    if ((eng->isSaveButtonHovered && eng->viewportMode != VIEWPORT_CG_EDITOR) || (eng->isBuildButtonHovered && cgEd->hasChanged))
+    if ((eng->isSaveButtonHovered && eng->viewportMode != VIEWPORT_CG_EDITOR) || (eng->isBuildButtonHovered && (cgEd->hasChanged || eng->viewportMode != VIEWPORT_CG_EDITOR)))
     {
         SetMouseCursor(MOUSE_CURSOR_NOT_ALLOWED);
         return;
