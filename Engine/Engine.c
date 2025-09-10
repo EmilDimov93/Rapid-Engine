@@ -1406,24 +1406,24 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
         switch (GetFileType(eng->currentPath, fileName))
         {
         case FILE_FOLDER:
-            fileOutlineColor = (Color){205, 205, 50, 200};
+            fileOutlineColor = (Color){205, 205, 50, 150};
             fileTextColor = (Color){240, 240, 120, 255};
             break;
         case FILE_CG:
-            fileOutlineColor = (Color){220, 140, 240, 200};
+            fileOutlineColor = (Color){220, 140, 240, 150};
             fileTextColor = (Color){245, 200, 255, 255};
             break;
         case FILE_IMAGE:
-            fileOutlineColor = (Color){107, 127, 209, 255};
+            fileOutlineColor = (Color){107, 127, 209, 150};
             fileTextColor = (Color){107, 127, 209, 255};
             break;
         case FILE_OTHER:
-            fileOutlineColor = (Color){242, 240, 235, 255};
+            fileOutlineColor = (Color){242, 240, 235, 150};
             fileTextColor = (Color){242, 240, 235, 255};
             break;
         default:
             AddToLog(eng, "Out of bounds enum{O201}", LOG_LEVEL_ERROR);
-            fileOutlineColor = (Color){160, 160, 160, 255};
+            fileOutlineColor = (Color){160, 160, 160, 150};
             fileTextColor = (Color){220, 220, 220, 255};
             break;
         }
@@ -1460,7 +1460,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                               .name = "FileOutline",
                               .shape = UIRectangle,
                               .type = UI_ACTION_NO_COLLISION_ACTION,
-                              .rect = {.pos = {xOffset - 1, yOffset - 1}, .recSize = {152, 62}, .roundness = 0.5f, .roundSegments = 8},
+                              .rect = {.pos = {xOffset - 2, yOffset - 2}, .recSize = {154, 64}, .roundness = 0.5f, .roundSegments = 8},
                               .color = fileOutlineColor,
                               .layer = 0});
 
@@ -1468,7 +1468,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                               .name = "File",
                               .shape = UIRectangle,
                               .type = UI_ACTION_OPEN_FILE,
-                              .rect = {.pos = {xOffset, yOffset}, .recSize = {150, 60}, .roundness = 0.5f, .roundSegments = 8, .hoverColor = Fade(WHITE, 0.6f)},
+                              .rect = {.pos = {xOffset, yOffset}, .recSize = {150, 60}, .roundness = 0.4f, .roundSegments = 8, .hoverColor = Fade(WHITE, 0.2f)},
                               .color = (Color){40, 40, 40, 255},
                               .layer = 1,
                               .text = {.string = "", .textPos = {xOffset + 10, yOffset + 16}, .textSize = 25, .textSpacing = 0, .textColor = fileTextColor}});
