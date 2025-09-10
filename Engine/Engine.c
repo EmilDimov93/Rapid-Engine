@@ -605,19 +605,24 @@ bool DrawSettingsMenu(EngineContext *eng, InterpreterContext *intp)
     return true;
 }
 
-FilePathList LoadAndSortFiles(const char *path) {
+FilePathList LoadAndSortFiles(const char *path)
+{
     FilePathList files = LoadDirectoryFilesEx(path, NULL, false);
 
-    if(files.count <= 0){
+    if (files.count <= 0)
+    {
         return files;
     }
 
-    for (int i = 0; i < files.count - 1; i++) {
-        for (int j = i + 1; j < files.count; j++) {
+    for (int i = 0; i < files.count - 1; i++)
+    {
+        for (int j = i + 1; j < files.count; j++)
+        {
             FileType ti = GetFileType(path, GetFileName(files.paths[i]));
             FileType tj = GetFileType(path, GetFileName(files.paths[j]));
 
-            if (ti > tj || (ti == tj && strcmp(files.paths[i], files.paths[j]) > 0)) {
+            if (ti > tj || (ti == tj && strcmp(files.paths[i], files.paths[j]) > 0))
+            {
                 char *tmp = files.paths[i];
                 files.paths[i] = files.paths[j];
                 files.paths[j] = tmp;
@@ -988,354 +993,351 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
     BeginTextureMode(eng->uiTex);
     ClearBackground((Color){255, 255, 255, 0});
 
-    if (eng->screenWidth > eng->screenHeight && eng->screenWidth > 1000)
+    AddUIElement(eng, (UIElement){
+                          .name = "SideBarVars",
+                          .shape = UIRectangle,
+                          .type = UI_ACTION_NO_COLLISION_ACTION,
+                          .rect = {.pos = {0, 0}, .recSize = {eng->sideBarWidth, eng->sideBarMiddleY}, .roundness = 0.0f, .roundSegments = 0},
+                          .color = (Color){28, 28, 28, 255},
+                          .layer = 0,
+                      });
+
+    AddUIElement(eng, (UIElement){
+                          .name = "SideBarLog",
+                          .shape = UIRectangle,
+                          .type = UI_ACTION_NO_COLLISION_ACTION,
+                          .rect = {.pos = {0, eng->sideBarMiddleY}, .recSize = {eng->sideBarWidth, eng->screenHeight - eng->bottomBarHeight}, .roundness = 0.0f, .roundSegments = 0},
+                          .color = (Color){15, 15, 15, 255},
+                          .layer = 0,
+                      });
+
+    AddUIElement(eng, (UIElement){
+                          .name = "SideBarMiddleLine",
+                          .shape = UILine,
+                          .type = UI_ACTION_NO_COLLISION_ACTION,
+                          .line = {.startPos = {eng->sideBarWidth, 0}, .engPos = {eng->sideBarWidth, eng->screenHeight - eng->bottomBarHeight}, .thickness = 2},
+                          .color = WHITE,
+                          .layer = 0,
+                      });
+
+    AddUIElement(eng, (UIElement){
+                          .name = "SideBarFromViewportDividerLine",
+                          .shape = UILine,
+                          .type = UI_ACTION_NO_COLLISION_ACTION,
+                          .line = {.startPos = {0, eng->sideBarMiddleY}, .engPos = {eng->sideBarWidth, eng->sideBarMiddleY}, .thickness = 2},
+                          .color = WHITE,
+                          .layer = 0,
+                      });
+
+    Vector2 saveButtonPos = {
+        eng->sideBarHalfSnap ? eng->sideBarWidth - 70 : eng->sideBarWidth - 145,
+        eng->sideBarHalfSnap ? eng->sideBarMiddleY + 60 : eng->sideBarMiddleY + 15};
+
+    AddUIElement(eng, (UIElement){
+                          .name = "SaveButton",
+                          .shape = UIRectangle,
+                          .type = UI_ACTION_SAVE_CG,
+                          .rect = {.pos = saveButtonPos, .recSize = {64, 30}, .roundness = 0.2f, .roundSegments = 8, .hoverColor = (eng->viewportMode == VIEWPORT_CG_EDITOR ? Fade(WHITE, 0.6f) : (Color){0, 0, 0, 0})},
+                          .color = (Color){70, 70, 70, 200},
+                          .layer = 1,
+                          .text = {.textPos = {cgEd->hasChanged ? saveButtonPos.x + 5 : saveButtonPos.x + 8, saveButtonPos.y + 5}, .textSize = 20, .textSpacing = 2, .textColor = (eng->viewportMode == VIEWPORT_CG_EDITOR ? WHITE : GRAY)},
+                      });
+    if (cgEd->hasChanged)
+    {
+        strmac(eng->uiElements[eng->uiElementCount - 1].text.string, MAX_FILE_PATH, "Save*");
+    }
+    else
+    {
+        strmac(eng->uiElements[eng->uiElementCount - 1].text.string, MAX_FILE_PATH, "Save");
+    }
+
+    if (eng->viewportMode == VIEWPORT_GAME_SCREEN)
     {
         AddUIElement(eng, (UIElement){
-                              .name = "SideBarVars",
+                              .name = "StopButton",
                               .shape = UIRectangle,
-                              .type = UI_ACTION_NO_COLLISION_ACTION,
-                              .rect = {.pos = {0, 0}, .recSize = {eng->sideBarWidth, eng->sideBarMiddleY}, .roundness = 0.0f, .roundSegments = 0},
-                              .color = (Color){28, 28, 28, 255},
-                              .layer = 0,
+                              .type = UI_ACTION_STOP_GAME,
+                              .rect = {.pos = {eng->sideBarWidth - 70, eng->sideBarMiddleY + 15}, .recSize = {64, 30}, .roundness = 0.2f, .roundSegments = 8, .hoverColor = Fade(WHITE, 0.6f)},
+                              .color = RED,
+                              .layer = 1,
+                              .text = {.string = "Stop", .textPos = {eng->sideBarWidth - 62, eng->sideBarMiddleY + 20}, .textSize = 20, .textSpacing = 2, .textColor = WHITE},
                           });
-
+    }
+    else if (eng->wasBuilt && eng->viewportMode == VIEWPORT_CG_EDITOR)
+    {
         AddUIElement(eng, (UIElement){
-                              .name = "SideBarLog",
+                              .name = "RunButton",
                               .shape = UIRectangle,
-                              .type = UI_ACTION_NO_COLLISION_ACTION,
-                              .rect = {.pos = {0, eng->sideBarMiddleY}, .recSize = {eng->sideBarWidth, eng->screenHeight - eng->bottomBarHeight}, .roundness = 0.0f, .roundSegments = 0},
-                              .color = (Color){15, 15, 15, 255},
-                              .layer = 0,
+                              .type = UI_ACTION_RUN_GAME,
+                              .rect = {.pos = {eng->sideBarWidth - 70, eng->sideBarMiddleY + 15}, .recSize = {64, 30}, .roundness = 0.2f, .roundSegments = 8, .hoverColor = Fade(WHITE, 0.6f)},
+                              .color = DARKGREEN,
+                              .layer = 1,
+                              .text = {.string = "Run", .textPos = {eng->sideBarWidth - 56, eng->sideBarMiddleY + 20}, .textSize = 20, .textSpacing = 2, .textColor = WHITE},
                           });
-
+    }
+    else
+    {
         AddUIElement(eng, (UIElement){
-                              .name = "SideBarMiddleLine",
-                              .shape = UILine,
-                              .type = UI_ACTION_NO_COLLISION_ACTION,
-                              .line = {.startPos = {eng->sideBarWidth, 0}, .engPos = {eng->sideBarWidth, eng->screenHeight - eng->bottomBarHeight}, .thickness = 2},
-                              .color = WHITE,
-                              .layer = 0,
-                          });
-
-        AddUIElement(eng, (UIElement){
-                              .name = "SideBarFromViewportDividerLine",
-                              .shape = UILine,
-                              .type = UI_ACTION_NO_COLLISION_ACTION,
-                              .line = {.startPos = {0, eng->sideBarMiddleY}, .engPos = {eng->sideBarWidth, eng->sideBarMiddleY}, .thickness = 2},
-                              .color = WHITE,
-                              .layer = 0,
-                          });
-
-        Vector2 saveButtonPos = {
-            eng->sideBarHalfSnap ? eng->sideBarWidth - 70 : eng->sideBarWidth - 145,
-            eng->sideBarHalfSnap ? eng->sideBarMiddleY + 60 : eng->sideBarMiddleY + 15};
-
-        AddUIElement(eng, (UIElement){
-                              .name = "SaveButton",
+                              .name = "BuildButton",
                               .shape = UIRectangle,
-                              .type = UI_ACTION_SAVE_CG,
-                              .rect = {.pos = saveButtonPos, .recSize = {64, 30}, .roundness = 0.2f, .roundSegments = 8, .hoverColor = (eng->viewportMode == VIEWPORT_CG_EDITOR ? Fade(WHITE, 0.6f) : (Color){0, 0, 0, 0})},
+                              .type = UI_ACTION_BUILD_GRAPH,
+                              .rect = {.pos = {eng->sideBarWidth - 70, eng->sideBarMiddleY + 15}, .recSize = {64, 30}, .roundness = 0.2f, .roundSegments = 8, .hoverColor = (!cgEd->hasChanged ? Fade(WHITE, 0.6f) : (Color){0, 0, 0, 0})},
                               .color = (Color){70, 70, 70, 200},
                               .layer = 1,
-                              .text = {.textPos = {cgEd->hasChanged ? saveButtonPos.x + 5 : saveButtonPos.x + 8, saveButtonPos.y + 5}, .textSize = 20, .textSpacing = 2, .textColor = (eng->viewportMode == VIEWPORT_CG_EDITOR ? WHITE : GRAY)},
+                              .text = {.string = "Build", .textPos = {eng->sideBarWidth - 64, eng->sideBarMiddleY + 20}, .textSize = 20, .textSpacing = 2, .textColor = (!cgEd->hasChanged ? WHITE : GRAY)},
                           });
-        if (cgEd->hasChanged)
-        {
-            strmac(eng->uiElements[eng->uiElementCount - 1].text.string, MAX_FILE_PATH, "Save*");
-        }
-        else
-        {
-            strmac(eng->uiElements[eng->uiElementCount - 1].text.string, MAX_FILE_PATH, "Save");
-        }
+    }
 
-        if (eng->viewportMode == VIEWPORT_GAME_SCREEN)
+    int logY = eng->screenHeight - eng->bottomBarHeight - 30;
+    char cutMessage[256];
+    for (int i = eng->logs.count - 1; i >= 0 && logY > eng->sideBarMiddleY + 60 + eng->sideBarHalfSnap * 40; i--)
+    {
+        const char *msgNoTimestamp = eng->logs.entries[i].message + 9;
+
+        char finalMsg[256];
+        strmac(finalMsg, MAX_LOG_MESSAGE_SIZE, "%s", eng->logs.entries[i].message);
+        if (eng->logs.entries[i].level != LOG_LEVEL_DEBUG)
         {
-            AddUIElement(eng, (UIElement){
-                                  .name = "StopButton",
-                                  .shape = UIRectangle,
-                                  .type = UI_ACTION_STOP_GAME,
-                                  .rect = {.pos = {eng->sideBarWidth - 70, eng->sideBarMiddleY + 15}, .recSize = {64, 30}, .roundness = 0.2f, .roundSegments = 8, .hoverColor = Fade(WHITE, 0.6f)},
-                                  .color = RED,
-                                  .layer = 1,
-                                  .text = {.string = "Stop", .textPos = {eng->sideBarWidth - 62, eng->sideBarMiddleY + 20}, .textSize = 20, .textSpacing = 2, .textColor = WHITE},
-                              });
-        }
-        else if (eng->wasBuilt && eng->viewportMode == VIEWPORT_CG_EDITOR)
-        {
-            AddUIElement(eng, (UIElement){
-                                  .name = "RunButton",
-                                  .shape = UIRectangle,
-                                  .type = UI_ACTION_RUN_GAME,
-                                  .rect = {.pos = {eng->sideBarWidth - 70, eng->sideBarMiddleY + 15}, .recSize = {64, 30}, .roundness = 0.2f, .roundSegments = 8, .hoverColor = Fade(WHITE, 0.6f)},
-                                  .color = DARKGREEN,
-                                  .layer = 1,
-                                  .text = {.string = "Run", .textPos = {eng->sideBarWidth - 56, eng->sideBarMiddleY + 20}, .textSize = 20, .textSpacing = 2, .textColor = WHITE},
-                              });
-        }
-        else
-        {
-            AddUIElement(eng, (UIElement){
-                                  .name = "BuildButton",
-                                  .shape = UIRectangle,
-                                  .type = UI_ACTION_BUILD_GRAPH,
-                                  .rect = {.pos = {eng->sideBarWidth - 70, eng->sideBarMiddleY + 15}, .recSize = {64, 30}, .roundness = 0.2f, .roundSegments = 8, .hoverColor = (!cgEd->hasChanged ? Fade(WHITE, 0.6f) : (Color){0, 0, 0, 0})},
-                                  .color = (Color){70, 70, 70, 200},
-                                  .layer = 1,
-                                  .text = {.string = "Build", .textPos = {eng->sideBarWidth - 64, eng->sideBarMiddleY + 20}, .textSize = 20, .textSpacing = 2, .textColor = (!cgEd->hasChanged ? WHITE : GRAY)},
-                              });
+            finalMsg[strlen(finalMsg) - 6] = '\0';
         }
 
-        int logY = eng->screenHeight - eng->bottomBarHeight - 30;
-        char cutMessage[256];
-        for (int i = eng->logs.count - 1; i >= 0 && logY > eng->sideBarMiddleY + 60 + eng->sideBarHalfSnap * 40; i--)
+        int repeatCount = 1;
+        while (i - repeatCount >= 0)
         {
-            const char *msgNoTimestamp = eng->logs.entries[i].message + 9;
-
-            char finalMsg[256];
-            strmac(finalMsg, MAX_LOG_MESSAGE_SIZE, "%s", eng->logs.entries[i].message);
-            if (eng->logs.entries[i].level != LOG_LEVEL_DEBUG)
-            {
-                finalMsg[strlen(finalMsg) - 6] = '\0';
-            }
-
-            int repeatCount = 1;
-            while (i - repeatCount >= 0)
-            {
-                const char *prevMsgNoTimestamp = eng->logs.entries[i - repeatCount].message + 9;
-                if (strcmp(msgNoTimestamp, prevMsgNoTimestamp) != 0)
-                    break;
-                repeatCount++;
-            }
-
-            if (repeatCount > 1)
-            {
-                strmac(finalMsg, MAX_LOG_MESSAGE_SIZE, "[x%d] %s", repeatCount, eng->logs.entries[i].message);
-                i -= (repeatCount - 1);
-            }
-
-            int j;
-            for (j = 0; j < (int)strlen(finalMsg); j++)
-            {
-                char temp[256];
-                strmac(temp, MAX_LOG_MESSAGE_SIZE, "%.*s", j, finalMsg);
-                temp[j] = '\0';
-
-                if (MeasureTextEx(eng->font, temp, 20, 2).x < eng->sideBarWidth - 25)
-                {
-                    continue;
-                }
-                else
-                {
-                    break;
-                }
-            }
-            strmac(cutMessage, MAX_LOG_MESSAGE_SIZE, "%.*s", j, finalMsg);
-
-            Color logColor;
-            switch (eng->logs.entries[i].level)
-            {
-            case LOG_LEVEL_NORMAL:
-                logColor = WHITE;
+            const char *prevMsgNoTimestamp = eng->logs.entries[i - repeatCount].message + 9;
+            if (strcmp(msgNoTimestamp, prevMsgNoTimestamp) != 0)
                 break;
-            case LOG_LEVEL_WARNING:
-                logColor = YELLOW;
-                break;
-            case LOG_LEVEL_ERROR:
-                logColor = RED;
-                break;
-            case LOG_LEVEL_DEBUG:
-                logColor = PURPLE;
-                break;
-            case LOG_LEVEL_SUCCESS:
-                logColor = GREEN;
-                break;
-            default:
-                logColor = WHITE;
-                break;
-            }
-
-            AddUIElement(eng, (UIElement){
-                                  .name = "LogText",
-                                  .shape = UIText,
-                                  .type = UI_ACTION_NO_COLLISION_ACTION,
-                                  .text = {.textPos = {10, logY}, .textSize = 20, .textSpacing = 2, .textColor = logColor},
-                                  .layer = 0});
-
-            strmac(eng->uiElements[eng->uiElementCount - 1].text.string, MAX_LOG_MESSAGE_SIZE, cutMessage);
-
-            logY -= 25;
+            repeatCount++;
         }
 
-        if (eng->sideBarMiddleY > 45)
+        if (repeatCount > 1)
         {
-            AddUIElement(eng, (UIElement){
-                                  .name = "VarsFilterShowText",
-                                  .shape = UIText,
-                                  .type = UI_ACTION_NO_COLLISION_ACTION,
-                                  .text = {.string = "Show:", .textPos = {eng->sideBarWidth - 155, 20}, .textSize = 20, .textSpacing = 2, .textColor = WHITE},
-                                  .layer = 0});
-            char varsFilterText[10];
-            Color varFilterColor;
-            switch (eng->varsFilter)
-            {
-            case VAR_FILTER_ALL:
-                strmac(varsFilterText, 10, "All");
-                varFilterColor = RAYWHITE;
-                break;
-            case VAR_FILTER_NUMBERS:
-                strmac(varsFilterText, 10, "Nums");
-                varFilterColor = (Color){24, 119, 149, 255};
-                break;
-            case VAR_FILTER_STRINGS:
-                strmac(varsFilterText, 10, "Strings");
-                varFilterColor = (Color){180, 178, 40, 255};
-                break;
-            case VAR_FILTER_BOOLS:
-                strmac(varsFilterText, 10, "Bools");
-                varFilterColor = (Color){27, 64, 121, 255};
-                break;
-            case VAR_FILTER_COLORS:
-                strmac(varsFilterText, 10, "Colors");
-                varFilterColor = (Color){217, 3, 104, 255};
-                break;
-            case VAR_FILTER_SPRITES:
-                strmac(varsFilterText, 10, "Sprites");
-                varFilterColor = (Color){3, 206, 164, 255};
-                break;
-            default:
-                eng->varsFilter = 0;
-                strmac(varsFilterText, 10, "All");
-                varFilterColor = RAYWHITE;
-                break;
-            }
-            AddUIElement(eng, (UIElement){
-                                  .name = "VarsFilterButton",
-                                  .shape = UIRectangle,
-                                  .type = UI_ACTION_CHANGE_VARS_FILTER,
-                                  .rect = {.pos = {eng->sideBarWidth - 85, 15}, .recSize = {78, 30}, .roundness = 0.2f, .roundSegments = 8, .hoverColor = Fade(WHITE, 0.6f)},
-                                  .color = (Color){70, 70, 70, 200},
-                                  .layer = 1,
-                                  .text = {.textPos = {eng->sideBarWidth - 85 + (78 - MeasureTextEx(eng->font, varsFilterText, 20, 1).x) / 2, 20}, .textSize = 20, .textSpacing = 1, .textColor = varFilterColor},
-                              });
-            strmac(eng->uiElements[eng->uiElementCount - 1].text.string, 10, varsFilterText);
+            strmac(finalMsg, MAX_LOG_MESSAGE_SIZE, "[x%d] %s", repeatCount, eng->logs.entries[i].message);
+            i -= (repeatCount - 1);
         }
 
-        int varsY = 60;
-        for (int i = 0; i < (eng->isGameRunning ? intp->valueCount : graph->variablesCount) && varsY < eng->sideBarMiddleY - 40; i++)
+        int j;
+        for (j = 0; j < (int)strlen(finalMsg); j++)
         {
-            if (eng->isGameRunning)
+            char temp[256];
+            strmac(temp, MAX_LOG_MESSAGE_SIZE, "%.*s", j, finalMsg);
+            temp[j] = '\0';
+
+            if (MeasureTextEx(eng->font, temp, 20, 2).x < eng->sideBarWidth - 25)
             {
-                if (!intp->values[i].isVariable)
-                {
-                    continue;
-                }
+                continue;
             }
             else
             {
-                if (i == 0)
-                {
-                    continue;
-                }
-            }
-
-            Color varColor;
-            strmac(cutMessage, MAX_VARIABLE_NAME_SIZE, "%s", eng->isGameRunning ? intp->values[i].name : graph->variables[i]);
-            switch (eng->isGameRunning ? intp->values[i].type : graph->variableTypes[i])
-            {
-            case VAL_NUMBER:
-            case NODE_CREATE_NUMBER:
-                varColor = (Color){24, 119, 149, 255};
-                if (eng->varsFilter != VAR_FILTER_NUMBERS && eng->varsFilter != VAR_FILTER_ALL)
-                {
-                    continue;
-                }
-                break;
-            case VAL_STRING:
-            case NODE_CREATE_STRING:
-                varColor = (Color){180, 178, 40, 255};
-                if (eng->varsFilter != VAR_FILTER_STRINGS && eng->varsFilter != VAR_FILTER_ALL)
-                {
-                    continue;
-                }
-                break;
-            case VAL_BOOL:
-            case NODE_CREATE_BOOL:
-                varColor = (Color){27, 64, 121, 255};
-                if (eng->varsFilter != VAR_FILTER_BOOLS && eng->varsFilter != VAR_FILTER_ALL)
-                {
-                    continue;
-                }
-                break;
-            case VAL_COLOR:
-            case NODE_CREATE_COLOR:
-                varColor = (Color){217, 3, 104, 255};
-                if (eng->varsFilter != VAR_FILTER_COLORS && eng->varsFilter != VAR_FILTER_ALL)
-                {
-                    continue;
-                }
-                break;
-            case VAL_SPRITE:
-            case NODE_CREATE_SPRITE:
-                varColor = (Color){3, 206, 164, 255};
-                if (eng->varsFilter != VAR_FILTER_SPRITES && eng->varsFilter != VAR_FILTER_ALL)
-                {
-                    continue;
-                }
-                break;
-            default:
-                varColor = LIGHTGRAY;
-            }
-
-            AddUIElement(eng, (UIElement){
-                                  .name = "Variable Background",
-                                  .shape = UIRectangle,
-                                  .type = eng->isGameRunning ? UI_ACTION_VAR_TOOLTIP_RUNTIME : UI_ACTION_NO_COLLISION_ACTION,
-                                  .rect = {.pos = {15, varsY - 5}, .recSize = {eng->sideBarWidth - 25, 35}, .roundness = 0.6f, .roundSegments = 8, .hoverColor = Fade(WHITE, 0.6f)},
-                                  .color = (Color){59, 59, 59, 255},
-                                  .layer = 1,
-                                  .valueIndex = i});
-
-            float dotsWidth = MeasureTextEx(eng->font, "...", 24, 2).x;
-            int j;
-            bool wasCut = false;
-            for (j = 1; j <= strlen(cutMessage); j++)
-            {
-                char temp[256];
-                strmac(temp, MAX_VARIABLE_NAME_SIZE, "%.*s", j, cutMessage);
-
-                float textWidth = MeasureTextEx(eng->font, temp, 24, 2).x;
-                if (textWidth + dotsWidth < eng->sideBarWidth - 80)
-                    continue;
-
-                wasCut = true;
-                j--;
                 break;
             }
-
-            bool textHidden = false;
-
-            if (wasCut && j < 252)
-            {
-                strmac(cutMessage, MAX_VARIABLE_NAME_SIZE, "%s...", cutMessage);
-            }
-            if (wasCut && j == 0)
-            {
-                cutMessage[0] = '\0';
-                textHidden = true;
-            }
-
-            AddUIElement(eng, (UIElement){
-                                  .name = "Variable",
-                                  .shape = UICircle,
-                                  .type = UI_ACTION_NO_COLLISION_ACTION,
-                                  .circle = {.center = (Vector2){textHidden ? eng->sideBarWidth / 2 + 3 : eng->sideBarWidth - 25, varsY + 14}, .radius = 8},
-                                  .color = varColor,
-                                  .text = {.textPos = {20, varsY}, .textSize = 24, .textSpacing = 2, .textColor = WHITE},
-                                  .layer = 2});
-
-            strmac(eng->uiElements[eng->uiElementCount - 1].text.string, MAX_VARIABLE_NAME_SIZE, "%s", cutMessage);
-            varsY += 40;
         }
+        strmac(cutMessage, MAX_LOG_MESSAGE_SIZE, "%.*s", j, finalMsg);
+
+        Color logColor;
+        switch (eng->logs.entries[i].level)
+        {
+        case LOG_LEVEL_NORMAL:
+            logColor = WHITE;
+            break;
+        case LOG_LEVEL_WARNING:
+            logColor = YELLOW;
+            break;
+        case LOG_LEVEL_ERROR:
+            logColor = RED;
+            break;
+        case LOG_LEVEL_DEBUG:
+            logColor = PURPLE;
+            break;
+        case LOG_LEVEL_SUCCESS:
+            logColor = GREEN;
+            break;
+        default:
+            logColor = WHITE;
+            break;
+        }
+
+        AddUIElement(eng, (UIElement){
+                              .name = "LogText",
+                              .shape = UIText,
+                              .type = UI_ACTION_NO_COLLISION_ACTION,
+                              .text = {.textPos = {10, logY}, .textSize = 20, .textSpacing = 2, .textColor = logColor},
+                              .layer = 0});
+
+        strmac(eng->uiElements[eng->uiElementCount - 1].text.string, MAX_LOG_MESSAGE_SIZE, cutMessage);
+
+        logY -= 25;
+    }
+
+    if (eng->sideBarMiddleY > 45)
+    {
+        AddUIElement(eng, (UIElement){
+                              .name = "VarsFilterShowText",
+                              .shape = UIText,
+                              .type = UI_ACTION_NO_COLLISION_ACTION,
+                              .text = {.string = "Show:", .textPos = {eng->sideBarWidth - 155, 20}, .textSize = 20, .textSpacing = 2, .textColor = WHITE},
+                              .layer = 0});
+        char varsFilterText[10];
+        Color varFilterColor;
+        switch (eng->varsFilter)
+        {
+        case VAR_FILTER_ALL:
+            strmac(varsFilterText, 10, "All");
+            varFilterColor = RAYWHITE;
+            break;
+        case VAR_FILTER_NUMBERS:
+            strmac(varsFilterText, 10, "Nums");
+            varFilterColor = (Color){64, 159, 189, 255};
+            break;
+        case VAR_FILTER_STRINGS:
+            strmac(varsFilterText, 10, "Strings");
+            varFilterColor = (Color){180, 178, 40, 255};
+            break;
+        case VAR_FILTER_BOOLS:
+            strmac(varsFilterText, 10, "Bools");
+            varFilterColor = (Color){87, 124, 181, 255};
+            break;
+        case VAR_FILTER_COLORS:
+            strmac(varsFilterText, 10, "Colors");
+            varFilterColor = (Color){217, 3, 104, 255};
+            break;
+        case VAR_FILTER_SPRITES:
+            strmac(varsFilterText, 10, "Sprites");
+            varFilterColor = (Color){3, 206, 164, 255};
+            break;
+        default:
+            eng->varsFilter = 0;
+            strmac(varsFilterText, 10, "All");
+            varFilterColor = RAYWHITE;
+            break;
+        }
+        AddUIElement(eng, (UIElement){
+                              .name = "VarsFilterButton",
+                              .shape = UIRectangle,
+                              .type = UI_ACTION_CHANGE_VARS_FILTER,
+                              .rect = {.pos = {eng->sideBarWidth - 85 + eng->sideBarHalfSnap * 15, 15}, .recSize = {78 - eng->sideBarHalfSnap * 15, 30}, .roundness = 0.2f, .roundSegments = 8, .hoverColor = Fade(WHITE, 0.2f)},
+                              .color = (Color){70, 70, 70, 200},
+                              .layer = 1,
+                              .text = {.textPos = {eng->sideBarWidth - 85 + (80 - MeasureTextEx(eng->font, varsFilterText, 20 - eng->sideBarHalfSnap * 3, 1).x) / 2 + eng->sideBarHalfSnap * 5, 20 + eng->sideBarHalfSnap * 2}, .textSize = 20 - eng->sideBarHalfSnap * 3, .textSpacing = 1, .textColor = varFilterColor},
+                          });
+        strmac(eng->uiElements[eng->uiElementCount - 1].text.string, 10, varsFilterText);
+    }
+
+    int varsY = 60;
+    for (int i = 0; i < (eng->isGameRunning ? intp->valueCount : graph->variablesCount) && varsY < eng->sideBarMiddleY - 40; i++)
+    {
+        if (eng->isGameRunning)
+        {
+            if (!intp->values[i].isVariable)
+            {
+                continue;
+            }
+        }
+        else
+        {
+            if (i == 0)
+            {
+                continue;
+            }
+        }
+
+        Color varColor;
+        strmac(cutMessage, MAX_VARIABLE_NAME_SIZE, "%s", eng->isGameRunning ? intp->values[i].name : graph->variables[i]);
+        switch (eng->isGameRunning ? intp->values[i].type : graph->variableTypes[i])
+        {
+        case VAL_NUMBER:
+        case NODE_CREATE_NUMBER:
+            varColor = (Color){24, 119, 149, 255};
+            if (eng->varsFilter != VAR_FILTER_NUMBERS && eng->varsFilter != VAR_FILTER_ALL)
+            {
+                continue;
+            }
+            break;
+        case VAL_STRING:
+        case NODE_CREATE_STRING:
+            varColor = (Color){180, 178, 40, 255};
+            if (eng->varsFilter != VAR_FILTER_STRINGS && eng->varsFilter != VAR_FILTER_ALL)
+            {
+                continue;
+            }
+            break;
+        case VAL_BOOL:
+        case NODE_CREATE_BOOL:
+            varColor = (Color){27, 64, 121, 255};
+            if (eng->varsFilter != VAR_FILTER_BOOLS && eng->varsFilter != VAR_FILTER_ALL)
+            {
+                continue;
+            }
+            break;
+        case VAL_COLOR:
+        case NODE_CREATE_COLOR:
+            varColor = (Color){217, 3, 104, 255};
+            if (eng->varsFilter != VAR_FILTER_COLORS && eng->varsFilter != VAR_FILTER_ALL)
+            {
+                continue;
+            }
+            break;
+        case VAL_SPRITE:
+        case NODE_CREATE_SPRITE:
+            varColor = (Color){3, 206, 164, 255};
+            if (eng->varsFilter != VAR_FILTER_SPRITES && eng->varsFilter != VAR_FILTER_ALL)
+            {
+                continue;
+            }
+            break;
+        default:
+            varColor = LIGHTGRAY;
+        }
+
+        AddUIElement(eng, (UIElement){
+                              .name = "Variable Background",
+                              .shape = UIRectangle,
+                              .type = eng->isGameRunning ? UI_ACTION_VAR_TOOLTIP_RUNTIME : UI_ACTION_NO_COLLISION_ACTION,
+                              .rect = {.pos = {15, varsY - 5}, .recSize = {eng->sideBarWidth - 25, 35}, .roundness = 0.6f, .roundSegments = 8, .hoverColor = Fade(WHITE, 0.6f)},
+                              .color = (Color){59, 59, 59, 255},
+                              .layer = 1,
+                              .valueIndex = i});
+
+        float dotsWidth = MeasureTextEx(eng->font, "...", 24, 2).x;
+        int j;
+        bool wasCut = false;
+        for (j = 1; j <= strlen(cutMessage); j++)
+        {
+            char temp[256];
+            strmac(temp, MAX_VARIABLE_NAME_SIZE, "%.*s", j, cutMessage);
+
+            float textWidth = MeasureTextEx(eng->font, temp, 24, 2).x;
+            if (textWidth + dotsWidth < eng->sideBarWidth - 80)
+                continue;
+
+            wasCut = true;
+            j--;
+            break;
+        }
+
+        bool textHidden = false;
+
+        if (wasCut && j < 252)
+        {
+            strmac(cutMessage, MAX_VARIABLE_NAME_SIZE, "%s...", cutMessage);
+        }
+        if (wasCut && j == 0)
+        {
+            cutMessage[0] = '\0';
+            textHidden = true;
+        }
+
+        AddUIElement(eng, (UIElement){
+                              .name = "Variable",
+                              .shape = UICircle,
+                              .type = UI_ACTION_NO_COLLISION_ACTION,
+                              .circle = {.center = (Vector2){textHidden ? eng->sideBarWidth / 2 + 3 : eng->sideBarWidth - 25, varsY + 14}, .radius = 8},
+                              .color = varColor,
+                              .text = {.textPos = {20, varsY}, .textSize = 24, .textSpacing = 2, .textColor = WHITE},
+                              .layer = 2});
+
+        strmac(eng->uiElements[eng->uiElementCount - 1].text.string, MAX_VARIABLE_NAME_SIZE, "%s", cutMessage);
+        varsY += 40;
     }
 
     AddUIElement(eng, (UIElement){
@@ -1782,6 +1784,10 @@ bool HandleUICollisions(EngineContext *eng, GraphContext *graph, InterpreterCont
     else if (eng->sideBarMiddleY <= 5)
     {
         eng->sideBarMiddleY = 5;
+    }
+    if(eng->screenWidth < eng->screenHeight || eng->screenWidth < 400){
+        eng->sideBarWidth = 80;
+        eng->sideBarHalfSnap = true;
     }
 
     if (eng->draggingResizeButtonID != 0)
