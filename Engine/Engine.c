@@ -605,6 +605,29 @@ bool DrawSettingsMenu(EngineContext *eng, InterpreterContext *intp)
     return true;
 }
 
+FilePathList LoadAndSortFiles(const char *path) {
+    FilePathList files = LoadDirectoryFilesEx(path, NULL, false);
+
+    if(files.count <= 0){
+        return files;
+    }
+
+    for (int i = 0; i < files.count - 1; i++) {
+        for (int j = i + 1; j < files.count; j++) {
+            FileType ti = GetFileType(path, GetFileName(files.paths[i]));
+            FileType tj = GetFileType(path, GetFileName(files.paths[j]));
+
+            if (ti > tj || (ti == tj && strcmp(files.paths[i], files.paths[j]) > 0)) {
+                char *tmp = files.paths[i];
+                files.paths[i] = files.paths[j];
+                files.paths[j] = tmp;
+            }
+        }
+    }
+
+    return files;
+}
+
 void CountingSortByLayer(EngineContext *eng)
 {
     int **elements = malloc(MAX_LAYER_COUNT * sizeof(int *));
@@ -751,7 +774,7 @@ void DrawUIElements(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                 }
 
                 UnloadDirectoryFiles(eng->files);
-                eng->files = LoadDirectoryFilesEx(eng->currentPath, NULL, false);
+                eng->files = LoadAndSortFiles(eng->currentPath);
                 if (!eng->files.paths || eng->files.count < 0)
                 {
                     AddToLog(eng, "Error loading files{E201}", LOG_LEVEL_ERROR);
@@ -766,7 +789,7 @@ void DrawUIElements(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
             if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
             {
                 UnloadDirectoryFiles(eng->files);
-                eng->files = LoadDirectoryFilesEx(eng->currentPath, NULL, false);
+                eng->files = LoadAndSortFiles(eng->currentPath);
                 if (!eng->files.paths || eng->files.count < 0)
                 {
                     AddToLog(eng, "Error loading files{E201}", LOG_LEVEL_ERROR);
@@ -879,7 +902,7 @@ void DrawUIElements(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                         strmac(eng->currentPath, MAX_FILE_PATH, "%s%c%s", eng->currentPath, PATH_SEPARATOR, eng->uiElements[eng->hoveredUIElementIndex].text.string);
 
                         UnloadDirectoryFiles(eng->files);
-                        eng->files = LoadDirectoryFilesEx(eng->currentPath, NULL, false);
+                        eng->files = LoadAndSortFiles(eng->currentPath);
                         if (!eng->files.paths || eng->files.count < 0)
                         {
                             AddToLog(eng, "Error loading files{E201}", LOG_LEVEL_ERROR);
@@ -1391,12 +1414,12 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
             fileTextColor = (Color){245, 200, 255, 255};
             break;
         case FILE_IMAGE:
-            fileOutlineColor = (Color){205, 30, 30, 200};
-            fileTextColor = (Color){255, 60, 60, 255};
+            fileOutlineColor = (Color){107, 127, 209, 255};
+            fileTextColor = (Color){107, 127, 209, 255};
             break;
         case FILE_OTHER:
-            fileOutlineColor = (Color){160, 160, 160, 255};
-            fileTextColor = (Color){220, 220, 220, 255};
+            fileOutlineColor = (Color){242, 240, 235, 255};
+            fileTextColor = (Color){242, 240, 235, 255};
             break;
         default:
             AddToLog(eng, "Out of bounds enum{O201}", LOG_LEVEL_ERROR);
@@ -2024,7 +2047,7 @@ int main()
 
     eng.currentPath = SetProjectFolderPath(&eng, fileName);
 
-    eng.files = LoadDirectoryFilesEx(eng.currentPath, NULL, false);
+    eng.files = LoadAndSortFiles(eng.currentPath);
     if (!eng.files.paths || eng.files.count <= 0)
     {
         AddToLog(&eng, "Error loading files{E201}", LOG_LEVEL_ERROR);
