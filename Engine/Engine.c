@@ -33,6 +33,8 @@ EngineContext InitEngineContext()
     eng.screenHeight = GetScreenHeight();
     eng.sideBarWidth = eng.screenWidth * 0.2;
     eng.bottomBarHeight = eng.screenHeight * 0.25;
+    eng.maxScreenWidth = eng.screenWidth;
+    eng.maxScreenHeight = eng.screenHeight;
 
     eng.prevScreenWidth = eng.screenWidth;
     eng.prevScreenHeight = eng.screenHeight;
@@ -834,7 +836,7 @@ void DrawUIElements(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
             break;
         case UI_ACTION_MOVE_WINDOW:
             eng->isViewportFocused = false;
-            DrawCircleSector((Vector2){eng->screenWidth - 152, 7}, 38, 90, 180, 8, (Color){200, 200, 200, 200});
+            DrawCircleSector((Vector2){eng->screenWidth - 152, 7}, 38, 90, 180, 8, Fade(WHITE, 0.4f));
             if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
             {
                 eng->isWindowMoving = true;
@@ -1037,7 +1039,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                           .name = "SaveButton",
                           .shape = UIRectangle,
                           .type = UI_ACTION_SAVE_CG,
-                          .rect = {.pos = saveButtonPos, .recSize = {64, 30}, .roundness = 0.2f, .roundSegments = 8, .hoverColor = (eng->viewportMode == VIEWPORT_CG_EDITOR ? Fade(WHITE, 0.6f) : (Color){0, 0, 0, 0})},
+                          .rect = {.pos = saveButtonPos, .recSize = {64, 30}, .roundness = 0.2f, .roundSegments = 8, .hoverColor = (eng->viewportMode == VIEWPORT_CG_EDITOR ? Fade(WHITE, 0.2f) : (Color){0, 0, 0, 0})},
                           .color = (Color){70, 70, 70, 200},
                           .layer = 1,
                           .text = {.textPos = {cgEd->hasChanged ? saveButtonPos.x + 5 : saveButtonPos.x + 8, saveButtonPos.y + 5}, .textSize = 20, .textSpacing = 2, .textColor = (eng->viewportMode == VIEWPORT_CG_EDITOR ? WHITE : GRAY)},
@@ -1057,7 +1059,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                               .name = "StopButton",
                               .shape = UIRectangle,
                               .type = UI_ACTION_STOP_GAME,
-                              .rect = {.pos = {eng->sideBarWidth - 70, eng->sideBarMiddleY + 15}, .recSize = {64, 30}, .roundness = 0.2f, .roundSegments = 8, .hoverColor = Fade(WHITE, 0.6f)},
+                              .rect = {.pos = {eng->sideBarWidth - 70, eng->sideBarMiddleY + 15}, .recSize = {64, 30}, .roundness = 0.2f, .roundSegments = 8, .hoverColor = Fade(WHITE, 0.4f)},
                               .color = RED,
                               .layer = 1,
                               .text = {.string = "Stop", .textPos = {eng->sideBarWidth - 62, eng->sideBarMiddleY + 20}, .textSize = 20, .textSpacing = 2, .textColor = WHITE},
@@ -1069,7 +1071,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                               .name = "RunButton",
                               .shape = UIRectangle,
                               .type = UI_ACTION_RUN_GAME,
-                              .rect = {.pos = {eng->sideBarWidth - 70, eng->sideBarMiddleY + 15}, .recSize = {64, 30}, .roundness = 0.2f, .roundSegments = 8, .hoverColor = Fade(WHITE, 0.6f)},
+                              .rect = {.pos = {eng->sideBarWidth - 70, eng->sideBarMiddleY + 15}, .recSize = {64, 30}, .roundness = 0.2f, .roundSegments = 8, .hoverColor = Fade(WHITE, 0.4f)},
                               .color = DARKGREEN,
                               .layer = 1,
                               .text = {.string = "Run", .textPos = {eng->sideBarWidth - 56, eng->sideBarMiddleY + 20}, .textSize = 20, .textSpacing = 2, .textColor = WHITE},
@@ -1081,7 +1083,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                               .name = "BuildButton",
                               .shape = UIRectangle,
                               .type = UI_ACTION_BUILD_GRAPH,
-                              .rect = {.pos = {eng->sideBarWidth - 70, eng->sideBarMiddleY + 15}, .recSize = {64, 30}, .roundness = 0.2f, .roundSegments = 8, .hoverColor = (!cgEd->hasChanged ? Fade(WHITE, 0.6f) : (Color){0, 0, 0, 0})},
+                              .rect = {.pos = {eng->sideBarWidth - 70, eng->sideBarMiddleY + 15}, .recSize = {64, 30}, .roundness = 0.2f, .roundSegments = 8, .hoverColor = (!cgEd->hasChanged ? Fade(WHITE, 0.2f) : (Color){0, 0, 0, 0})},
                               .color = (Color){70, 70, 70, 200},
                               .layer = 1,
                               .text = {.string = "Build", .textPos = {eng->sideBarWidth - 64, eng->sideBarMiddleY + 20}, .textSize = 20, .textSpacing = 2, .textColor = (!cgEd->hasChanged ? WHITE : GRAY)},
@@ -1293,7 +1295,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                               .name = "Variable Background",
                               .shape = UIRectangle,
                               .type = eng->isGameRunning ? UI_ACTION_VAR_TOOLTIP_RUNTIME : UI_ACTION_NO_COLLISION_ACTION,
-                              .rect = {.pos = {15, varsY - 5}, .recSize = {eng->sideBarWidth - 25, 35}, .roundness = 0.6f, .roundSegments = 8, .hoverColor = Fade(WHITE, 0.6f)},
+                              .rect = {.pos = {15, varsY - 5}, .recSize = {eng->sideBarWidth - 25, 35}, .roundness = 0.6f, .roundSegments = 8, .hoverColor = Fade(WHITE, 0.2f)},
                               .color = (Color){59, 59, 59, 255},
                               .layer = 1,
                               .valueIndex = i});
@@ -1362,7 +1364,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                           .name = "BackButton",
                           .shape = UIRectangle,
                           .type = UI_ACTION_BACK_FILEPATH,
-                          .rect = {.pos = {30, eng->screenHeight - eng->bottomBarHeight + 10}, .recSize = {65, 30}, .roundness = 0, .roundSegments = 0, .hoverColor = Fade(WHITE, 0.6f)},
+                          .rect = {.pos = {30, eng->screenHeight - eng->bottomBarHeight + 10}, .recSize = {65, 30}, .roundness = 0, .roundSegments = 0, .hoverColor = Fade(WHITE, 0.2f)},
                           .color = (Color){70, 70, 70, 150},
                           .layer = 1,
                           .text = {.string = "Back", .textPos = {35, eng->screenHeight - eng->bottomBarHeight + 12}, .textSize = 25, .textSpacing = 0, .textColor = WHITE}});
@@ -1371,7 +1373,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                           .name = "RefreshButton",
                           .shape = UIRectangle,
                           .type = UI_ACTION_REFRESH_FILES,
-                          .rect = {.pos = {110, eng->screenHeight - eng->bottomBarHeight + 10}, .recSize = {100, 30}, .roundness = 0, .roundSegments = 0, .hoverColor = Fade(WHITE, 0.6f)},
+                          .rect = {.pos = {110, eng->screenHeight - eng->bottomBarHeight + 10}, .recSize = {100, 30}, .roundness = 0, .roundSegments = 0, .hoverColor = Fade(WHITE, 0.2f)},
                           .color = (Color){70, 70, 70, 150},
                           .layer = 1,
                           .text = {.string = "Refresh", .textPos = {119, eng->screenHeight - eng->bottomBarHeight + 12}, .textSize = 25, .textSpacing = 0, .textColor = WHITE}});
@@ -1692,15 +1694,44 @@ bool HandleUICollisions(EngineContext *eng, GraphContext *graph, InterpreterCont
 
     if (eng->isWindowMoving)
     {
-        Vector2 screenMousePos = {GetWindowPosition().x + eng->mousePos.x, GetWindowPosition().y + eng->mousePos.y};
-        SetWindowPosition(screenMousePos.x - eng->screenWidth + 175, screenMousePos.y - 25);
+        Vector2 winPos = GetWindowPosition();
+        Vector2 screenMousePos = {winPos.x + eng->mousePos.x, winPos.y + eng->mousePos.y};
+
+        int newX = screenMousePos.x - eng->screenWidth + 175;
+        int newY = screenMousePos.y - 25;
+
         if (IsMouseButtonUp(MOUSE_LEFT_BUTTON))
         {
-            if (screenMousePos.y - 25 < 10)
+            if (screenMousePos.y < 10)
             {
-                SetWindowPosition(0, 0);
+                newX = 0;
+                newY = 0;
+                eng->screenWidth = eng->maxScreenWidth;
+                eng->screenHeight = eng->maxScreenHeight;
             }
+            else if (screenMousePos.x < 10)
+            {
+                newX = 0;
+                newY = 0;
+                eng->screenWidth = eng->maxScreenWidth / 3;
+                eng->screenHeight = eng->maxScreenHeight;
+            }
+            else if (screenMousePos.x > eng->maxScreenWidth - 10)
+            {
+                newX = eng->maxScreenWidth * 2 / 3;
+                newY = 0;
+                eng->screenWidth = eng->maxScreenWidth / 3;
+                eng->screenHeight = eng->maxScreenHeight;
+            }
+            else if (screenMousePos.y > eng->maxScreenHeight - 10){
+                newY = eng->maxScreenHeight - 51;
+            }
+            SetWindowPosition(newX, newY);
+            SetWindowSize(eng->screenWidth, eng->screenHeight);
             eng->isWindowMoving = false;
+        }
+        else{
+            SetWindowPosition(newX, newY);
         }
     }
 
@@ -1732,21 +1763,38 @@ bool HandleUICollisions(EngineContext *eng, GraphContext *graph, InterpreterCont
     }
     else if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON) && eng->resizingWindow != RESIZING_WINDOW_NONE)
     {
+        Vector2 windowPosition = GetWindowPosition();
 
         switch (eng->resizingWindow)
         {
         case RESIZING_WINDOW_NORTH:
+            if (windowPosition.y + totalWindowResizeDelta.y < 0)
+            {
+                totalWindowResizeDelta.y = -windowPosition.y;
+            }
             eng->screenHeight -= totalWindowResizeDelta.y;
-            if (eng->screenHeight <= 1)
+            if (eng->screenHeight > eng->maxScreenHeight)
+            {
+                eng->screenHeight = eng->maxScreenHeight;
+            }
+            else if (eng->screenHeight <= MIN_WINDOW_HEIGHT)
             {
                 eng->screenHeight = MIN_WINDOW_HEIGHT;
             }
             SetWindowSize(eng->screenWidth, eng->screenHeight);
-            SetWindowPosition(GetWindowPosition().x, GetWindowPosition().y + totalWindowResizeDelta.y);
+            SetWindowPosition(GetWindowPosition().x, windowPosition.y + totalWindowResizeDelta.y);
             break;
         case RESIZING_WINDOW_SOUTH:
             eng->screenHeight += totalWindowResizeDelta.y;
-            if (eng->screenHeight <= 1)
+            if (windowPosition.y + eng->screenHeight > eng->maxScreenHeight)
+            {
+                eng->screenHeight = eng->maxScreenHeight - windowPosition.y;
+            }
+            if (eng->screenHeight > eng->maxScreenHeight)
+            {
+                eng->screenHeight = eng->maxScreenHeight;
+            }
+            else if (eng->screenHeight <= MIN_WINDOW_HEIGHT)
             {
                 eng->screenHeight = MIN_WINDOW_HEIGHT;
             }
@@ -1754,26 +1802,40 @@ bool HandleUICollisions(EngineContext *eng, GraphContext *graph, InterpreterCont
             break;
         case RESIZING_WINDOW_EAST:
             eng->screenWidth += totalWindowResizeDelta.x;
-            if (eng->screenWidth <= 1)
+            if (windowPosition.x + eng->screenWidth > eng->maxScreenWidth)
+            {
+                eng->screenWidth = eng->maxScreenWidth - windowPosition.x;
+            }
+            if (eng->screenWidth > eng->maxScreenWidth)
+            {
+                eng->screenWidth = eng->maxScreenWidth;
+            }
+            else if (eng->screenWidth <= MIN_WINDOW_WIDTH)
             {
                 eng->screenWidth = MIN_WINDOW_WIDTH;
             }
             SetWindowSize(eng->screenWidth, eng->screenHeight);
             break;
         case RESIZING_WINDOW_WEST:
+            if (windowPosition.x + totalWindowResizeDelta.x < 0)
+            {
+                totalWindowResizeDelta.x = -windowPosition.x;
+            }
             eng->screenWidth -= totalWindowResizeDelta.x;
-            if (eng->screenWidth <= 1)
+            if (eng->screenWidth > eng->maxScreenWidth)
+            {
+                eng->screenWidth = eng->maxScreenWidth;
+            }
+            else if (eng->screenWidth <= MIN_WINDOW_WIDTH)
             {
                 eng->screenWidth = MIN_WINDOW_WIDTH;
             }
             SetWindowSize(eng->screenWidth, eng->screenHeight);
-            SetWindowPosition(GetWindowPosition().x + totalWindowResizeDelta.x, GetWindowPosition().y);
+            SetWindowPosition(windowPosition.x + totalWindowResizeDelta.x, windowPosition.y);
             break;
         default:
             AddToLog(eng, "Out of bounds enum{O201}", LOG_ERROR);
-            eng->resizingWindow = RESIZING_WINDOW_NONE;
         }
-
         eng->resizingWindow = RESIZING_WINDOW_NONE;
     }
 
@@ -1785,7 +1847,8 @@ bool HandleUICollisions(EngineContext *eng, GraphContext *graph, InterpreterCont
     {
         eng->sideBarMiddleY = 5;
     }
-    if(eng->screenWidth < eng->screenHeight || eng->screenWidth < 400){
+    if (eng->screenWidth < eng->screenHeight || eng->screenWidth < 400)
+    {
         eng->sideBarWidth = 80;
         eng->sideBarHalfSnap = true;
     }
@@ -2333,7 +2396,7 @@ int main()
             DrawTextureRec(eng.uiTex.texture, (Rectangle){0, 0, eng.uiTex.texture.width, -eng.uiTex.texture.height}, (Vector2){0, 0}, WHITE);
         }
 
-        if (eng.viewportMode == VIEWPORT_CG_EDITOR)
+        if (eng.viewportMode == VIEWPORT_CG_EDITOR && eng.screenHeight - eng.bottomBarHeight > 80 && eng.screenWidth > 550)
         {
             DrawTextEx(GetFontDefault(), "CoreGraph", (Vector2){eng.sideBarWidth + 20, 30}, 40, 4, Fade(WHITE, 0.2f));
             DrawTextEx(GetFontDefault(), "TM", (Vector2){eng.sideBarWidth + 230, 20}, 15, 1, Fade(WHITE, 0.2f));

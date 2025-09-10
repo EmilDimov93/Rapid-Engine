@@ -12,8 +12,8 @@ const double doubleClickThreshold = 0.3;
 
 #define MAX_LAYER_COUNT 100
 
-#define MIN_WINDOW_WIDTH 200
-#define MIN_WINDOW_HEIGHT 200
+#define MIN_WINDOW_WIDTH 300
+#define MIN_WINDOW_HEIGHT 300
 
 typedef enum
 {
@@ -137,6 +137,8 @@ typedef struct EngineContext
     float zoom;
     bool isGameFullscreen;
     bool sideBarHalfSnap;
+    int maxScreenWidth;
+    int maxScreenHeight;
 
     int bottomBarHeight;
     int sideBarWidth;
