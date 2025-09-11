@@ -1435,29 +1435,57 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
         char buff[MAX_FILE_NAME];
         strmac(buff, MAX_FILE_NAME, "%s", fileName);
 
-        if (MeasureTextEx(eng->font, fileName, 22, 0).x > 140)
-        {
-            const char *ext = GetFileExtension(fileName);
-            int extLen = ext ? strlen(ext) : 0;
-            int maxLen = strlen(buff) - extLen;
+        int maxSize = 130;
+        const char *ext = GetFileExtension(fileName);
+        int extLen = ext ? strlen(ext) : 0;
 
-            for (int j = maxLen - 1; j >= 0; j--)
+        char *namePart = buff;
+        if (ext)
+        {
+            buff[strlen(buff) - extLen] = '\0';
+            namePart = buff;
+        }
+
+        int nameLen = strlen(namePart);
+        int shortened = 0;
+
+        for (int j = nameLen; j >= 0; j--)
+        {
+            namePart[j] = '\0';
+            const char *displayStr;
+
+            if (shortened || j < nameLen)
             {
-                buff[j] = '\0';
-                if (MeasureTextEx(eng->font, buff, 22, 0).x < 140)
-                {
-                    if (j > 3)
-                    {
-                        buff[j - 3] = '\0';
-                        strmac(buff, MAX_FILE_NAME, "%s...", buff);
-                        if (ext)
-                        {
-                            strmac(buff, MAX_FILE_NAME, "%s%s", buff, ext);
-                        }
-                    }
-                    break;
-                }
+                if (ext)
+                    displayStr = TextFormat("%s..%s", namePart, ext);
+                else
+                    displayStr = TextFormat("%s..", namePart);
             }
+            else
+            {
+                if (ext)
+                    displayStr = TextFormat("%s%s", namePart, ext);
+                else
+                    displayStr = namePart;
+            }
+
+            if (MeasureTextEx(eng->font, displayStr, 22, 0).x <= maxSize)
+            {
+                shortened = (j < nameLen);
+                break;
+            }
+        }
+
+        if (shortened)
+        {
+            if (ext)
+                strmac(buff, MAX_FILE_NAME, "%s..%s", namePart, ext);
+            else
+                strmac(buff, MAX_FILE_NAME, "%s..", namePart);
+        }
+        else if (ext)
+        {
+            strmac(buff, MAX_FILE_NAME, "%s%s", namePart, ext);
         }
 
         AddUIElement(eng, (UIElement){
