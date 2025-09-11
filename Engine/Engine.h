@@ -124,7 +124,15 @@ typedef enum
     RESIZING_WINDOW_SOUTH,
     RESIZING_WINDOW_EAST,
     RESIZING_WINDOW_WEST
-}ResizingWindowSide;
+}WindowResizingButton;
+
+typedef enum
+{
+    RESIZING_MENU_NONE,
+    RESIZING_MENU_BOTTOMBAR,
+    RESIZING_MENU_SIDEBAR,
+    RESIZING_MENU_SIDEBAR_MIDDLE
+}MenuResizingButton;
 
 typedef struct EngineContext
 {
@@ -165,9 +173,10 @@ typedef struct EngineContext
     ViewportMode viewportMode;
 
     Vector2 mousePos;
-    int draggingResizeButtonID;
 
-    ResizingWindowSide resizingWindow;
+    MenuResizingButton menuResizeButton;
+
+    WindowResizingButton windowResizeButton;
     bool isWindowMoving;
 
     char *currentPath;

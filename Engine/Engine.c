@@ -65,7 +65,7 @@ EngineContext InitEngineContext()
     }
 
     eng.delayFrames = true;
-    eng.draggingResizeButtonID = 0;
+    eng.menuResizeButton = RESIZING_MENU_NONE;
 
     eng.font = LoadFontFromMemory(".ttf", arialbd_ttf, arialbd_ttf_len, 128, NULL, 0);
     if (eng.font.texture.id == 0)
@@ -117,7 +117,7 @@ EngineContext InitEngineContext()
 
     eng.shouldCloseWindow = false;
 
-    eng.resizingWindow = RESIZING_WINDOW_NONE;
+    eng.windowResizeButton = RESIZING_WINDOW_NONE;
     eng.isWindowMoving = false;
 
     eng.shouldHideCursorInGameFullscreen = true;
@@ -836,7 +836,7 @@ void DrawUIElements(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
             break;
         case UI_ACTION_MOVE_WINDOW:
             eng->isViewportFocused = false;
-            DrawCircleSector((Vector2){eng->screenWidth - 152, 7}, 38, 90, 180, 8, Fade(WHITE, 0.4f));
+            DrawCircleSector((Vector2){eng->screenWidth - 152, 7}, 38, 90, 180, 8, (Color){150, 150, 150, 255});
             if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
             {
                 eng->isWindowMoving = true;
@@ -844,23 +844,23 @@ void DrawUIElements(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
             break;
         case UI_ACTION_RESIZE_BOTTOM_BAR:
             eng->isViewportFocused = false;
-            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && eng->draggingResizeButtonID == 0)
+            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && eng->menuResizeButton == RESIZING_MENU_NONE)
             {
-                eng->draggingResizeButtonID = 1;
+                eng->menuResizeButton = RESIZING_MENU_BOTTOMBAR;
             }
             break;
         case UI_ACTION_RESIZE_SIDE_BAR:
             eng->isViewportFocused = false;
-            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && eng->draggingResizeButtonID == 0)
+            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && eng->menuResizeButton == RESIZING_MENU_NONE)
             {
-                eng->draggingResizeButtonID = 2;
+                eng->menuResizeButton = RESIZING_MENU_SIDEBAR;
             }
             break;
         case UI_ACTION_RESIZE_SIDE_BAR_MIDDLE:
             eng->isViewportFocused = false;
-            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && eng->draggingResizeButtonID == 0)
+            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && eng->menuResizeButton == 0)
             {
-                eng->draggingResizeButtonID = 3;
+                eng->menuResizeButton = RESIZING_MENU_SIDEBAR_MIDDLE;
             }
             break;
         case UI_ACTION_OPEN_FILE:
@@ -993,7 +993,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
     eng->uiElementCount = 0;
 
     BeginTextureMode(eng->uiTex);
-    ClearBackground((Color){255, 255, 255, 0});
+    ClearBackground((Color){0, 0, 0, 0});
 
     AddUIElement(eng, (UIElement){
                           .name = "SideBarVars",
@@ -1040,7 +1040,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                           .shape = UIRectangle,
                           .type = UI_ACTION_SAVE_CG,
                           .rect = {.pos = saveButtonPos, .recSize = {64, 30}, .roundness = 0.2f, .roundSegments = 8, .hoverColor = (eng->viewportMode == VIEWPORT_CG_EDITOR ? Fade(WHITE, 0.2f) : (Color){0, 0, 0, 0})},
-                          .color = (Color){70, 70, 70, 200},
+                          .color = (Color){50, 50, 50, 255},
                           .layer = 1,
                           .text = {.textPos = {cgEd->hasChanged ? saveButtonPos.x + 5 : saveButtonPos.x + 8, saveButtonPos.y + 5}, .textSize = 20, .textSpacing = 2, .textColor = (eng->viewportMode == VIEWPORT_CG_EDITOR ? WHITE : GRAY)},
                       });
@@ -1084,7 +1084,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                               .shape = UIRectangle,
                               .type = UI_ACTION_BUILD_GRAPH,
                               .rect = {.pos = {eng->sideBarWidth - 70, eng->sideBarMiddleY + 15}, .recSize = {64, 30}, .roundness = 0.2f, .roundSegments = 8, .hoverColor = ((!cgEd->hasChanged && eng->viewportMode == VIEWPORT_CG_EDITOR) ? Fade(WHITE, 0.2f) : (Color){0, 0, 0, 0})},
-                              .color = (Color){70, 70, 70, 200},
+                              .color = (Color){50, 50, 50, 255},
                               .layer = 1,
                               .text = {.string = "Build", .textPos = {eng->sideBarWidth - 64, eng->sideBarMiddleY + 20}, .textSize = 20, .textSpacing = 2, .textColor = ((!cgEd->hasChanged && eng->viewportMode == VIEWPORT_CG_EDITOR) ? WHITE : GRAY)},
                           });
@@ -1218,7 +1218,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                               .shape = UIRectangle,
                               .type = UI_ACTION_CHANGE_VARS_FILTER,
                               .rect = {.pos = {eng->sideBarWidth - 85 + eng->sideBarHalfSnap * 15, 15}, .recSize = {78 - eng->sideBarHalfSnap * 15, 30}, .roundness = 0.2f, .roundSegments = 8, .hoverColor = Fade(WHITE, 0.2f)},
-                              .color = (Color){70, 70, 70, 200},
+                              .color = (Color){50, 50, 50, 255},
                               .layer = 1,
                               .text = {.textPos = {eng->sideBarWidth - 85 + (80 - MeasureTextEx(eng->font, varsFilterText, 20 - eng->sideBarHalfSnap * 3, 1).x) / 2 + eng->sideBarHalfSnap * 5, 20 + eng->sideBarHalfSnap * 2}, .textSize = 20 - eng->sideBarHalfSnap * 3, .textSpacing = 1, .textColor = varFilterColor},
                           });
@@ -1365,7 +1365,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                           .shape = UIRectangle,
                           .type = UI_ACTION_BACK_FILEPATH,
                           .rect = {.pos = {30, eng->screenHeight - eng->bottomBarHeight + 10}, .recSize = {65, 30}, .roundness = 0, .roundSegments = 0, .hoverColor = Fade(WHITE, 0.2f)},
-                          .color = (Color){70, 70, 70, 150},
+                          .color = (Color){40, 40, 40, 255},
                           .layer = 1,
                           .text = {.string = "Back", .textPos = {35, eng->screenHeight - eng->bottomBarHeight + 12}, .textSize = 25, .textSpacing = 0, .textColor = WHITE}});
 
@@ -1374,7 +1374,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                           .shape = UIRectangle,
                           .type = UI_ACTION_REFRESH_FILES,
                           .rect = {.pos = {110, eng->screenHeight - eng->bottomBarHeight + 10}, .recSize = {100, 30}, .roundness = 0, .roundSegments = 0, .hoverColor = Fade(WHITE, 0.2f)},
-                          .color = (Color){70, 70, 70, 150},
+                          .color = (Color){40, 40, 40, 255},
                           .layer = 1,
                           .text = {.string = "Refresh", .textPos = {119, eng->screenHeight - eng->bottomBarHeight + 12}, .textSize = 25, .textSpacing = 0, .textColor = WHITE}});
 
@@ -1410,24 +1410,24 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
         switch (GetFileType(eng->currentPath, fileName))
         {
         case FILE_FOLDER:
-            fileOutlineColor = (Color){205, 205, 50, 150};
+            fileOutlineColor = (Color){102, 102, 11, 255};
             fileTextColor = (Color){240, 240, 120, 255};
             break;
         case FILE_CG:
-            fileOutlineColor = (Color){220, 140, 240, 150};
+            fileOutlineColor = (Color){111, 64, 123, 255};
             fileTextColor = (Color){245, 200, 255, 255};
             break;
         case FILE_IMAGE:
-            fileOutlineColor = (Color){107, 127, 209, 150};
+            fileOutlineColor = (Color){74, 86, 134, 255};
             fileTextColor = (Color){107, 127, 209, 255};
             break;
         case FILE_OTHER:
-            fileOutlineColor = (Color){242, 240, 235, 150};
+            fileOutlineColor = (Color){124, 123, 120, 255};
             fileTextColor = (Color){242, 240, 235, 255};
             break;
         default:
             AddToLog(eng, "Out of bounds enum{O201}", LOG_LEVEL_ERROR);
-            fileOutlineColor = (Color){160, 160, 160, 150};
+            fileOutlineColor = (Color){220, 220, 220, 255};
             fileTextColor = (Color){220, 220, 220, 255};
             break;
         }
@@ -1740,32 +1740,32 @@ bool HandleUICollisions(EngineContext *eng, GraphContext *graph, InterpreterCont
     {
         if (CheckCollisionPointLine(eng->mousePos, (Vector2){0, 5}, (Vector2){eng->screenWidth, 5}, 10.0f))
         {
-            eng->resizingWindow = RESIZING_WINDOW_NORTH;
+            eng->windowResizeButton = RESIZING_WINDOW_NORTH;
         }
         else if (CheckCollisionPointLine(eng->mousePos, (Vector2){0, eng->screenHeight - 5}, (Vector2){eng->screenWidth, eng->screenHeight - 5}, 10.0f))
         {
-            eng->resizingWindow = RESIZING_WINDOW_SOUTH;
+            eng->windowResizeButton = RESIZING_WINDOW_SOUTH;
         }
         else if (CheckCollisionPointLine(eng->mousePos, (Vector2){eng->screenWidth - 5, 0}, (Vector2){eng->screenWidth - 5, eng->screenHeight}, 10.0f))
         {
-            eng->resizingWindow = RESIZING_WINDOW_EAST;
+            eng->windowResizeButton = RESIZING_WINDOW_EAST;
         }
         else if (CheckCollisionPointLine(eng->mousePos, (Vector2){5, 0}, (Vector2){5, eng->screenHeight}, 10.0f))
         {
-            eng->resizingWindow = RESIZING_WINDOW_WEST;
+            eng->windowResizeButton = RESIZING_WINDOW_WEST;
         }
 
         totalWindowResizeDelta = (Vector2){0, 0};
     }
-    else if (IsMouseButtonDown(MOUSE_LEFT_BUTTON) && eng->resizingWindow != RESIZING_WINDOW_NONE)
+    else if (IsMouseButtonDown(MOUSE_LEFT_BUTTON) && eng->windowResizeButton != RESIZING_WINDOW_NONE)
     {
         totalWindowResizeDelta = Vector2Add(totalWindowResizeDelta, GetMouseDelta());
     }
-    else if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON) && eng->resizingWindow != RESIZING_WINDOW_NONE)
+    else if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON) && eng->windowResizeButton != RESIZING_WINDOW_NONE)
     {
         Vector2 windowPosition = GetWindowPosition();
 
-        switch (eng->resizingWindow)
+        switch (eng->windowResizeButton)
         {
         case RESIZING_WINDOW_NORTH:
             if (windowPosition.y + totalWindowResizeDelta.y < 0)
@@ -1836,7 +1836,7 @@ bool HandleUICollisions(EngineContext *eng, GraphContext *graph, InterpreterCont
         default:
             AddToLog(eng, "Out of bounds enum{O201}", LOG_ERROR);
         }
-        eng->resizingWindow = RESIZING_WINDOW_NONE;
+        eng->windowResizeButton = RESIZING_WINDOW_NONE;
     }
 
     if (eng->sideBarMiddleY >= eng->screenHeight - eng->bottomBarHeight - 60 - eng->sideBarHalfSnap * 40)
@@ -1853,20 +1853,20 @@ bool HandleUICollisions(EngineContext *eng, GraphContext *graph, InterpreterCont
         eng->sideBarHalfSnap = true;
     }
 
-    if (eng->draggingResizeButtonID != 0)
+    if (eng->menuResizeButton != RESIZING_MENU_NONE)
     {
         if (IsMouseButtonUp(MOUSE_LEFT_BUTTON))
         {
-            eng->draggingResizeButtonID = 0;
+            eng->menuResizeButton = RESIZING_MENU_NONE;
         }
 
         eng->hasResizedBar = true;
 
-        switch (eng->draggingResizeButtonID)
+        switch (eng->menuResizeButton)
         {
-        case 0:
+        case RESIZING_MENU_NONE:
             break;
-        case 1:
+        case RESIZING_MENU_BOTTOMBAR:
             eng->bottomBarHeight -= GetMouseDelta().y;
             if (eng->bottomBarHeight <= 5)
             {
@@ -1881,7 +1881,7 @@ bool HandleUICollisions(EngineContext *eng, GraphContext *graph, InterpreterCont
                 eng->sideBarMiddleY += GetMouseDelta().y / 2;
             }
             break;
-        case 2:
+        case RESIZING_MENU_SIDEBAR:
             eng->sideBarWidth += GetMouseDelta().x;
 
             if (eng->sideBarWidth < 160 && GetMouseDelta().x < 0)
@@ -1898,7 +1898,7 @@ bool HandleUICollisions(EngineContext *eng, GraphContext *graph, InterpreterCont
                 }
             }
             break;
-        case 3:
+        case RESIZING_MENU_SIDEBAR_MIDDLE:
             eng->sideBarMiddleY += GetMouseDelta().y;
             break;
         default:
@@ -1960,23 +1960,23 @@ void SetEngineMouseCursor(EngineContext *eng, CGEditorContext *cgEd)
         return;
     }
 
-    if (eng->resizingWindow == RESIZING_WINDOW_EAST || eng->resizingWindow == RESIZING_WINDOW_WEST)
+    if (eng->windowResizeButton == RESIZING_WINDOW_EAST || eng->windowResizeButton == RESIZING_WINDOW_WEST)
     {
         SetMouseCursor(MOUSE_CURSOR_RESIZE_EW);
         return;
     }
-    else if (eng->resizingWindow == RESIZING_WINDOW_NORTH || eng->resizingWindow == RESIZING_WINDOW_SOUTH)
+    else if (eng->windowResizeButton == RESIZING_WINDOW_NORTH || eng->windowResizeButton == RESIZING_WINDOW_SOUTH)
     {
         SetMouseCursor(MOUSE_CURSOR_RESIZE_NS);
         return;
     }
 
-    if (eng->draggingResizeButtonID == 1 || eng->draggingResizeButtonID == 3)
+    if (eng->menuResizeButton == RESIZING_MENU_BOTTOMBAR || eng->menuResizeButton == RESIZING_MENU_SIDEBAR_MIDDLE)
     {
         SetMouseCursor(MOUSE_CURSOR_RESIZE_NS);
         return;
     }
-    else if (eng->draggingResizeButtonID == 2)
+    else if (eng->menuResizeButton == RESIZING_MENU_SIDEBAR)
     {
         SetMouseCursor(MOUSE_CURSOR_RESIZE_EW);
         return;
@@ -2185,7 +2185,7 @@ int main()
             eng.screenWidth - (eng.isGameFullscreen ? 0 : eng.sideBarWidth),
             eng.screenHeight - (eng.isGameFullscreen ? 0 : eng.bottomBarHeight)};
 
-        if (eng.showSaveWarning == 1 || eng.showSettingsMenu || eng.resizingWindow != RESIZING_WINDOW_NONE)
+        if (eng.showSaveWarning == 1 || eng.showSettingsMenu || eng.windowResizeButton != RESIZING_WINDOW_NONE)
         {
             eng.isViewportFocused = false;
         }
@@ -2207,7 +2207,7 @@ int main()
             if (eng.CGFilePath[0] != '\0' && (eng.isViewportFocused || isSecondFrame))
             {
                 cgEd.viewportBoundary = viewportRecInViewportTex;
-                HandleEditor(&cgEd, &graph, &eng.viewportTex, mouseInViewportTex, eng.draggingResizeButtonID != 0, isSecondFrame);
+                HandleEditor(&cgEd, &graph, &eng.viewportTex, mouseInViewportTex, eng.menuResizeButton != RESIZING_MENU_NONE, isSecondFrame);
             }
             if (isSecondFrame)
             {
@@ -2398,8 +2398,8 @@ int main()
 
         if (eng.viewportMode == VIEWPORT_CG_EDITOR && eng.screenHeight - eng.bottomBarHeight > 80 && eng.screenWidth > 550)
         {
-            DrawTextEx(GetFontDefault(), "CoreGraph", (Vector2){eng.sideBarWidth + 20, 30}, 40, 4, Fade(WHITE, 0.2f));
-            DrawTextEx(GetFontDefault(), "TM", (Vector2){eng.sideBarWidth + 230, 20}, 15, 1, Fade(WHITE, 0.2f));
+            DrawTextEx(GetFontDefault(), "CoreGraph", (Vector2){eng.sideBarWidth + 20, 30}, 40, 4, (Color){255, 255, 255, 51});
+            DrawTextEx(eng.font, "TM", (Vector2){eng.sideBarWidth + 240, 20}, 15, 1, (Color){255, 255, 255, 51});
         }
 
         if (eng.showSaveWarning == 1)
