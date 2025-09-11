@@ -1435,7 +1435,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
         char buff[MAX_FILE_NAME];
         strmac(buff, MAX_FILE_NAME, "%s", fileName);
 
-        if (MeasureTextEx(eng->font, fileName, 25, 0).x > 135)
+        if (MeasureTextEx(eng->font, fileName, 22, 0).x > 140)
         {
             const char *ext = GetFileExtension(fileName);
             int extLen = ext ? strlen(ext) : 0;
@@ -1444,7 +1444,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
             for (int j = maxLen - 1; j >= 0; j--)
             {
                 buff[j] = '\0';
-                if (MeasureText(buff, 25) < 115)
+                if (MeasureTextEx(eng->font, buff, 22, 0).x < 140)
                 {
                     if (j > 3)
                     {
@@ -1475,13 +1475,17 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                               .rect = {.pos = {xOffset, yOffset}, .recSize = {150, 60}, .roundness = 0.4f, .roundSegments = 8, .hoverColor = Fade(WHITE, 0.2f)},
                               .color = (Color){40, 40, 40, 255},
                               .layer = 1,
-                              .text = {.string = "", .textPos = {xOffset + 10, yOffset + 16}, .textSize = 25, .textSpacing = 0, .textColor = fileTextColor}});
+                              .text = {.string = "", .textPos = {xOffset + 10, yOffset + 18}, .textSize = 22, .textSpacing = 0, .textColor = fileTextColor}});
         strmac(eng->uiElements[eng->uiElementCount - 1].name, MAX_FILE_PATH, "%s", eng->files.paths[i]);
         strmac(eng->uiElements[eng->uiElementCount - 1].text.string, MAX_FILE_PATH, "%s", buff);
 
-        xOffset += 200;
-        if (xOffset + 100 >= eng->screenWidth)
+        xOffset += 180;
+        if (xOffset + 155 >= eng->screenWidth)
         {
+            if (yOffset + 65 >= eng->screenHeight)
+            {
+                break;
+            }
             xOffset = 50;
             yOffset += 120;
         }
@@ -1723,14 +1727,16 @@ bool HandleUICollisions(EngineContext *eng, GraphContext *graph, InterpreterCont
                 eng->screenWidth = eng->maxScreenWidth / 3;
                 eng->screenHeight = eng->maxScreenHeight;
             }
-            else if (screenMousePos.y > eng->maxScreenHeight - 10){
+            else if (screenMousePos.y > eng->maxScreenHeight - 10)
+            {
                 newY = eng->maxScreenHeight - 51;
             }
             SetWindowPosition(newX, newY);
             SetWindowSize(eng->screenWidth, eng->screenHeight);
             eng->isWindowMoving = false;
         }
-        else{
+        else
+        {
             SetWindowPosition(newX, newY);
         }
     }
@@ -1852,6 +1858,10 @@ bool HandleUICollisions(EngineContext *eng, GraphContext *graph, InterpreterCont
         eng->sideBarWidth = 80;
         eng->sideBarHalfSnap = true;
     }
+    if (eng->bottomBarHeight >= 3 * eng->screenHeight / 4)
+    {
+        eng->bottomBarHeight = 3 * eng->screenHeight / 4;
+    }
 
     if (eng->menuResizeButton != RESIZING_MENU_NONE)
     {
@@ -1862,29 +1872,31 @@ bool HandleUICollisions(EngineContext *eng, GraphContext *graph, InterpreterCont
 
         eng->hasResizedBar = true;
 
+        Vector2 mouseDelta = GetMouseDelta();
+
         switch (eng->menuResizeButton)
         {
         case RESIZING_MENU_NONE:
             break;
         case RESIZING_MENU_BOTTOMBAR:
-            eng->bottomBarHeight -= GetMouseDelta().y;
-            if (eng->bottomBarHeight <= 5)
+            eng->bottomBarHeight -= mouseDelta.y;
+            if (eng->bottomBarHeight <= 150)
             {
-                eng->bottomBarHeight = 5;
+                eng->bottomBarHeight = 150; // comeback
             }
-            else if (eng->bottomBarHeight >= 3 * eng->screenHeight / 4)
+            else if (eng->bottomBarHeight < 3 * eng->screenHeight / 4)
             {
-                eng->bottomBarHeight = 3 * eng->screenHeight / 4;
+                eng->sideBarMiddleY += mouseDelta.y / 2;
             }
             else
             {
-                eng->sideBarMiddleY += GetMouseDelta().y / 2;
+                eng->bottomBarHeight = 3 * eng->screenHeight / 4;
             }
             break;
         case RESIZING_MENU_SIDEBAR:
-            eng->sideBarWidth += GetMouseDelta().x;
+            eng->sideBarWidth += mouseDelta.x;
 
-            if (eng->sideBarWidth < 160 && GetMouseDelta().x < 0)
+            if (eng->sideBarWidth < 160 && mouseDelta.x < 0)
             {
                 eng->sideBarWidth = 80;
                 eng->sideBarHalfSnap = true;
@@ -1899,7 +1911,7 @@ bool HandleUICollisions(EngineContext *eng, GraphContext *graph, InterpreterCont
             }
             break;
         case RESIZING_MENU_SIDEBAR_MIDDLE:
-            eng->sideBarMiddleY += GetMouseDelta().y;
+            eng->sideBarMiddleY += mouseDelta.y;
             break;
         default:
             break;
