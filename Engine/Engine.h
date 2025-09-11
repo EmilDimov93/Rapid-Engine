@@ -157,6 +157,7 @@ typedef struct EngineContext
     bool hasResizedBar;
     bool isEditorOpened;
     bool isViewportFocused;
+    bool wasViewportFocusedLastFrame;
     bool isAnyMenuOpen;
     bool isSaveButtonHovered;
     bool isBuildButtonHovered;

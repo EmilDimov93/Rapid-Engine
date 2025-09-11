@@ -74,6 +74,8 @@ EngineContext InitEngineContext()
         EmergencyExit(&eng, &(CGEditorContext){0}, &(InterpreterContext){0});
     }
 
+    eng.wasViewportFocusedLastFrame = false;
+
     eng.CGFilePath = malloc(MAX_FILE_PATH);
     eng.CGFilePath[0] = '\0';
 
@@ -2244,7 +2246,11 @@ int main()
                 cgEd.isFirstFrame = false;
                 break;
             }
-            if (eng.CGFilePath[0] != '\0' && (eng.isViewportFocused || isSecondFrame))
+            if(eng.wasViewportFocusedLastFrame && !eng.isViewportFocused){
+                cgEd.isDraggingScreen = false;
+                cgEd.draggingNodeIndex = -1;
+            }
+            if (eng.CGFilePath[0] != '\0' && (eng.isViewportFocused || isSecondFrame || eng.wasViewportFocusedLastFrame))
             {
                 cgEd.viewportBoundary = viewportRecInViewportTex;
                 HandleEditor(&cgEd, &graph, &eng.viewportTex, mouseInViewportTex, eng.menuResizeButton != RESIZING_MENU_NONE, isSecondFrame);
@@ -2461,6 +2467,8 @@ int main()
         }
 
         EndDrawing();
+
+        eng.wasViewportFocusedLastFrame = eng.isViewportFocused;
 
         if (eng.shouldCloseWindow)
         {
