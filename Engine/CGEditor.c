@@ -74,6 +74,10 @@ CGEditorContext InitEditorContext()
 
     cgEd.zoom = 1.0f;
 
+    cgEd.nodeGlareTime = 0;
+
+    cgEd.copiedNode.id = -1;
+
     return cgEd;
 }
 
@@ -283,14 +287,16 @@ void HandleVarNameTextBox(CGEditorContext *cgEd, Rectangle bounds, char *text, i
 
 const char *AddEllipsis(Font font, const char *text, float fontSize, float maxWidth, bool showEnd)
 {
-    static char result[256];
+    static char result[MAX_LITERAL_NODE_FIELD_SIZE];
     float fullWidth = MeasureTextEx(font, text, fontSize, 0).x;
     if (fullWidth <= maxWidth)
+    {
         return text;
+    }
 
     int len = strlen(text);
     int maxChars = 0;
-    char temp[256];
+    char temp[MAX_LITERAL_NODE_FIELD_SIZE];
 
     for (int c = 1; c <= len; c++)
     {
@@ -423,7 +429,7 @@ void HandleLiteralNodeField(CGEditorContext *cgEd, GraphContext *graph, int curr
     const char *originalText = graph->pins[currPinIndex].textFieldValue;
     const char *text = originalText;
 
-    static char truncated[256];
+    static char truncated[MAX_LITERAL_NODE_FIELD_SIZE];
 
     if (boxWidth == limit)
     {
@@ -843,7 +849,8 @@ void DrawNodes(CGEditorContext *cgEd, GraphContext *graph)
                 isInputPosSet = true;
                 isInputFlow = (graph->pins[j].type == PIN_FLOW);
 
-                if(graph->pins[j].type != PIN_ANY_VALUE){
+                if (graph->pins[j].type != PIN_ANY_VALUE)
+                {
                     linkType = graph->pins[j].type;
                 }
             }
@@ -853,7 +860,8 @@ void DrawNodes(CGEditorContext *cgEd, GraphContext *graph)
                 isOutputPosSet = true;
                 isOutputFlow = (graph->pins[j].type == PIN_FLOW);
 
-                if(graph->pins[j].type != PIN_ANY_VALUE){
+                if (graph->pins[j].type != PIN_ANY_VALUE)
+                {
                     linkType = graph->pins[j].type;
                 }
             }
@@ -862,26 +870,28 @@ void DrawNodes(CGEditorContext *cgEd, GraphContext *graph)
         if (isInputPosSet && isOutputPosSet)
         {
             Color wireColor;
-            switch(linkType){
-                case PIN_FLOW:
-                    wireColor = (Color){180, 100, 200, 255};
-                    break;
-                case PIN_NUM:wireColor = (Color){24, 119, 149, 255};
-                    break;
-                case PIN_STRING:
-                    wireColor = (Color){180, 178, 40, 255};
-                    break;
-                case PIN_BOOL:
-                    wireColor = (Color){27, 64, 121, 255};
-                    break;
-                case PIN_COLOR:
-                    wireColor = (Color){217, 3, 104, 255};
-                    break;
-                case PIN_SPRITE:
-                    wireColor = (Color){3, 206, 164, 255};
-                    break;
-                default:
-                    wireColor = (Color){255, 255, 255, 255};
+            switch (linkType)
+            {
+            case PIN_FLOW:
+                wireColor = (Color){180, 100, 200, 255};
+                break;
+            case PIN_NUM:
+                wireColor = (Color){24, 119, 149, 255};
+                break;
+            case PIN_STRING:
+                wireColor = (Color){180, 178, 40, 255};
+                break;
+            case PIN_BOOL:
+                wireColor = (Color){27, 64, 121, 255};
+                break;
+            case PIN_COLOR:
+                wireColor = (Color){217, 3, 104, 255};
+                break;
+            case PIN_SPRITE:
+                wireColor = (Color){3, 206, 164, 255};
+                break;
+            default:
+                wireColor = (Color){255, 255, 255, 255};
             }
             DrawCurvedWire(outputPinPosition, inputPinPosition, 2.0f + 2.0f / cgEd->zoom, wireColor);
         }
@@ -894,7 +904,6 @@ void DrawNodes(CGEditorContext *cgEd, GraphContext *graph)
     int hoveredNodeIndex = -1;
     int nodeToDelete = -1;
     static Rectangle textBoxRect = {0};
-    static float glareTime = 0;
 
     for (int i = 0; i < graph->nodeCount; i++)
     {
@@ -909,8 +918,8 @@ void DrawNodes(CGEditorContext *cgEd, GraphContext *graph)
         if (CheckCollisionPointRec(cgEd->mousePos, (Rectangle){graph->nodes[i].position.x, graph->nodes[i].position.y, getNodeInfoByType(graph->nodes[i].type, WIDTH), getNodeInfoByType(graph->nodes[i].type, HEIGHT)}))
         {
             hoveredNodeIndex = i;
-            glareTime += GetFrameTime();
-            glareOffset = (int)(sinf(glareTime * 6.0f) * 30);
+            cgEd->nodeGlareTime += GetFrameTime();
+            glareOffset = (int)(sinf(cgEd->nodeGlareTime * 6.0f) * 30);
 
             if (IsMouseButtonPressed(MOUSE_RIGHT_BUTTON))
             {
@@ -956,9 +965,7 @@ void DrawNodes(CGEditorContext *cgEd, GraphContext *graph)
 
         DrawRectangleGradientH(x - 2, y + fullRadius - 2, width + 4, 38 - fullRadius, nodeLeftGradientColor, nodeRightGradientColor);
 
-        DrawRectangleRoundedLinesEx(
-            (Rectangle){x - 1, y - 1, width + 2, height + 2},
-            roundness, segments, 2.0f / cgEd->zoom, WHITE);
+        DrawRectangleRoundedLinesEx((Rectangle){x - 1, y - 1, width + 2, height + 2}, roundness, segments, 2.0f + 1.0f / cgEd->zoom, WHITE);
 
         DrawTextEx(cgEd->font, NodeTypeToString(graph->nodes[i].type),
                    (Vector2){x + 8, y + 6}, 28, 1, WHITE);
@@ -1088,7 +1095,7 @@ void DrawNodes(CGEditorContext *cgEd, GraphContext *graph)
                                                             cgEd->shouldOpenHitboxEditor = true;
                                                             strmac(cgEd->hitboxEditorFileName, MAX_FILE_NAME, "%s", graph->pins[e].textFieldValue);
                                                             cgEd->hitboxEditingPinID = graph->pins[i].id;
-                                                            cgEd->hasChanged = false;
+                                                            cgEd->hasChanged = false; // test
                                                             cgEd->hasChangedInLastFrame = false;
                                                             return;
                                                         }
@@ -1171,6 +1178,11 @@ void DrawNodes(CGEditorContext *cgEd, GraphContext *graph)
     if (hoveredPinIndex == -1 && hoveredNodeIndex != -1)
     {
         DrawRectangleRounded((Rectangle){graph->nodes[hoveredNodeIndex].position.x - 1, graph->nodes[hoveredNodeIndex].position.y - 1, getNodeInfoByType(graph->nodes[hoveredNodeIndex].type, WIDTH) + 2, getNodeInfoByType(graph->nodes[hoveredNodeIndex].type, HEIGHT) + 2}, 0.2f, 8, (Color){255, 255, 255, 5});
+        if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_C))
+        {
+            cgEd->copiedNode = graph->nodes[hoveredNodeIndex];
+            SetClipboardText(TextFormat("CoreGraph node of type %s", NodeTypeToString(graph->nodes[hoveredNodeIndex].type)));
+        }
         cgEd->delayFrames = true;
     }
 
@@ -1472,8 +1484,6 @@ void HandleDragging(CGEditorContext *cgEd, GraphContext *graph)
             {
                 cgEd->draggingNodeIndex = i;
                 dragOffset = (Vector2){cgEd->mousePos.x - graph->nodes[i].position.x, cgEd->mousePos.y - graph->nodes[i].position.y};
-                cgEd->hasChanged = true;
-                cgEd->hasChangedInLastFrame = true;
                 return;
             }
         }
@@ -1483,8 +1493,15 @@ void HandleDragging(CGEditorContext *cgEd, GraphContext *graph)
     }
     else if (IsMouseButtonDown(MOUSE_LEFT_BUTTON) && cgEd->draggingNodeIndex != -1)
     {
-        graph->nodes[cgEd->draggingNodeIndex].position.x = cgEd->mousePos.x - dragOffset.x;
-        graph->nodes[cgEd->draggingNodeIndex].position.y = cgEd->mousePos.y - dragOffset.y;
+        float newX = cgEd->mousePos.x - dragOffset.x;
+        float newY = cgEd->mousePos.y - dragOffset.y;
+        if (newX != graph->nodes[cgEd->draggingNodeIndex].position.x || newY != graph->nodes[cgEd->draggingNodeIndex].position.y)
+        {
+            cgEd->hasChanged = true;
+            cgEd->hasChangedInLastFrame = true;
+        }
+        graph->nodes[cgEd->draggingNodeIndex].position.x = newX;
+        graph->nodes[cgEd->draggingNodeIndex].position.y = newY;
         DrawRectangleRounded((Rectangle){graph->nodes[cgEd->draggingNodeIndex].position.x, graph->nodes[cgEd->draggingNodeIndex].position.y, getNodeInfoByType(graph->nodes[cgEd->draggingNodeIndex].type, WIDTH), getNodeInfoByType(graph->nodes[cgEd->draggingNodeIndex].type, HEIGHT)}, 0.2f, 8, CLITERAL(Color){255, 255, 255, 50});
     }
     else if (IsMouseButtonDown(MOUSE_LEFT_BUTTON) && cgEd->isDraggingScreen)
@@ -1545,19 +1562,6 @@ int DrawFullTexture(CGEditorContext *cgEd, GraphContext *graph, RenderTexture2D 
     return 0;
 }
 
-bool CheckAllCollisions(CGEditorContext *cgEd, GraphContext *graph)
-{
-    if (IsMouseButtonPressed(MOUSE_RIGHT_BUTTON))
-    {
-        cgEd->menuOpen = true;
-        cgEd->rightClickPos = cgEd->mousePos;
-        cgEd->scrollIndexNodeMenu = 0;
-        cgEd->delayFrames = true;
-    }
-
-    return CheckNodeCollisions(cgEd, graph) || IsMouseButtonDown(MOUSE_LEFT_BUTTON);
-}
-
 bool CheckOpenMenus(CGEditorContext *cgEd)
 {
     return cgEd->draggingNodeIndex != -1 || cgEd->lastClickedPin.id != -1 || cgEd->menuOpen || cgEd->nodeDropdownFocused != -1 || cgEd->nodeFieldPinFocused != -1 || cgEd->editingNodeNameIndex != -1;
@@ -1591,7 +1595,34 @@ void HandleEditor(CGEditorContext *cgEd, GraphContext *graph, RenderTexture2D *v
         return;
     }
 
-    if (CheckAllCollisions(cgEd, graph))
+    if (IsMouseButtonPressed(MOUSE_RIGHT_BUTTON))
+    {
+        cgEd->menuOpen = true;
+        cgEd->rightClickPos = cgEd->mousePos;
+        cgEd->scrollIndexNodeMenu = 0;
+        cgEd->delayFrames = true;
+    }
+
+    if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_V) && cgEd->copiedNode.id != -1)
+    {
+        DuplicateNode(graph, &cgEd->copiedNode, cgEd->mousePos);
+        if (cgEd->copiedNode.type == NODE_CREATE_NUMBER || cgEd->copiedNode.type == NODE_CREATE_STRING || cgEd->copiedNode.type == NODE_CREATE_BOOL || cgEd->copiedNode.type == NODE_CREATE_COLOR || cgEd->copiedNode.type == NODE_CREATE_SPRITE)
+        {
+            strmac(graph->nodes[graph->nodeCount - 1].name, MAX_VARIABLE_NAME_SIZE, "%s", AssignAvailableVarName(graph, graph->nodes[graph->nodeCount - 1].name));
+
+            graph->variables = realloc(graph->variables, sizeof(char *) * (graph->variablesCount + 1));
+            graph->variables[graph->variablesCount] = strmac(NULL, MAX_VARIABLE_NAME_SIZE, "%s", graph->nodes[graph->nodeCount - 1].name);
+
+            graph->variableTypes = realloc(graph->variableTypes, sizeof(int) * (graph->variablesCount + 1));
+            graph->variableTypes[graph->variablesCount] = graph->nodes[graph->nodeCount - 1].type;
+
+            graph->variablesCount++;
+        }
+        cgEd->delayFrames = true;
+        cgEd->engineDelayFrames = true;
+    }
+
+    if (CheckNodeCollisions(cgEd, graph) || IsMouseButtonDown(MOUSE_LEFT_BUTTON))
     {
         DrawFullTexture(cgEd, graph, *viewport, dot);
         cgEd->delayFrames = true;

@@ -66,6 +66,10 @@ typedef struct
     char hitboxEditorFileName[MAX_FILE_NAME];
     int hitboxEditingPinID;
 
+    float nodeGlareTime;
+
+    Node copiedNode;
+
     GraphContext *graph;
 } CGEditorContext;
 

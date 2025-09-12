@@ -235,7 +235,7 @@ Node CreateNode(GraphContext *graph, NodeType type, Vector2 pos)
 
     if (inputCount > MAX_NODE_PINS || outputCount > MAX_NODE_PINS)
     {
-        TraceLog(LOG_ERROR, "CreateNode: input/output count exceeds MAX_NODE_PINS");
+        TraceLog(LOG_ERROR, "Error");
         return node;
     }
 
@@ -243,7 +243,7 @@ Node CreateNode(GraphContext *graph, NodeType type, Vector2 pos)
     Pin *newPins = realloc(graph->pins, sizeof(Pin) * newPinCapacity);
     if (!newPins && newPinCapacity != 0)
     {
-        TraceLog(LOG_ERROR, "CreateNode: Failed to realloc pins array");
+        TraceLog(LOG_ERROR, "Error");
         return node;
     }
     graph->pins = newPins;
@@ -267,7 +267,7 @@ Node CreateNode(GraphContext *graph, NodeType type, Vector2 pos)
     Node *newNodes = realloc(graph->nodes, sizeof(Node) * (graph->nodeCount + 1));
     if (!newNodes)
     {
-        TraceLog(LOG_ERROR, "CreateNode: Failed to realloc nodes");
+        TraceLog(LOG_ERROR, "Error");
         return node;
     }
     graph->nodes = newNodes;
@@ -276,7 +276,7 @@ Node CreateNode(GraphContext *graph, NodeType type, Vector2 pos)
     return node;
 }
 
-int GetPinIndexByID1(int id, GraphContext *graph)
+int GetPinIndexByID(int id, GraphContext *graph)
 {
     for (int i = 0; i < graph->pinCount; i++)
     {
@@ -284,6 +284,72 @@ int GetPinIndexByID1(int id, GraphContext *graph)
             return i;
     }
     return -1;
+}
+
+Node DuplicateNode(GraphContext *graph, const Node *src, Vector2 pos)
+{
+    Node node = {0};
+    node.id = graph->nextNodeID++;
+    node.type = src->type;
+    node.position = pos;
+    strmac(node.name, MAX_VARIABLE_NAME_SIZE, "%s", src->name);
+
+    int inputCount  = src->inputCount;
+    int outputCount = src->outputCount;
+
+    int newPinCapacity = graph->pinCount + inputCount + outputCount;
+    Pin *newPins = realloc(graph->pins, sizeof(Pin) * newPinCapacity);
+    if (!newPins && newPinCapacity != 0)
+    {
+        TraceLog(LOG_ERROR, "Error");
+        return node;
+    }
+    graph->pins = newPins;
+
+    for (int i = 0; i < inputCount; ++i)
+    {
+        int srcPinID = src->inputPins[i];
+        int srcIdx = GetPinIndexByID(srcPinID, graph);
+        if (srcIdx < 0) { TraceLog(LOG_WARNING, "Error"); continue; }
+
+        Pin *srcPin = &graph->pins[srcIdx];
+        Vector2 offset = { srcPin->position.x - src->position.x, srcPin->position.y - src->position.y };
+        Vector2 newPinPos = { pos.x + offset.x, pos.y + offset.y };
+
+        Pin pin = CreatePin(graph, node.id, true, srcPin->type, srcPin->posInNode, newPinPos);
+
+        graph->pins[graph->pinCount] = pin;
+        node.inputPins[node.inputCount++] = pin.id;
+        graph->pinCount++;
+    }
+
+    for (int i = 0; i < outputCount; ++i)
+    {
+        int srcPinID = src->outputPins[i];
+        int srcIdx = GetPinIndexByID(srcPinID, graph);
+        if (srcIdx < 0) { TraceLog(LOG_WARNING, "Error"); continue; }
+
+        Pin *srcPin = &graph->pins[srcIdx];
+        Vector2 offset = { srcPin->position.x - src->position.x, srcPin->position.y - src->position.y };
+        Vector2 newPinPos = { pos.x + offset.x, pos.y + offset.y };
+
+        Pin pin = CreatePin(graph, node.id, false, srcPin->type, srcPin->posInNode, newPinPos);
+
+        graph->pins[graph->pinCount] = pin;
+        node.outputPins[node.outputCount++] = pin.id;
+        graph->pinCount++;
+    }
+
+    Node *newNodes = realloc(graph->nodes, sizeof(Node) * (graph->nodeCount + 1));
+    if (!newNodes)
+    {
+        TraceLog(LOG_ERROR, "Error");
+        return node;
+    }
+    graph->nodes = newNodes;
+    graph->nodes[graph->nodeCount++] = node;
+
+    return node;
 }
 
 void CreateLink(GraphContext *graph, Pin Pin1, Pin Pin2)
@@ -310,8 +376,8 @@ void CreateLink(GraphContext *graph, Pin Pin1, Pin Pin2)
         link.outputPinID = Pin1.id;
     }
 
-    int inputPinIndex = GetPinIndexByID1(link.inputPinID, graph);
-    int outputPinIndex = GetPinIndexByID1(link.outputPinID, graph);
+    int inputPinIndex = GetPinIndexByID(link.inputPinID, graph);
+    int outputPinIndex = GetPinIndexByID(link.outputPinID, graph);
 
     Pin inputPin = graph->pins[inputPinIndex];
     Pin outputPin = graph->pins[outputPinIndex];

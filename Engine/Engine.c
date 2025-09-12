@@ -2251,6 +2251,7 @@ int main()
             if(eng.wasViewportFocusedLastFrame && !eng.isViewportFocused){
                 cgEd.isDraggingScreen = false;
                 cgEd.draggingNodeIndex = -1;
+                cgEd.nodeGlareTime = 0;
             }
             if (eng.CGFilePath[0] != '\0' && (eng.isViewportFocused || isSecondFrame || eng.wasViewportFocusedLastFrame))
             {

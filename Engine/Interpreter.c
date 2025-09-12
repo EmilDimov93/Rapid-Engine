@@ -190,19 +190,6 @@ void AddToLogFromInterpreter(InterpreterContext *intp, Value message, int level)
     intp->newLogMessage = true;
 }
 
-int GetPinIndexByID(int id, GraphContext *graph)
-{
-    for (int i = 0; i < graph->pinCount; i++)
-    {
-        if (id == graph->pins[i].id)
-        {
-            return i;
-        }
-    }
-
-    return -1;
-}
-
 void UpdateSpecialValues(InterpreterContext *intp, Vector2 mousePos, Rectangle screenBoundary)
 {
     intp->values[SPECIAL_VALUE_MOUSE_X].number = mousePos.x;

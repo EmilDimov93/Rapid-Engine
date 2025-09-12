@@ -75,6 +75,8 @@ GraphContext InitGraphContext();
 
 void FreeGraphContext(GraphContext *graph);
 
+char *AssignAvailableVarName(GraphContext *graph, const char *baseName);
+
 int SaveGraphToFile(const char *filename, GraphContext *graph);
 
 bool LoadGraphFromFile(const char *filename, GraphContext *graph);
@@ -82,6 +84,8 @@ bool LoadGraphFromFile(const char *filename, GraphContext *graph);
 Pin CreatePin(GraphContext *graph, int nodeID, bool isInput, PinType type, int index, Vector2 pos);
 
 Node CreateNode(GraphContext *graph, NodeType type, Vector2 pos);
+
+Node DuplicateNode(GraphContext *graph, const Node *src, Vector2 pos);
 
 void CreateLink(GraphContext *graph, Pin Pin1, Pin Pin2);
 

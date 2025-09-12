@@ -72,7 +72,7 @@ typedef struct {
 } Polygon;
 
 #define MAX_LOG_MESSAGE_SIZE 256
-#define MAX_LOG_MESSAGES 32 //should be higher?
+#define MAX_LOG_MESSAGES 32
 typedef enum
 {
     LOG_LEVEL_NORMAL,
