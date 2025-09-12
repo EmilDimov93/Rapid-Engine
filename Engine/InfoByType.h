@@ -211,114 +211,12 @@ static InfoByType NodeInfoByType[] = {
 
 static inline int NodeTypeToIndex(NodeType type)
 {
-    switch (type)
-    {
-    case NODE_UNKNOWN:
-        return 0;
-
-    case NODE_CREATE_NUMBER:
-        return 1;
-    case NODE_CREATE_STRING:
-        return 2;
-    case NODE_CREATE_BOOL:
-        return 3;
-    case NODE_CREATE_COLOR:
-        return 4;
-
-    case NODE_EVENT_START:
-        return 5;
-    case NODE_EVENT_TICK:
-        return 6;
-    case NODE_EVENT_ON_BUTTON:
-        return 7;
-    case NODE_CREATE_CUSTOM_EVENT:
-        return 8;
-    case NODE_CALL_CUSTOM_EVENT:
-        return 9;
-
-    case NODE_GET_VARIABLE:
-        return 10;
-    case NODE_GET_SCREEN_WIDTH:
-        return 11;
-    case NODE_GET_SCREEN_HEIGHT:
-        return 12;
-    case NODE_GET_MOUSE_X:
-        return 13;
-    case NODE_GET_MOUSE_Y:
-        return 14;
-    case NODE_GET_RANDOM_NUMBER:
-        return 15;
-
-    case NODE_SET_VARIABLE:
-        return 16;
-    case NODE_SET_BACKGROUND:
-        return 17;
-    case NODE_SET_FPS:
-        return 18;
-
-    case NODE_BRANCH:
-        return 19;
-    case NODE_LOOP:
-        return 20;
-    case NODE_DELAY:
-        return 21;
-    case NODE_FLIP_FLOP:
-        return 22;
-    case NODE_BREAK:
-        return 23;
-    case NODE_RETURN:
-        return 24;
-
-    case NODE_CREATE_SPRITE:
-        return 25;
-    case NODE_SPAWN_SPRITE:
-        return 26;
-    case NODE_DESTROY_SPRITE:
-        return 27;
-    case NODE_SET_SPRITE_POSITION:
-        return 28;
-    case NODE_SET_SPRITE_ROTATION:
-        return 29;
-    case NODE_SET_SPRITE_TEXTURE:
-        return 30;
-    case NODE_SET_SPRITE_SIZE:
-        return 31;
-    case NODE_MOVE_TO_SPRITE:
-        return 32;
-    case NODE_FORCE_SPRITE:
-        return 33;
-
-    case NODE_DRAW_PROP_TEXTURE:
-        return 34;
-    case NODE_DRAW_PROP_RECTANGLE:
-        return 35;
-    case NODE_DRAW_PROP_CIRCLE:
-        return 36;
-
-    case NODE_COMPARISON:
-        return 37;
-    case NODE_GATE:
-        return 38;
-    case NODE_ARITHMETIC:
-        return 39;
-
-    case NODE_PRINT_TO_LOG:
-        return 40;
-    case NODE_DRAW_DEBUG_LINE:
-        return 41;
-
-    case NODE_LITERAL_NUMBER:
-        return 42;
-    case NODE_LITERAL_STRING:
-        return 43;
-    case NODE_LITERAL_BOOL:
-        return 44;
-    case NODE_LITERAL_COLOR:
-        return 45;
-
-    default:
-        return -1;
+    for (int i = 0; i < sizeof(NodeInfoByType)/sizeof(NodeInfoByType[0]); i++) {
+        if (NodeInfoByType[i].type == type){
+            return i;
+        }
     }
+    return -1;
 }
 
 typedef struct DropdownOptionsByPinType

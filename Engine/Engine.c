@@ -1048,11 +1048,11 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                       });
     if (cgEd->hasChanged)
     {
-        strmac(eng->uiElements[eng->uiElementCount - 1].text.string, MAX_FILE_PATH, "Save*");
+        strmac(eng->uiElements[eng->uiElementCount - 1].text.string, 6, "Save*");
     }
     else
     {
-        strmac(eng->uiElements[eng->uiElementCount - 1].text.string, MAX_FILE_PATH, "Save");
+        strmac(eng->uiElements[eng->uiElementCount - 1].text.string, 5, "Save");
     }
 
     if (eng->viewportMode == VIEWPORT_GAME_SCREEN)
@@ -1100,10 +1100,6 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
 
         char finalMsg[256];
         strmac(finalMsg, MAX_LOG_MESSAGE_SIZE, "%s", eng->logs.entries[i].message);
-        if (eng->logs.entries[i].level != LOG_LEVEL_DEBUG)
-        {
-            finalMsg[strlen(finalMsg) - 6] = '\0';
-        }
 
         int repeatCount = 1;
         while (i - repeatCount >= 0)
@@ -1118,6 +1114,11 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
         {
             strmac(finalMsg, MAX_LOG_MESSAGE_SIZE, "[x%d] %s", repeatCount, eng->logs.entries[i].message);
             i -= (repeatCount - 1);
+        }
+
+        if (eng->logs.entries[i].level != LOG_LEVEL_DEBUG)
+        {
+            finalMsg[strlen(finalMsg) - 6] = '\0';
         }
 
         int j;
@@ -1186,32 +1187,32 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
         switch (eng->varsFilter)
         {
         case VAR_FILTER_ALL:
-            strmac(varsFilterText, 10, "All");
+            strmac(varsFilterText, 4, "All");
             varFilterColor = RAYWHITE;
             break;
         case VAR_FILTER_NUMBERS:
-            strmac(varsFilterText, 10, "Nums");
+            strmac(varsFilterText, 5, "Nums");
             varFilterColor = (Color){64, 159, 189, 255};
             break;
         case VAR_FILTER_STRINGS:
-            strmac(varsFilterText, 10, "Strings");
+            strmac(varsFilterText, 8, "Strings");
             varFilterColor = (Color){180, 178, 40, 255};
             break;
         case VAR_FILTER_BOOLS:
-            strmac(varsFilterText, 10, "Bools");
+            strmac(varsFilterText, 6, "Bools");
             varFilterColor = (Color){87, 124, 181, 255};
             break;
         case VAR_FILTER_COLORS:
-            strmac(varsFilterText, 10, "Colors");
+            strmac(varsFilterText, 7, "Colors");
             varFilterColor = (Color){217, 3, 104, 255};
             break;
         case VAR_FILTER_SPRITES:
-            strmac(varsFilterText, 10, "Sprites");
+            strmac(varsFilterText, 8, "Sprites");
             varFilterColor = (Color){3, 206, 164, 255};
             break;
         default:
             eng->varsFilter = 0;
-            strmac(varsFilterText, 10, "All");
+            strmac(varsFilterText, 4, "All");
             varFilterColor = RAYWHITE;
             break;
         }
@@ -1307,12 +1308,13 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
         bool wasCut = false;
         for (j = 1; j <= strlen(cutMessage); j++)
         {
-            char temp[256];
+            char temp[MAX_VARIABLE_NAME_SIZE];
             strmac(temp, MAX_VARIABLE_NAME_SIZE, "%.*s", j, cutMessage);
 
             float textWidth = MeasureTextEx(eng->font, temp, 24, 2).x;
-            if (textWidth + dotsWidth < eng->sideBarWidth - 80)
+            if (textWidth + dotsWidth < eng->sideBarWidth - 80){
                 continue;
+            }
 
             wasCut = true;
             j--;
@@ -1321,7 +1323,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
 
         bool textHidden = false;
 
-        if (wasCut && j < 252)
+        if (wasCut && j < MAX_VARIABLE_NAME_SIZE - 4)
         {
             strmac(cutMessage, MAX_VARIABLE_NAME_SIZE, "%s...", cutMessage);
         }
@@ -1337,7 +1339,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                               .type = UI_ACTION_NO_COLLISION_ACTION,
                               .circle = {.center = (Vector2){textHidden ? eng->sideBarWidth / 2 + 3 : eng->sideBarWidth - 25, varsY + 14}, .radius = 8},
                               .color = varColor,
-                              .text = {.textPos = {20, varsY}, .textSize = 24, .textSpacing = 2, .textColor = WHITE},
+                              .text = {.textPos = {25, varsY}, .textSize = 24, .textSpacing = 2, .textColor = WHITE},
                               .layer = 2});
 
         strmac(eng->uiElements[eng->uiElementCount - 1].text.string, MAX_VARIABLE_NAME_SIZE, "%s", cutMessage);
@@ -1420,8 +1422,8 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
             fileTextColor = (Color){245, 200, 255, 255};
             break;
         case FILE_IMAGE:
-            fileOutlineColor = (Color){74, 86, 134, 255};
-            fileTextColor = (Color){107, 127, 209, 255};
+            fileOutlineColor = (Color){44, 88, 148, 255};
+            fileTextColor = (Color){140, 185, 245, 255};
             break;
         case FILE_OTHER:
             fileOutlineColor = (Color){124, 123, 120, 255};

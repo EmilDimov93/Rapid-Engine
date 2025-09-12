@@ -118,7 +118,7 @@ bool LoadGraphFromFile(const char *filename, GraphContext *graph)
 
     graph->variables = malloc(sizeof(char *) * 1);
     graph->variableTypes = malloc(sizeof(NodeType) * 1);
-    graph->variables[0] = strmac(NULL, 4, "NONE");
+    graph->variables[0] = strmac(NULL, 5, "NONE");
     graph->variableTypes[0] = NODE_UNKNOWN;
     graph->variablesCount = 1;
 
@@ -152,16 +152,16 @@ Pin CreatePin(GraphContext *graph, int nodeID, bool isInput, PinType type, int i
     switch (type)
     {
     case PIN_FIELD_NUM:
-        strmac(pin.textFieldValue, 1, "0");
+        strmac(pin.textFieldValue, 2, "0");
         break;
     case PIN_FIELD_BOOL:
-        strmac(pin.textFieldValue, 5, "false");
+        strmac(pin.textFieldValue, 6, "false");
         break;
     case PIN_FIELD_COLOR:
-        strmac(pin.textFieldValue, 8, "00000000");
+        strmac(pin.textFieldValue, 9, "00000000");
         break;
     case PIN_FIELD_KEY:
-        strmac(pin.textFieldValue, 4, "NONE");
+        strmac(pin.textFieldValue, 5, "NONE");
         break;
     default:
         break;
@@ -170,12 +170,12 @@ Pin CreatePin(GraphContext *graph, int nodeID, bool isInput, PinType type, int i
 }
 
 char *AssignAvailableVarName(GraphContext *graph, const char *baseName) {
-    char temp[64];
+    char temp[MAX_VARIABLE_NAME_SIZE];
     int suffix = 1;
     bool exists;
 
     do {
-        strmac(temp, sizeof(temp), "%s %d", baseName, suffix);
+        strmac(temp, MAX_VARIABLE_NAME_SIZE, "%s %d", baseName, suffix);
         exists = false;
         for (int i = 0; i < graph->nodeCount; i++) {
             if (strcmp(temp, graph->nodes[i].name) == 0) {
@@ -187,7 +187,7 @@ char *AssignAvailableVarName(GraphContext *graph, const char *baseName) {
     } while (exists);
 
     char *name = malloc(strlen(temp) + 1);
-    strmac(name, sizeof(temp), "%s", temp);
+    strmac(name, MAX_VARIABLE_NAME_SIZE, "%s", temp);
     return name;
 }
 

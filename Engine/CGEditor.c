@@ -196,7 +196,7 @@ void HandleVarNameTextBox(CGEditorContext *cgEd, Rectangle bounds, char *text, i
 
     bool showCursor = ((int)(GetTime() * 2) % 2) == 0;
     char buffer[MAX_VARIABLE_NAME_SIZE];
-    strmac(buffer, sizeof(buffer), "%s%s", text, showCursor ? "_" : " ");
+    strmac(buffer, MAX_VARIABLE_NAME_SIZE, "%s%s", text, showCursor ? "_" : " ");
     DrawTextEx(cgEd->font, buffer, (Vector2){bounds.x + 5, bounds.y + 8}, 16, 2, BLACK);
 
     int key = GetCharPressed();
@@ -261,7 +261,7 @@ void HandleVarNameTextBox(CGEditorContext *cgEd, Rectangle bounds, char *text, i
 
         graph->variables = malloc(sizeof(char *) * 1);
         graph->variableTypes = malloc(sizeof(NodeType) * 1);
-        graph->variables[0] = strmac(NULL, 4, "NONE");
+        graph->variables[0] = strmac(NULL, 5, "NONE");
         graph->variableTypes[0] = NODE_UNKNOWN;
         graph->variablesCount = 1;
 
@@ -376,11 +376,11 @@ void HandleLiteralNodeField(CGEditorContext *cgEd, GraphContext *graph, int curr
             {
                 if (strcmp(graph->pins[currPinIndex].textFieldValue, "false") == 0 || strcmp(graph->pins[currPinIndex].textFieldValue, "") == 0)
                 {
-                    strmac(graph->pins[currPinIndex].textFieldValue, 4, "true");
+                    strmac(graph->pins[currPinIndex].textFieldValue, 5, "true");
                 }
                 else
                 {
-                    strmac(graph->pins[currPinIndex].textFieldValue, 5, "false");
+                    strmac(graph->pins[currPinIndex].textFieldValue, 6, "false");
                 }
             }
             else
@@ -395,7 +395,7 @@ void HandleLiteralNodeField(CGEditorContext *cgEd, GraphContext *graph, int curr
             case PIN_FIELD_NUM:
                 if (graph->pins[currPinIndex].textFieldValue[0] == '\0')
                 {
-                    strmac(graph->pins[currPinIndex].textFieldValue, 1, "0");
+                    strmac(graph->pins[currPinIndex].textFieldValue, 2, "0");
                 }
                 break;
             case PIN_FIELD_STRING:
@@ -407,7 +407,7 @@ void HandleLiteralNodeField(CGEditorContext *cgEd, GraphContext *graph, int curr
             case PIN_FIELD_COLOR:
                 if (strlen(graph->pins[currPinIndex].textFieldValue) != 8)
                 {
-                    strmac(graph->pins[currPinIndex].textFieldValue, 8, "00000000");
+                    strmac(graph->pins[currPinIndex].textFieldValue, 9, "00000000");
                 }
                 break;
             default:
@@ -436,8 +436,8 @@ void HandleLiteralNodeField(CGEditorContext *cgEd, GraphContext *graph, int curr
         blinkTime += GetFrameTime();
         if (fmodf(blinkTime, 1.0f) < 0.5f)
         {
-            char blinking[256];
-            strmac(blinking, sizeof(blinking), "%s_", text);
+            char blinking[MAX_LITERAL_NODE_FIELD_SIZE];
+            strmac(blinking, MAX_LITERAL_NODE_FIELD_SIZE, "%s_", text);
             DrawTextEx(cgEd->font, blinking, (Vector2){textbox.x + 5, textbox.y + 4}, 20, 0, BLACK);
         }
         else
@@ -564,7 +564,7 @@ void HandleLiteralNodeField(CGEditorContext *cgEd, GraphContext *graph, int curr
             case PIN_FIELD_NUM:
                 if (graph->pins[currPinIndex].textFieldValue[0] == '\0')
                 {
-                    strmac(graph->pins[currPinIndex].textFieldValue, 1, "0");
+                    strmac(graph->pins[currPinIndex].textFieldValue, 2, "0");
                 }
                 break;
             case PIN_FIELD_STRING:
@@ -576,7 +576,7 @@ void HandleLiteralNodeField(CGEditorContext *cgEd, GraphContext *graph, int curr
             case PIN_FIELD_COLOR:
                 if (strlen(graph->pins[currPinIndex].textFieldValue) != 8)
                 {
-                    strmac(graph->pins[currPinIndex].textFieldValue, 8, "00000000");
+                    strmac(graph->pins[currPinIndex].textFieldValue, 9, "00000000");
                 }
                 break;
             default:
@@ -605,7 +605,7 @@ void HandleKeyNodeField(CGEditorContext *cgEd, GraphContext *graph, int currPinI
         {
             if (graph->pins[currPinIndex].textFieldValue[0] == '\0')
             {
-                strmac(graph->pins[currPinIndex].textFieldValue, 1, "NONE");
+                strmac(graph->pins[currPinIndex].textFieldValue, 5, "NONE");
                 graph->pins[currPinIndex].pickedOption = -1;
             }
             cgEd->nodeFieldPinFocused = -1;
@@ -626,8 +626,8 @@ void HandleKeyNodeField(CGEditorContext *cgEd, GraphContext *graph, int currPinI
         blinkTime += GetFrameTime();
         if (fmodf(blinkTime, 1.0f) < 0.6f)
         {
-            char blinking[256];
-            strmac(blinking, sizeof(blinking), "Press a key");
+            char blinking[MAX_KEY_NAME_SIZE];
+            strmac(blinking, MAX_KEY_NAME_SIZE, "Press a key");
             DrawTextEx(cgEd->font, blinking, (Vector2){textbox.x + 5, textbox.y + 4}, 20, 0, BLACK);
         }
     }
@@ -653,7 +653,7 @@ void HandleKeyNodeField(CGEditorContext *cgEd, GraphContext *graph, int currPinI
         {
             if (graph->pins[currPinIndex].textFieldValue[0] == '\0')
             {
-                strmac(graph->pins[currPinIndex].textFieldValue, 4, "NONE");
+                strmac(graph->pins[currPinIndex].textFieldValue, 5, "NONE");
                 graph->pins[currPinIndex].pickedOption = -1;
             }
             cgEd->nodeFieldPinFocused = -1;
@@ -834,6 +834,7 @@ void DrawNodes(CGEditorContext *cgEd, GraphContext *graph)
         bool isOutputPosSet = false;
         bool isInputFlow = false;
         bool isOutputFlow = false;
+        PinType linkType;
         for (int j = 0; j < graph->pinCount; j++)
         {
             if (graph->links[i].inputPinID == graph->pins[j].id)
@@ -841,18 +842,48 @@ void DrawNodes(CGEditorContext *cgEd, GraphContext *graph)
                 inputPinPosition = graph->pins[j].position;
                 isInputPosSet = true;
                 isInputFlow = (graph->pins[j].type == PIN_FLOW);
+
+                if(graph->pins[j].type != PIN_ANY_VALUE){
+                    linkType = graph->pins[j].type;
+                }
             }
             else if (graph->links[i].outputPinID == graph->pins[j].id)
             {
                 outputPinPosition = graph->pins[j].position;
                 isOutputPosSet = true;
                 isOutputFlow = (graph->pins[j].type == PIN_FLOW);
+
+                if(graph->pins[j].type != PIN_ANY_VALUE){
+                    linkType = graph->pins[j].type;
+                }
             }
         }
-        bool isFlowConnection = isInputFlow && isOutputFlow;
+        bool isFlowLink = isInputFlow && isOutputFlow;
         if (isInputPosSet && isOutputPosSet)
         {
-            DrawCurvedWire(outputPinPosition, inputPinPosition, 2.0f + 2.0f / cgEd->zoom, isFlowConnection ? (Color){180, 100, 200, 255} : (Color){0, 255, 255, 255});
+            Color wireColor;
+            switch(linkType){
+                case PIN_FLOW:
+                    wireColor = (Color){180, 100, 200, 255};
+                    break;
+                case PIN_NUM:wireColor = (Color){24, 119, 149, 255};
+                    break;
+                case PIN_STRING:
+                    wireColor = (Color){180, 178, 40, 255};
+                    break;
+                case PIN_BOOL:
+                    wireColor = (Color){27, 64, 121, 255};
+                    break;
+                case PIN_COLOR:
+                    wireColor = (Color){217, 3, 104, 255};
+                    break;
+                case PIN_SPRITE:
+                    wireColor = (Color){3, 206, 164, 255};
+                    break;
+                default:
+                    wireColor = (Color){255, 255, 255, 255};
+            }
+            DrawCurvedWire(outputPinPosition, inputPinPosition, 2.0f + 2.0f / cgEd->zoom, wireColor);
         }
         else
         {
@@ -1147,11 +1178,11 @@ void DrawNodes(CGEditorContext *cgEd, GraphContext *graph)
     {
         if (cgEd->lastClickedPin.isInput)
         {
-            DrawCurvedWire(cgEd->mousePos, cgEd->lastClickedPin.position, 2.0f + 2.0f / cgEd->zoom, YELLOW);
+            DrawCurvedWire(cgEd->mousePos, cgEd->lastClickedPin.position, 2.0f + 2.0f / cgEd->zoom, (Color){0, 255, 255, 255});
         }
         else
         {
-            DrawCurvedWire(cgEd->lastClickedPin.position, cgEd->mousePos, 2.0f + 2.0f / cgEd->zoom, YELLOW);
+            DrawCurvedWire(cgEd->lastClickedPin.position, cgEd->mousePos, 2.0f + 2.0f / cgEd->zoom, (Color){0, 255, 255, 255});
         }
     }
 
@@ -1417,7 +1448,7 @@ const char *DrawNodeMenu(CGEditorContext *cgEd, RenderTexture2D view)
     char buff[MAX_SEARCH_BAR_FIELD_SIZE];
     if (cgEd->nodeMenuSearch[0] == '\0')
     {
-        strmac(buff, 6, "Search");
+        strmac(buff, 7, "Search");
     }
     else
     {
