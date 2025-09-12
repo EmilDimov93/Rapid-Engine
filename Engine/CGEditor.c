@@ -1095,8 +1095,6 @@ void DrawNodes(CGEditorContext *cgEd, GraphContext *graph)
                                                             cgEd->shouldOpenHitboxEditor = true;
                                                             strmac(cgEd->hitboxEditorFileName, MAX_FILE_NAME, "%s", graph->pins[e].textFieldValue);
                                                             cgEd->hitboxEditingPinID = graph->pins[i].id;
-                                                            cgEd->hasChanged = false; // test
-                                                            cgEd->hasChangedInLastFrame = false;
                                                             return;
                                                         }
                                                     }
