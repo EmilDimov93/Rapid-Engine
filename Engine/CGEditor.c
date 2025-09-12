@@ -25,6 +25,8 @@ CGEditorContext InitEditorContext()
 {
     CGEditorContext cgEd = {0};
 
+    cgEd.hasFatalErrorOccurred = false;
+
     cgEd.lastClickedPin = INVALID_PIN;
 
     cgEd.scrollIndexNodeMenu = 0;
@@ -49,7 +51,9 @@ CGEditorContext InitEditorContext()
     UnloadImage(tempImg);
     if (cgEd.gearTxt.id == 0)
     {
+        cgEd.hasFatalErrorOccurred = true;
         AddToLogFromEditor(&cgEd, "Failed to load texture{C220}", LOG_LEVEL_ERROR);
+        return cgEd;
     }
 
     cgEd.nodeDropdownFocused = -1;
@@ -58,7 +62,9 @@ CGEditorContext InitEditorContext()
     cgEd.font = LoadFontFromMemory(".ttf", arialbd_ttf, arialbd_ttf_len, 256, NULL, 0);
     if (cgEd.font.texture.id == 0)
     {
+        cgEd.hasFatalErrorOccurred = true;
         AddToLogFromEditor(&cgEd, "Failed to load font{C221}", LOG_LEVEL_ERROR);
+        return cgEd;
     }
 
     cgEd.newLogMessage = false;
@@ -290,9 +296,7 @@ const char *AddEllipsis(Font font, const char *text, float fontSize, float maxWi
     static char result[MAX_LITERAL_NODE_FIELD_SIZE];
     float fullWidth = MeasureTextEx(font, text, fontSize, 0).x;
     if (fullWidth <= maxWidth)
-    {
         return text;
-    }
 
     int len = strlen(text);
     int maxChars = 0;
@@ -301,19 +305,13 @@ const char *AddEllipsis(Font font, const char *text, float fontSize, float maxWi
     for (int c = 1; c <= len; c++)
     {
         if (showEnd)
-        {
             strmac(temp, c, "%s", text + len - c);
-        }
         else
-        {
-            strmac(temp, c, "%s", text);
-        }
+            strmac(temp, c, "%.*s", c, text);
 
         temp[c] = '\0';
 
-        float width = MeasureTextEx(font, temp, fontSize, 0).x +
-                      MeasureTextEx(font, "...", fontSize, 0).x;
-
+        float width = MeasureTextEx(font, temp, fontSize, 0).x + MeasureTextEx(font, "...", fontSize, 0).x;
         if (width > maxWidth)
             break;
 
@@ -328,9 +326,9 @@ const char *AddEllipsis(Font font, const char *text, float fontSize, float maxWi
     }
     else
     {
-        strmac(result, maxChars, "%s", text);
-        result[maxChars] = '\0';
-        strmac(result, maxChars, "%s...", result);
+        strmac(temp, maxChars, "%.*s", maxChars, text);
+        temp[maxChars] = '\0';
+        strmac(result, sizeof(result), "%s...", temp);
     }
 
     return result;
@@ -784,7 +782,7 @@ void HandleDropdownMenu(GraphContext *graph, int currPinIndex, int hoveredNodeIn
             }
             Rectangle option = {dropdown.x, dropdown.y - displayedVarsCounter * 30, dropdown.width, 30};
             DrawRectangleRec(option, RAYWHITE);
-            const char *text = AddEllipsis(cgEd->font, options.options[j], 20, options.boxWidth - 20, false);
+            const char *text = AddEllipsis(cgEd->font, options.options[j], 20, options.boxWidth - 10, false);
             DrawTextEx(cgEd->font, text, (Vector2){(graph->pins[currPinIndex].type == PIN_VARIABLE || graph->pins[currPinIndex].type == PIN_SPRITE_VARIABLE) ? option.x + 20 : option.x + 3, option.y + 3}, 20, 0, BLACK);
             DrawRectangleLinesEx(option, 1, DARKGRAY);
 
@@ -1522,7 +1520,7 @@ void HandleDragging(CGEditorContext *cgEd, GraphContext *graph)
     }
 }
 
-int DrawFullTexture(CGEditorContext *cgEd, GraphContext *graph, RenderTexture2D view, RenderTexture2D dot)
+void DrawFullTexture(CGEditorContext *cgEd, GraphContext *graph, RenderTexture2D view, RenderTexture2D dot)
 {
     BeginTextureMode(view);
     ClearBackground((Color){40, 42, 54, 255});
@@ -1540,9 +1538,12 @@ int DrawFullTexture(CGEditorContext *cgEd, GraphContext *graph, RenderTexture2D 
         if (strcmp(createdNode, "NULL") != 0)
         {
             NodeType newNodeType = StringToNodeType(createdNode);
-            CreateNode(graph, newNodeType, cgEd->rightClickPos);
-            cgEd->rightClickPos = (Vector2){0, 0};
-            if (newNodeType == NODE_CREATE_NUMBER || newNodeType == NODE_CREATE_STRING || newNodeType == NODE_CREATE_BOOL || newNodeType == NODE_CREATE_COLOR || newNodeType == NODE_CREATE_SPRITE)
+            if(!CreateNode(graph, newNodeType, cgEd->rightClickPos)){
+                cgEd->hasFatalErrorOccurred = true;
+                AddToLogFromEditor(cgEd, "Error creating node{C230}", LOG_LEVEL_ERROR);
+                return;
+            }
+            else if (newNodeType == NODE_CREATE_NUMBER || newNodeType == NODE_CREATE_STRING || newNodeType == NODE_CREATE_BOOL || newNodeType == NODE_CREATE_COLOR || newNodeType == NODE_CREATE_SPRITE)
             {
                 graph->variables = realloc(graph->variables, sizeof(char *) * (graph->variablesCount + 1));
                 graph->variables[graph->variablesCount] = strmac(NULL, MAX_VARIABLE_NAME_SIZE, "%s", graph->nodes[graph->nodeCount - 1].name);
@@ -1552,12 +1553,11 @@ int DrawFullTexture(CGEditorContext *cgEd, GraphContext *graph, RenderTexture2D 
 
                 graph->variablesCount++;
             }
+            cgEd->rightClickPos = (Vector2){0, 0};
         }
     }
 
     EndTextureMode();
-
-    return 0;
 }
 
 bool CheckOpenMenus(CGEditorContext *cgEd)
@@ -1603,8 +1603,12 @@ void HandleEditor(CGEditorContext *cgEd, GraphContext *graph, RenderTexture2D *v
 
     if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_V) && cgEd->copiedNode.id != -1)
     {
-        DuplicateNode(graph, &cgEd->copiedNode, cgEd->mousePos);
-        if (cgEd->copiedNode.type == NODE_CREATE_NUMBER || cgEd->copiedNode.type == NODE_CREATE_STRING || cgEd->copiedNode.type == NODE_CREATE_BOOL || cgEd->copiedNode.type == NODE_CREATE_COLOR || cgEd->copiedNode.type == NODE_CREATE_SPRITE)
+        if(!DuplicateNode(graph, &cgEd->copiedNode, cgEd->mousePos)){
+            cgEd->hasFatalErrorOccurred = true;
+            AddToLogFromEditor(cgEd, "Error duplicating node{C231}", LOG_LEVEL_ERROR);
+            return;
+        }
+        else if (cgEd->copiedNode.type == NODE_CREATE_NUMBER || cgEd->copiedNode.type == NODE_CREATE_STRING || cgEd->copiedNode.type == NODE_CREATE_BOOL || cgEd->copiedNode.type == NODE_CREATE_COLOR || cgEd->copiedNode.type == NODE_CREATE_SPRITE)
         {
             strmac(graph->nodes[graph->nodeCount - 1].name, MAX_VARIABLE_NAME_SIZE, "%s", AssignAvailableVarName(graph, graph->nodes[graph->nodeCount - 1].name));
 

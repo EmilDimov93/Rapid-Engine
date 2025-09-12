@@ -233,8 +233,8 @@ static char *arithmeticOps[] = {"ADD", "SUBTRACT", "MULTIPLY", "DIVIDE", "MODULO
 static char *keyActionOps[] = {"Pressed", "Released", "Down", "Not down"};
 
 static DropdownOptionsByPinType PinDropdownOptionsByType[] = {
-    {PIN_DROPDOWN_COMPARISON_OPERATOR, 3, comparisonOps, 120},
-    {PIN_DROPDOWN_GATE, 6, gateOps, 60},
+    {PIN_DROPDOWN_COMPARISON_OPERATOR, 3, comparisonOps, 130},
+    {PIN_DROPDOWN_GATE, 6, gateOps, 70},
     {PIN_DROPDOWN_ARITHMETIC, 5, arithmeticOps, 110},
     {PIN_DROPDOWN_KEY_ACTION, 4, keyActionOps, 110}};
 

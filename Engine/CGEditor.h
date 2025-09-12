@@ -70,6 +70,8 @@ typedef struct
 
     Node copiedNode;
 
+    bool hasFatalErrorOccurred;
+
     GraphContext *graph;
 } CGEditorContext;
 

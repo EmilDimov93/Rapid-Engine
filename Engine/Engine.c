@@ -2307,6 +2307,9 @@ int main()
                 cgEd.shouldOpenHitboxEditor = false;
                 eng.viewportMode = VIEWPORT_HITBOX_EDITOR;
             }
+            if(cgEd.hasFatalErrorOccurred){
+                EmergencyExit(&eng, &cgEd, &intp);
+            }
 
             break;
         }

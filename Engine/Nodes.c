@@ -191,7 +191,7 @@ char *AssignAvailableVarName(GraphContext *graph, const char *baseName) {
     return name;
 }
 
-Node CreateNode(GraphContext *graph, NodeType type, Vector2 pos)
+bool CreateNode(GraphContext *graph, NodeType type, Vector2 pos)
 {
     Node node = {0};
     node.id = graph->nextNodeID++;
@@ -227,7 +227,7 @@ Node CreateNode(GraphContext *graph, NodeType type, Vector2 pos)
 
     if (type == NODE_UNKNOWN)
     {
-        return node;
+        return false;
     }
 
     int inputCount = getNodeInfoByType(type, INPUT_COUNT);
@@ -235,16 +235,14 @@ Node CreateNode(GraphContext *graph, NodeType type, Vector2 pos)
 
     if (inputCount > MAX_NODE_PINS || outputCount > MAX_NODE_PINS)
     {
-        TraceLog(LOG_ERROR, "Error");
-        return node;
+        return false;
     }
 
     int newPinCapacity = graph->pinCount + inputCount + outputCount;
     Pin *newPins = realloc(graph->pins, sizeof(Pin) * newPinCapacity);
     if (!newPins && newPinCapacity != 0)
     {
-        TraceLog(LOG_ERROR, "Error");
-        return node;
+        return false;
     }
     graph->pins = newPins;
 
@@ -267,13 +265,12 @@ Node CreateNode(GraphContext *graph, NodeType type, Vector2 pos)
     Node *newNodes = realloc(graph->nodes, sizeof(Node) * (graph->nodeCount + 1));
     if (!newNodes)
     {
-        TraceLog(LOG_ERROR, "Error");
-        return node;
+        return false;
     }
     graph->nodes = newNodes;
     graph->nodes[graph->nodeCount++] = node;
 
-    return node;
+    return true;
 }
 
 int GetPinIndexByID(int id, GraphContext *graph)
@@ -286,7 +283,7 @@ int GetPinIndexByID(int id, GraphContext *graph)
     return -1;
 }
 
-Node DuplicateNode(GraphContext *graph, const Node *src, Vector2 pos)
+bool DuplicateNode(GraphContext *graph, const Node *src, Vector2 pos)
 {
     Node node = {0};
     node.id = graph->nextNodeID++;
@@ -301,8 +298,7 @@ Node DuplicateNode(GraphContext *graph, const Node *src, Vector2 pos)
     Pin *newPins = realloc(graph->pins, sizeof(Pin) * newPinCapacity);
     if (!newPins && newPinCapacity != 0)
     {
-        TraceLog(LOG_ERROR, "Error");
-        return node;
+        return false;
     }
     graph->pins = newPins;
 
@@ -310,7 +306,7 @@ Node DuplicateNode(GraphContext *graph, const Node *src, Vector2 pos)
     {
         int srcPinID = src->inputPins[i];
         int srcIdx = GetPinIndexByID(srcPinID, graph);
-        if (srcIdx < 0) { TraceLog(LOG_WARNING, "Error"); continue; }
+        if (srcIdx < 0) { return false; }
 
         Pin *srcPin = &graph->pins[srcIdx];
         Vector2 offset = { srcPin->position.x - src->position.x, srcPin->position.y - src->position.y };
@@ -337,7 +333,7 @@ Node DuplicateNode(GraphContext *graph, const Node *src, Vector2 pos)
     {
         int srcPinID = src->outputPins[i];
         int srcIdx = GetPinIndexByID(srcPinID, graph);
-        if (srcIdx < 0) { TraceLog(LOG_WARNING, "Error"); continue; }
+        if (srcIdx < 0) { return false; }
 
         Pin *srcPin = &graph->pins[srcIdx];
         Vector2 offset = { srcPin->position.x - src->position.x, srcPin->position.y - src->position.y };
@@ -353,13 +349,12 @@ Node DuplicateNode(GraphContext *graph, const Node *src, Vector2 pos)
     Node *newNodes = realloc(graph->nodes, sizeof(Node) * (graph->nodeCount + 1));
     if (!newNodes)
     {
-        TraceLog(LOG_ERROR, "Error");
-        return node;
+        return false;
     }
     graph->nodes = newNodes;
     graph->nodes[graph->nodeCount++] = node;
 
-    return node;
+    return true;
 }
 
 void CreateLink(GraphContext *graph, Pin Pin1, Pin Pin2)
