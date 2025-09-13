@@ -372,9 +372,15 @@ void HandleLiteralNodeField(CGEditorContext *cgEd, GraphContext *graph, int curr
     }
     textbox.width = boxWidth;
 
+    bool isFieldHovered = CheckCollisionPointRec(cgEd->mousePos, textbox);
+
+    if(isFieldHovered && type != PIN_FIELD_BOOL){
+        cgEd->cursor = MOUSE_CURSOR_IBEAM;
+    }
+
     if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
     {
-        if (CheckCollisionPointRec(cgEd->mousePos, textbox))
+        if (isFieldHovered)
         {
             if (type == PIN_FIELD_BOOL)
             {
@@ -421,7 +427,18 @@ void HandleLiteralNodeField(CGEditorContext *cgEd, GraphContext *graph, int curr
         }
     }
 
-    DrawRectangleRec(textbox, (cgEd->nodeFieldPinFocused == currPinIndex) ? LIGHTGRAY : GRAY);
+    Color textboxColor;
+    if(cgEd->nodeFieldPinFocused == currPinIndex){
+        textboxColor = LIGHTGRAY;
+    }
+    else if(isFieldHovered){
+        textboxColor = WHITE;
+    }
+    else{
+        textboxColor = GRAY;
+    }
+
+    DrawRectangleRec(textbox, textboxColor);
     DrawRectangleLinesEx(textbox, 1, WHITE);
 
     const char *originalText = graph->pins[currPinIndex].textFieldValue;
@@ -1184,6 +1201,7 @@ void DrawNodes(CGEditorContext *cgEd, GraphContext *graph)
 
     if (cgEd->lastClickedPin.id != -1)
     {
+        cgEd->cursor = MOUSE_CURSOR_CROSSHAIR;
         if (cgEd->lastClickedPin.isInput)
         {
             DrawCurvedWire(cgEd->mousePos, cgEd->lastClickedPin.position, 2.0f + 2.0f / cgEd->zoom, (Color){0, 255, 255, 255});
@@ -1489,6 +1507,7 @@ void HandleDragging(CGEditorContext *cgEd, GraphContext *graph)
     }
     else if (IsMouseButtonDown(MOUSE_LEFT_BUTTON) && cgEd->draggingNodeIndex != -1)
     {
+        cgEd->cursor = MOUSE_CURSOR_RESIZE_ALL;
         float newX = cgEd->mousePos.x - dragOffset.x;
         float newY = cgEd->mousePos.y - dragOffset.y;
         if (newX != graph->nodes[cgEd->draggingNodeIndex].position.x || newY != graph->nodes[cgEd->draggingNodeIndex].position.y)
@@ -1626,9 +1645,9 @@ void HandleEditor(CGEditorContext *cgEd, GraphContext *graph, RenderTexture2D *v
 
     if (CheckNodeCollisions(cgEd, graph) || IsMouseButtonDown(MOUSE_LEFT_BUTTON))
     {
+        cgEd->cursor = MOUSE_CURSOR_POINTING_HAND;
         DrawFullTexture(cgEd, graph, *viewport, dot);
         cgEd->delayFrames = true;
-        cgEd->cursor = MOUSE_CURSOR_POINTING_HAND;
     }
     else if (CheckOpenMenus(cgEd))
     {
