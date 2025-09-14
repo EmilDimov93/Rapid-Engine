@@ -189,6 +189,8 @@ void HandleVarNameTextBox(CGEditorContext *cgEd, Rectangle bounds, char *text, i
 {
     if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_V))
     {
+        cgEd->hasChanged = true;
+        cgEd->hasChangedInLastFrame = true;
         const char *clipboard = GetClipboardText();
         if (clipboard)
         {
@@ -384,6 +386,8 @@ void HandleLiteralNodeField(CGEditorContext *cgEd, GraphContext *graph, int curr
         {
             if (type == PIN_FIELD_BOOL)
             {
+                cgEd->hasChanged = true;
+                cgEd->hasChangedInLastFrame = true;
                 if (strcmp(graph->pins[currPinIndex].textFieldValue, "false") == 0 || strcmp(graph->pins[currPinIndex].textFieldValue, "") == 0)
                 {
                     strmac(graph->pins[currPinIndex].textFieldValue, 5, "true");
@@ -405,18 +409,24 @@ void HandleLiteralNodeField(CGEditorContext *cgEd, GraphContext *graph, int curr
             case PIN_FIELD_NUM:
                 if (graph->pins[currPinIndex].textFieldValue[0] == '\0')
                 {
+                    cgEd->hasChanged = true;
+                    cgEd->hasChangedInLastFrame = true;
                     strmac(graph->pins[currPinIndex].textFieldValue, 2, "0");
                 }
                 break;
             case PIN_FIELD_STRING:
                 if (graph->pins[currPinIndex].textFieldValue[0] == '\0')
                 {
+                    cgEd->hasChanged = true;
+                    cgEd->hasChangedInLastFrame = true;
                     strmac(graph->pins[currPinIndex].textFieldValue, 1, "");
                 }
                 break;
             case PIN_FIELD_COLOR:
                 if (strlen(graph->pins[currPinIndex].textFieldValue) != 8)
                 {
+                    cgEd->hasChanged = true;
+                    cgEd->hasChangedInLastFrame = true;
                     strmac(graph->pins[currPinIndex].textFieldValue, 9, "00000000");
                 }
                 break;
@@ -495,6 +505,8 @@ void HandleLiteralNodeField(CGEditorContext *cgEd, GraphContext *graph, int curr
 
                 if (validClipboard)
                 {
+                    cgEd->hasChanged = true;
+                    cgEd->hasChangedInLastFrame = true;
                     strmac(graph->pins[currPinIndex].textFieldValue, MAX_VARIABLE_NAME_SIZE, "%s%s", graph->pins[currPinIndex].textFieldValue, clipboard);
                 }
             }
@@ -513,6 +525,8 @@ void HandleLiteralNodeField(CGEditorContext *cgEd, GraphContext *graph, int curr
 
             if (validKey)
             {
+                cgEd->hasChanged = true;
+                cgEd->hasChangedInLastFrame = true;
                 if (type == PIN_FIELD_COLOR && len >= 8)
                 {
                     key = GetCharPressed();
@@ -527,6 +541,8 @@ void HandleLiteralNodeField(CGEditorContext *cgEd, GraphContext *graph, int curr
                 type == PIN_FIELD_NUM &&
                 !graph->pins[currPinIndex].isFloat)
             {
+                cgEd->hasChanged = true;
+                cgEd->hasChangedInLastFrame = true;
                 graph->pins[currPinIndex].textFieldValue[len] = (char)key;
                 graph->pins[currPinIndex].textFieldValue[len + 1] = '\0';
                 graph->pins[currPinIndex].isFloat = true;
@@ -539,6 +555,8 @@ void HandleLiteralNodeField(CGEditorContext *cgEd, GraphContext *graph, int curr
         static bool backspaceHeld = false;
         if (IsKeyDown(KEY_BACKSPACE))
         {
+            cgEd->hasChanged = true;
+            cgEd->hasChangedInLastFrame = true;
             if (!backspaceHeld)
             {
                 size_t len = strlen(graph->pins[currPinIndex].textFieldValue);
@@ -585,18 +603,24 @@ void HandleLiteralNodeField(CGEditorContext *cgEd, GraphContext *graph, int curr
             case PIN_FIELD_NUM:
                 if (graph->pins[currPinIndex].textFieldValue[0] == '\0')
                 {
+                    cgEd->hasChanged = true;
+                    cgEd->hasChangedInLastFrame = true;
                     strmac(graph->pins[currPinIndex].textFieldValue, 2, "0");
                 }
                 break;
             case PIN_FIELD_STRING:
                 if (graph->pins[currPinIndex].textFieldValue[0] == '\0')
                 {
+                    cgEd->hasChanged = true;
+                    cgEd->hasChangedInLastFrame = true;
                     strmac(graph->pins[currPinIndex].textFieldValue, 1, "");
                 }
                 break;
             case PIN_FIELD_COLOR:
                 if (strlen(graph->pins[currPinIndex].textFieldValue) != 8)
                 {
+                    cgEd->hasChanged = true;
+                    cgEd->hasChangedInLastFrame = true;
                     strmac(graph->pins[currPinIndex].textFieldValue, 9, "00000000");
                 }
                 break;
@@ -663,21 +687,13 @@ void HandleKeyNodeField(CGEditorContext *cgEd, GraphContext *graph, int currPinI
         {
             if (IsKeyPressed(key))
             {
+                cgEd->hasChanged = true;
+                cgEd->hasChangedInLastFrame = true;
                 strmac(graph->pins[currPinIndex].textFieldValue, MAX_KEY_NAME_SIZE, GetKeyboardKeyName(key));
                 graph->pins[currPinIndex].pickedOption = key;
                 cgEd->nodeFieldPinFocused = -1;
                 break;
             }
-        }
-
-        if (IsKeyPressed(KEY_ENTER))
-        {
-            if (graph->pins[currPinIndex].textFieldValue[0] == '\0')
-            {
-                strmac(graph->pins[currPinIndex].textFieldValue, 5, "NONE");
-                graph->pins[currPinIndex].pickedOption = -1;
-            }
-            cgEd->nodeFieldPinFocused = -1;
         }
     }
 }
@@ -1621,7 +1637,7 @@ void HandleEditor(CGEditorContext *cgEd, GraphContext *graph, RenderTexture2D *v
         cgEd->delayFrames = true;
     }
 
-    if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_V) && cgEd->copiedNode.id != -1)
+    if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_V) && cgEd->copiedNode.id != -1 && cgEd->nodeFieldPinFocused == -1 && cgEd->editingNodeNameIndex == -1)
     {
         if(!DuplicateNode(graph, &cgEd->copiedNode, cgEd->mousePos)){
             cgEd->hasFatalErrorOccurred = true;
