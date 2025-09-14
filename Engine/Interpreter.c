@@ -196,8 +196,8 @@ void UpdateSpecialValues(InterpreterContext *intp, Vector2 mousePos, Rectangle s
     intp->values[SPECIAL_VALUE_MOUSE_Y].number = mousePos.y;
     intp->values[SPECIAL_VALUE_SCREEN_WIDTH].number = screenBoundary.width;
     intp->values[SPECIAL_VALUE_SCREEN_HEIGHT].number = screenBoundary.height;
-    intp->values[SPECIAL_VALUE_SCREEN_CENTER_X].number = screenBoundary.x + screenBoundary.width / 2;
-    intp->values[SPECIAL_VALUE_SCREEN_CENTER_Y].number = screenBoundary.y + screenBoundary.height / 2;
+    intp->values[SPECIAL_VALUE_CAMERA_CENTER_X].number = screenBoundary.x + screenBoundary.width / 2;
+    intp->values[SPECIAL_VALUE_CAMERA_CENTER_Y].number = screenBoundary.y + screenBoundary.height / 2;
 }
 
 RuntimeGraphContext ConvertToRuntimeGraph(GraphContext *graph, InterpreterContext *intp)
@@ -337,8 +337,8 @@ RuntimeGraphContext ConvertToRuntimeGraph(GraphContext *graph, InterpreterContex
     intp->values[SPECIAL_VALUE_MOUSE_Y] = (Value){.type = VAL_NUMBER, .number = 0, .name = strmac(NULL, MAX_VARIABLE_NAME_SIZE, "Mouse Y")};
     intp->values[SPECIAL_VALUE_SCREEN_WIDTH] = (Value){.type = VAL_NUMBER, .number = 0, .name = strmac(NULL, MAX_VARIABLE_NAME_SIZE, "Screen Width")};
     intp->values[SPECIAL_VALUE_SCREEN_HEIGHT] = (Value){.type = VAL_NUMBER, .number = 0, .name = strmac(NULL, MAX_VARIABLE_NAME_SIZE, "Screen Height")};
-    intp->values[SPECIAL_VALUE_SCREEN_CENTER_X] = (Value){.type = VAL_NUMBER, .number = 0, .name = strmac(NULL, MAX_VARIABLE_NAME_SIZE, "Screen Center X")};
-    intp->values[SPECIAL_VALUE_SCREEN_CENTER_Y] = (Value){.type = VAL_NUMBER, .number = 0, .name = strmac(NULL, MAX_VARIABLE_NAME_SIZE, "Screen Center Y")};
+    intp->values[SPECIAL_VALUE_CAMERA_CENTER_X] = (Value){.type = VAL_NUMBER, .number = 0, .name = strmac(NULL, MAX_VARIABLE_NAME_SIZE, "Screen Center X")};
+    intp->values[SPECIAL_VALUE_CAMERA_CENTER_Y] = (Value){.type = VAL_NUMBER, .number = 0, .name = strmac(NULL, MAX_VARIABLE_NAME_SIZE, "Screen Center Y")};
     intp->valueCount = SPECIAL_VALUES_COUNT;
 
     intp->components = calloc(totalComponents + 1, sizeof(SceneComponent));
@@ -604,12 +604,12 @@ RuntimeGraphContext ConvertToRuntimeGraph(GraphContext *graph, InterpreterContex
                 node->outputPins[1]->valueIndex = SPECIAL_VALUE_MOUSE_Y;
             }
             continue;
-        case NODE_GET_SCREEN_CENTER:
+        case NODE_GET_CAMERA_CENTER:
             if (node->outputPins[0]){
-                node->outputPins[0]->valueIndex = SPECIAL_VALUE_SCREEN_CENTER_X;
+                node->outputPins[0]->valueIndex = SPECIAL_VALUE_CAMERA_CENTER_X;
             }
             if (node->outputPins[1]){
-                node->outputPins[1]->valueIndex = SPECIAL_VALUE_SCREEN_CENTER_Y;
+                node->outputPins[1]->valueIndex = SPECIAL_VALUE_CAMERA_CENTER_Y;
             }
             continue;
         default:

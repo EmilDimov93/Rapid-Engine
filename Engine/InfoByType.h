@@ -27,8 +27,7 @@ typedef enum
     NODE_GET_SCREEN_WIDTH = 301,
     NODE_GET_SCREEN_HEIGHT = 302,
     NODE_GET_MOUSE_POSITION = 303,
-    NODE_GET_SCREEN_CENTER = 304,
-    NODE_GET_RANDOM_NUMBER = 305,
+    NODE_GET_RANDOM_NUMBER = 304,
 
     NODE_SET_VARIABLE = 400,
     NODE_SET_BACKGROUND = 401,
@@ -66,7 +65,11 @@ typedef enum
     NODE_LITERAL_NUMBER = 1000,
     NODE_LITERAL_STRING = 1001,
     NODE_LITERAL_BOOL = 1002,
-    NODE_LITERAL_COLOR = 1003
+    NODE_LITERAL_COLOR = 1003,
+
+    NODE_MOVE_CAMERA = 1100,
+    NODE_ZOOM_CAMERA = 1101,
+    NODE_GET_CAMERA_CENTER = 1102
 } NodeType;
 
 typedef enum
@@ -169,7 +172,6 @@ static InfoByType NodeInfoByType[] = {
     {NODE_GET_SCREEN_WIDTH, 0, 1, 250, 70, {60, 100, 159, 200}, false, {0}, {PIN_NUM}, {0}, {"Screen Width"}},
     {NODE_GET_SCREEN_HEIGHT, 0, 1, 265, 70, {60, 100, 159, 200}, false, {0}, {PIN_NUM}, {0}, {"Screen Height"}},
     {NODE_GET_MOUSE_POSITION, 0, 2, 220, 95, {60, 100, 159, 200}, false, {0}, {PIN_NUM, PIN_NUM}, {0}, {"Mouse X", "Mouse Y"}},
-    {NODE_GET_SCREEN_CENTER, 0, 2, 160, 95, {60, 100, 159, 200}, false, {0}, {PIN_NUM, PIN_NUM}, {0}, {"Center X", "Center Y"}, false}, // not implemented
     {NODE_GET_RANDOM_NUMBER, 0, 1, 260, 70, {60, 100, 159, 200}, false, {0}, {0}, {0}, {0}, true}, // not implemented
 
     {NODE_SET_VARIABLE, 3, 2, 140, 130, {60, 100, 159, 200}, false, {PIN_FLOW, PIN_VARIABLE, PIN_UNKNOWN_VALUE}, {PIN_FLOW, PIN_NONE}, {"Prev", "Variable", "Set value"}, {"Next", ""}}, // shouldn't have PIN_NONE
@@ -207,7 +209,9 @@ static InfoByType NodeInfoByType[] = {
     {NODE_LITERAL_NUMBER, 1, 1, 200, 70, {110, 85, 40, 200}, false, {PIN_FIELD_NUM}, {PIN_NUM}, {""}, {"number"}},
     {NODE_LITERAL_STRING, 1, 1, 200, 70, {110, 85, 40, 200}, false, {PIN_FIELD_STRING}, {PIN_STRING}, {""}, {"string"}},
     {NODE_LITERAL_BOOL, 1, 1, 180, 70, {110, 85, 40, 200}, false, {PIN_FIELD_BOOL}, {PIN_BOOL}, {""}, {"bool"}},
-    {NODE_LITERAL_COLOR, 1, 1, 200, 70, {110, 85, 40, 200}, false, {PIN_FIELD_COLOR}, {PIN_COLOR}, {""}, {"color"}}};
+    {NODE_LITERAL_COLOR, 1, 1, 200, 70, {110, 85, 40, 200}, false, {PIN_FIELD_COLOR}, {PIN_COLOR}, {""}, {"color"}},
+
+    {NODE_GET_CAMERA_CENTER, 0, 2, 160, 95, {60, 100, 159, 200}, false, {0}, {PIN_NUM, PIN_NUM}, {0}, {"Center X", "Center Y"}, false}};
 
 static inline int NodeTypeToIndex(NodeType type)
 {
@@ -407,8 +411,6 @@ static inline const char *NodeTypeToString(NodeType type)
         return "Get screen height";
     case NODE_GET_MOUSE_POSITION:
         return "Get mouse pos";
-    case NODE_GET_SCREEN_CENTER:
-        return "Get center";
     case NODE_GET_RANDOM_NUMBER:
         return "Get random num";
 
@@ -479,6 +481,9 @@ static inline const char *NodeTypeToString(NodeType type)
     case NODE_LITERAL_COLOR:
         return "Literal color";
 
+    case NODE_GET_CAMERA_CENTER:
+        return "Get center";
+
     default:
         return "invalid";
     }
@@ -517,8 +522,6 @@ static inline NodeType StringToNodeType(const char strType[])
         return NODE_GET_SCREEN_HEIGHT;
     if (strcmp(strType, "Get Mouse Positon") == 0)
         return NODE_GET_MOUSE_POSITION;
-    if (strcmp(strType, "Get Screen Center") == 0)
-        return NODE_GET_SCREEN_CENTER;
     if (strcmp(strType, "Get Random Number") == 0)
         return NODE_GET_RANDOM_NUMBER;
 
@@ -588,6 +591,9 @@ static inline NodeType StringToNodeType(const char strType[])
         return NODE_LITERAL_BOOL;
     if (strcmp(strType, "Literal color") == 0)
         return NODE_LITERAL_COLOR;
+    
+    if (strcmp(strType, "Get Camera Center") == 0)
+        return NODE_GET_CAMERA_CENTER;
 
     return NODE_UNKNOWN;
 }
