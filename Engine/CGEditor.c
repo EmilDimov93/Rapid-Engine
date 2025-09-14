@@ -1276,7 +1276,7 @@ const char *DrawNodeMenu(CGEditorContext *cgEd, RenderTexture2D view)
         {"Comparison", "Gate", "Arithmetic"},
         {"Print To Log", "Draw Debug Line"},
         {"Literal number", "Literal string", "Literal bool", "Literal color"},
-        {"Move camera", "Zoom camera", "Get Camera Center"}};
+        {"Move Camera", "Zoom Camera", "Get Camera Center"}};
     int menuItemCount = sizeof(menuItems) / sizeof(menuItems[0]);
     int subMenuCounts[] = {4, 5, 5, 3, 6, 9, 3, 3, 2, 4, 3};
 

@@ -211,7 +211,9 @@ static InfoByType NodeInfoByType[] = {
     {NODE_LITERAL_BOOL, 1, 1, 180, 70, {110, 85, 40, 200}, false, {PIN_FIELD_BOOL}, {PIN_BOOL}, {""}, {"bool"}},
     {NODE_LITERAL_COLOR, 1, 1, 200, 70, {110, 85, 40, 200}, false, {PIN_FIELD_COLOR}, {PIN_COLOR}, {""}, {"color"}},
 
-    {NODE_GET_CAMERA_CENTER, 0, 2, 160, 95, {60, 100, 159, 200}, false, {0}, {PIN_NUM, PIN_NUM}, {0}, {"Center X", "Center Y"}, false}};
+    {NODE_MOVE_CAMERA, 3, 1, 190, 125, {60, 100, 159, 200}, false, {PIN_FLOW, PIN_NUM, PIN_NUM}, {PIN_FLOW}, {"Prev", "Camera Delta X", "Camera Delta Y"}, {"Next"}},
+    {NODE_ZOOM_CAMERA, 2, 1, 160, 95, {60, 100, 159, 200}, false, {PIN_FLOW, PIN_NUM}, {PIN_FLOW}, {"Prev", "Zoom Delta"}, {"Next"}, true}, // not implemented
+    {NODE_GET_CAMERA_CENTER, 0, 2, 160, 95, {60, 100, 159, 200}, false, {0}, {PIN_NUM, PIN_NUM}, {0}, {"Center X", "Center Y"}}};
 
 static inline int NodeTypeToIndex(NodeType type)
 {
@@ -481,6 +483,10 @@ static inline const char *NodeTypeToString(NodeType type)
     case NODE_LITERAL_COLOR:
         return "Literal color";
 
+    case NODE_MOVE_CAMERA:
+        return "Move Camera";
+    case NODE_ZOOM_CAMERA:
+        return "Zoom Camera";
     case NODE_GET_CAMERA_CENTER:
         return "Get center";
 
@@ -592,6 +598,10 @@ static inline NodeType StringToNodeType(const char strType[])
     if (strcmp(strType, "Literal color") == 0)
         return NODE_LITERAL_COLOR;
     
+    if (strcmp(strType, "Move Camera") == 0)
+        return NODE_MOVE_CAMERA;
+    if (strcmp(strType, "Zoom Camera") == 0)
+        return NODE_ZOOM_CAMERA;
     if (strcmp(strType, "Get Camera Center") == 0)
         return NODE_GET_CAMERA_CENTER;
 

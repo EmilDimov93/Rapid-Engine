@@ -1282,6 +1282,21 @@ void InterpretStringOfNodes(int lastNodeIndex, InterpreterContext *intp, Runtime
             intp->values[node->inputPins[5]->valueIndex].color);
         break;
     }
+
+    case NODE_MOVE_CAMERA:
+    {
+        if(node->inputPins[1]->valueIndex != -1){
+            intp->cameraOffset.x += intp->values[node->inputPins[1]->valueIndex].number;
+        }
+        if(node->inputPins[2]->valueIndex != -1){
+            intp->cameraOffset.y += intp->values[node->inputPins[2]->valueIndex].number;
+        }
+        break;
+    }
+    case NODE_ZOOM_CAMERA:
+    {
+        break;
+    }
     }
 
     if (currNodeIndex != lastNodeIndex)
