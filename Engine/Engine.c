@@ -703,8 +703,8 @@ void DrawUIElements(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                 }
                 if (SaveGraphToFile(eng->CGFilePath, graph) == 0)
                 {
-                    cgEd->hasChanged = false;
                     AddToLog(eng, "Saved successfully{C300}", LOG_LEVEL_SUCCESS);
+                    cgEd->hasChanged = false;
                 }
                 else
                     AddToLog(eng, "Error saving changes!{C101}", LOG_LEVEL_WARNING);
@@ -1650,8 +1650,8 @@ bool HandleUICollisions(EngineContext *eng, GraphContext *graph, InterpreterCont
         }
         if (SaveGraphToFile(eng->CGFilePath, graph) == 0)
         {
-            cgEd->hasChanged = false;
             AddToLog(eng, "Saved successfully{C300}", LOG_LEVEL_SUCCESS);
+            cgEd->hasChanged = false;
         }
         else
         {
@@ -2271,8 +2271,8 @@ int main()
                 {
                     if (SaveGraphToFile(eng.CGFilePath, &graph) == 0)
                     {
-                        cgEd.hasChanged = false;
                         AddToLog(&eng, "Auto-saved successfully{C301}", LOG_LEVEL_SUCCESS);
+                        cgEd.hasChanged = false;
                     }
                     else
                     {
@@ -2300,6 +2300,7 @@ int main()
             {
                 eng.delayFrames = true;
                 cgEd.hasChangedInLastFrame = false;
+                cgEd.hasChanged = true;
                 eng.wasBuilt = false;
             }
             if (cgEd.shouldOpenHitboxEditor)
@@ -2410,7 +2411,6 @@ int main()
                 if (hbEd.hasChanged)
                 {
                     cgEd.hasChangedInLastFrame = true;
-                    cgEd.hasChanged = true;
                     eng.wasBuilt = false;
                     hbEd.hasChanged = false;
                     eng.delayFrames = true;

@@ -189,7 +189,6 @@ void HandleVarNameTextBox(CGEditorContext *cgEd, Rectangle bounds, char *text, i
 {
     if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_V))
     {
-        cgEd->hasChanged = true;
         cgEd->hasChangedInLastFrame = true;
         const char *clipboard = GetClipboardText();
         if (clipboard)
@@ -223,7 +222,6 @@ void HandleVarNameTextBox(CGEditorContext *cgEd, Rectangle bounds, char *text, i
             text[len] = (char)key;
             text[len + 1] = '\0';
             hasNameChanged = true;
-            cgEd->hasChanged = true;
             cgEd->hasChangedInLastFrame = true;
         }
     }
@@ -239,7 +237,6 @@ void HandleVarNameTextBox(CGEditorContext *cgEd, Rectangle bounds, char *text, i
             {
                 text[len - 1] = '\0';
                 hasNameChanged = true;
-                cgEd->hasChanged = true;
                 cgEd->hasChangedInLastFrame = true;
             }
             backspaceTimer = 0.5f;
@@ -255,7 +252,6 @@ void HandleVarNameTextBox(CGEditorContext *cgEd, Rectangle bounds, char *text, i
                 {
                     text[len - 1] = '\0';
                     hasNameChanged = true;
-                    cgEd->hasChanged = true;
                     cgEd->hasChangedInLastFrame = true;
                 }
                 backspaceTimer = 0.05f;
@@ -386,7 +382,6 @@ void HandleLiteralNodeField(CGEditorContext *cgEd, GraphContext *graph, int curr
         {
             if (type == PIN_FIELD_BOOL)
             {
-                cgEd->hasChanged = true;
                 cgEd->hasChangedInLastFrame = true;
                 if (strcmp(graph->pins[currPinIndex].textFieldValue, "false") == 0 || strcmp(graph->pins[currPinIndex].textFieldValue, "") == 0)
                 {
@@ -409,7 +404,6 @@ void HandleLiteralNodeField(CGEditorContext *cgEd, GraphContext *graph, int curr
             case PIN_FIELD_NUM:
                 if (graph->pins[currPinIndex].textFieldValue[0] == '\0')
                 {
-                    cgEd->hasChanged = true;
                     cgEd->hasChangedInLastFrame = true;
                     strmac(graph->pins[currPinIndex].textFieldValue, 2, "0");
                 }
@@ -417,7 +411,6 @@ void HandleLiteralNodeField(CGEditorContext *cgEd, GraphContext *graph, int curr
             case PIN_FIELD_STRING:
                 if (graph->pins[currPinIndex].textFieldValue[0] == '\0')
                 {
-                    cgEd->hasChanged = true;
                     cgEd->hasChangedInLastFrame = true;
                     strmac(graph->pins[currPinIndex].textFieldValue, 1, "");
                 }
@@ -425,7 +418,6 @@ void HandleLiteralNodeField(CGEditorContext *cgEd, GraphContext *graph, int curr
             case PIN_FIELD_COLOR:
                 if (strlen(graph->pins[currPinIndex].textFieldValue) != 8)
                 {
-                    cgEd->hasChanged = true;
                     cgEd->hasChangedInLastFrame = true;
                     strmac(graph->pins[currPinIndex].textFieldValue, 9, "00000000");
                 }
@@ -505,7 +497,6 @@ void HandleLiteralNodeField(CGEditorContext *cgEd, GraphContext *graph, int curr
 
                 if (validClipboard)
                 {
-                    cgEd->hasChanged = true;
                     cgEd->hasChangedInLastFrame = true;
                     strmac(graph->pins[currPinIndex].textFieldValue, MAX_VARIABLE_NAME_SIZE, "%s%s", graph->pins[currPinIndex].textFieldValue, clipboard);
                 }
@@ -525,7 +516,6 @@ void HandleLiteralNodeField(CGEditorContext *cgEd, GraphContext *graph, int curr
 
             if (validKey)
             {
-                cgEd->hasChanged = true;
                 cgEd->hasChangedInLastFrame = true;
                 if (type == PIN_FIELD_COLOR && len >= 8)
                 {
@@ -541,7 +531,6 @@ void HandleLiteralNodeField(CGEditorContext *cgEd, GraphContext *graph, int curr
                 type == PIN_FIELD_NUM &&
                 !graph->pins[currPinIndex].isFloat)
             {
-                cgEd->hasChanged = true;
                 cgEd->hasChangedInLastFrame = true;
                 graph->pins[currPinIndex].textFieldValue[len] = (char)key;
                 graph->pins[currPinIndex].textFieldValue[len + 1] = '\0';
@@ -555,7 +544,6 @@ void HandleLiteralNodeField(CGEditorContext *cgEd, GraphContext *graph, int curr
         static bool backspaceHeld = false;
         if (IsKeyDown(KEY_BACKSPACE))
         {
-            cgEd->hasChanged = true;
             cgEd->hasChangedInLastFrame = true;
             if (!backspaceHeld)
             {
@@ -603,7 +591,6 @@ void HandleLiteralNodeField(CGEditorContext *cgEd, GraphContext *graph, int curr
             case PIN_FIELD_NUM:
                 if (graph->pins[currPinIndex].textFieldValue[0] == '\0')
                 {
-                    cgEd->hasChanged = true;
                     cgEd->hasChangedInLastFrame = true;
                     strmac(graph->pins[currPinIndex].textFieldValue, 2, "0");
                 }
@@ -611,7 +598,6 @@ void HandleLiteralNodeField(CGEditorContext *cgEd, GraphContext *graph, int curr
             case PIN_FIELD_STRING:
                 if (graph->pins[currPinIndex].textFieldValue[0] == '\0')
                 {
-                    cgEd->hasChanged = true;
                     cgEd->hasChangedInLastFrame = true;
                     strmac(graph->pins[currPinIndex].textFieldValue, 1, "");
                 }
@@ -619,7 +605,6 @@ void HandleLiteralNodeField(CGEditorContext *cgEd, GraphContext *graph, int curr
             case PIN_FIELD_COLOR:
                 if (strlen(graph->pins[currPinIndex].textFieldValue) != 8)
                 {
-                    cgEd->hasChanged = true;
                     cgEd->hasChangedInLastFrame = true;
                     strmac(graph->pins[currPinIndex].textFieldValue, 9, "00000000");
                 }
@@ -677,7 +662,6 @@ void HandleKeyNodeField(CGEditorContext *cgEd, GraphContext *graph, int currPinI
         {
             if (IsKeyPressed(key))
             {
-                cgEd->hasChanged = true;
                 cgEd->hasChangedInLastFrame = true;
                 graph->pins[currPinIndex].pickedOption = key;
                 cgEd->nodeFieldPinFocused = -1;
@@ -838,7 +822,6 @@ void HandleDropdownMenu(GraphContext *graph, int currPinIndex, int hoveredNodeIn
             {
                 graph->pins[currPinIndex].pickedOption = j;
                 cgEd->nodeDropdownFocused = -1;
-                cgEd->hasChanged = true;
                 cgEd->hasChangedInLastFrame = true;
             }
         }
@@ -1177,7 +1160,6 @@ void DrawNodes(CGEditorContext *cgEd, GraphContext *graph)
         {
             CreateLink(graph, cgEd->lastClickedPin, graph->pins[hoveredPinIndex]);
             cgEd->lastClickedPin = INVALID_PIN;
-            cgEd->hasChanged = true;
             cgEd->hasChangedInLastFrame = true;
         }
     }
@@ -1189,7 +1171,6 @@ void DrawNodes(CGEditorContext *cgEd, GraphContext *graph)
     {
         RemoveConnections(graph, graph->pins[hoveredPinIndex].id);
         cgEd->menuOpen = false;
-        cgEd->hasChanged = true;
         cgEd->hasChangedInLastFrame = true;
     }
 
@@ -1221,7 +1202,6 @@ void DrawNodes(CGEditorContext *cgEd, GraphContext *graph)
     {
         DeleteNode(graph, nodeToDelete);
         cgEd->menuOpen = false;
-        cgEd->hasChanged = true;
         cgEd->hasChangedInLastFrame = true;
         return;
     }
@@ -1387,7 +1367,6 @@ const char *DrawNodeMenu(CGEditorContext *cgEd, RenderTexture2D view)
                 if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
                 {
                     cgEd->delayFrames = true;
-                    cgEd->hasChanged = true;
                     cgEd->hasChangedInLastFrame = true;
                     cgEd->menuOpen = false;
                     cgEd->nodeMenuSearch[0] = '\0';
@@ -1465,7 +1444,6 @@ const char *DrawNodeMenu(CGEditorContext *cgEd, RenderTexture2D view)
                 if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
                 {
                     cgEd->delayFrames = true;
-                    cgEd->hasChanged = true;
                     cgEd->hasChangedInLastFrame = true;
                     cgEd->menuOpen = false;
                     return subMenuItems[cgEd->hoveredItem][j];
@@ -1518,7 +1496,6 @@ void HandleDragging(CGEditorContext *cgEd, GraphContext *graph)
         float newY = cgEd->mousePos.y - dragOffset.y;
         if (newX != graph->nodes[cgEd->draggingNodeIndex].position.x || newY != graph->nodes[cgEd->draggingNodeIndex].position.y)
         {
-            cgEd->hasChanged = true;
             cgEd->hasChangedInLastFrame = true;
         }
         graph->nodes[cgEd->draggingNodeIndex].position.x = newX;
