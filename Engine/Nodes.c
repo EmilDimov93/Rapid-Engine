@@ -161,7 +161,7 @@ Pin CreatePin(GraphContext *graph, int nodeID, bool isInput, PinType type, int i
         strmac(pin.textFieldValue, 9, "00000000");
         break;
     case PIN_FIELD_KEY:
-        strmac(pin.textFieldValue, 5, "NONE");
+        pin.pickedOption = -1;
         break;
     default:
         break;

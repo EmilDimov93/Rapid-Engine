@@ -637,7 +637,7 @@ void HandleKeyNodeField(CGEditorContext *cgEd, GraphContext *graph, int currPinI
     Rectangle textbox = {
         graph->pins[currPinIndex].position.x - 6,
         graph->pins[currPinIndex].position.y - 10,
-        cgEd->nodeFieldPinFocused == currPinIndex ? 110 : MeasureTextEx(cgEd->font, graph->pins[currPinIndex].textFieldValue, 20, 0).x + 10,
+        cgEd->nodeFieldPinFocused == currPinIndex ? 110 : MeasureTextEx(cgEd->font, GetKeyboardKeyName(graph->pins[currPinIndex].pickedOption), 20, 0).x + 10,
         24};
 
     if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
@@ -648,22 +648,12 @@ void HandleKeyNodeField(CGEditorContext *cgEd, GraphContext *graph, int currPinI
         }
         else if (cgEd->nodeFieldPinFocused == currPinIndex)
         {
-            if (graph->pins[currPinIndex].textFieldValue[0] == '\0')
-            {
-                strmac(graph->pins[currPinIndex].textFieldValue, 5, "NONE");
-                graph->pins[currPinIndex].pickedOption = -1;
-            }
             cgEd->nodeFieldPinFocused = -1;
         }
     }
 
     DrawRectangleRec(textbox, (cgEd->nodeFieldPinFocused == currPinIndex) ? LIGHTGRAY : GRAY);
     DrawRectangleLinesEx(textbox, 1, WHITE);
-
-    const char *originalText = graph->pins[currPinIndex].textFieldValue;
-    const char *text = originalText;
-
-    static char truncated[256];
 
     if (cgEd->nodeFieldPinFocused == currPinIndex)
     {
@@ -678,7 +668,7 @@ void HandleKeyNodeField(CGEditorContext *cgEd, GraphContext *graph, int currPinI
     }
     else
     {
-        DrawTextEx(cgEd->font, text, (Vector2){textbox.x + 5, textbox.y + 4}, 20, 0, BLACK);
+        DrawTextEx(cgEd->font, GetKeyboardKeyName(graph->pins[currPinIndex].pickedOption), (Vector2){textbox.x + 5, textbox.y + 4}, 20, 0, BLACK);
     }
 
     if (cgEd->nodeFieldPinFocused == currPinIndex)
@@ -689,7 +679,6 @@ void HandleKeyNodeField(CGEditorContext *cgEd, GraphContext *graph, int currPinI
             {
                 cgEd->hasChanged = true;
                 cgEd->hasChangedInLastFrame = true;
-                strmac(graph->pins[currPinIndex].textFieldValue, MAX_KEY_NAME_SIZE, GetKeyboardKeyName(key));
                 graph->pins[currPinIndex].pickedOption = key;
                 cgEd->nodeFieldPinFocused = -1;
                 break;

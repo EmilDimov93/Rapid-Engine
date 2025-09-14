@@ -1784,6 +1784,10 @@ bool HandleGameScreen(InterpreterContext *intp, RuntimeGraphContext *graph, Vect
         KeyboardKey key = graph->nodes[nodeIndex].inputPins[0]->pickedOption;
         KeyAction action = graph->nodes[nodeIndex].inputPins[1]->pickedOption;
 
+        if(key == -1){
+            continue;
+        }
+
         bool triggered = false;
         switch (action)
         {

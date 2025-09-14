@@ -610,8 +610,14 @@ static inline NodeType StringToNodeType(const char strType[])
 
 static inline char *GetKeyboardKeyName(KeyboardKey key)
 {
-    if (key >= 'a' && key <= 'z')
+    if(key == -1){
+        return "NONE";
+    }
+
+    if (key >= 'a' && key <= 'z'){
         key -= 32;
+    }
+
     switch (key)
     {
     case KEY_APOSTROPHE:
