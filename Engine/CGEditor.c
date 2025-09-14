@@ -1268,7 +1268,7 @@ const char *DrawNodeMenu(CGEditorContext *cgEd, RenderTexture2D view)
     const char *subMenuItems[][9] = {
         {"Create number", "Create string", "Create bool", "Create color", "", "", "", "", ""},
         {"Event Start", "Event Tick", "Event On Button", "Create Custom Event", "Call Custom Event", "", "", "", ""},
-        {"Get variable", "Get Screen Width", "Get Screen Height", "Get Mouse X", "Get Mouse Y", "Get Random Number", "", "", ""},
+        {"Get variable", "Get Screen Width", "Get Screen Height", "Get Mouse Positon", "Get Screen Center", "Get Random Number", "", "", ""},
         {"Set variable", "Set Background", "Set FPS", "", "", "", "", "", ""},
         {"Branch", "Loop", "Delay", "Flip Flop", "Break", "Return", "", "", ""},
         {"Create sprite", "Spawn sprite", "Destroy sprite", "Set Sprite Position", "Set Sprite Rotation", "Set Sprite Texture", "Set Sprite Size", "Move To", "Force"},

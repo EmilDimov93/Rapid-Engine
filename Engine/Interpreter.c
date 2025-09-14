@@ -196,6 +196,8 @@ void UpdateSpecialValues(InterpreterContext *intp, Vector2 mousePos, Rectangle s
     intp->values[SPECIAL_VALUE_MOUSE_Y].number = mousePos.y;
     intp->values[SPECIAL_VALUE_SCREEN_WIDTH].number = screenBoundary.width;
     intp->values[SPECIAL_VALUE_SCREEN_HEIGHT].number = screenBoundary.height;
+    intp->values[SPECIAL_VALUE_SCREEN_CENTER_X].number = screenBoundary.x + screenBoundary.width / 2;
+    intp->values[SPECIAL_VALUE_SCREEN_CENTER_Y].number = screenBoundary.y + screenBoundary.height / 2;
 }
 
 RuntimeGraphContext ConvertToRuntimeGraph(GraphContext *graph, InterpreterContext *intp)
@@ -335,6 +337,8 @@ RuntimeGraphContext ConvertToRuntimeGraph(GraphContext *graph, InterpreterContex
     intp->values[SPECIAL_VALUE_MOUSE_Y] = (Value){.type = VAL_NUMBER, .number = 0, .name = strmac(NULL, MAX_VARIABLE_NAME_SIZE, "Mouse Y")};
     intp->values[SPECIAL_VALUE_SCREEN_WIDTH] = (Value){.type = VAL_NUMBER, .number = 0, .name = strmac(NULL, MAX_VARIABLE_NAME_SIZE, "Screen Width")};
     intp->values[SPECIAL_VALUE_SCREEN_HEIGHT] = (Value){.type = VAL_NUMBER, .number = 0, .name = strmac(NULL, MAX_VARIABLE_NAME_SIZE, "Screen Height")};
+    intp->values[SPECIAL_VALUE_SCREEN_CENTER_X] = (Value){.type = VAL_NUMBER, .number = 0, .name = strmac(NULL, MAX_VARIABLE_NAME_SIZE, "Screen Center X")};
+    intp->values[SPECIAL_VALUE_SCREEN_CENTER_Y] = (Value){.type = VAL_NUMBER, .number = 0, .name = strmac(NULL, MAX_VARIABLE_NAME_SIZE, "Screen Center Y")};
     intp->valueCount = SPECIAL_VALUES_COUNT;
 
     intp->components = calloc(totalComponents + 1, sizeof(SceneComponent));
@@ -583,20 +587,30 @@ RuntimeGraphContext ConvertToRuntimeGraph(GraphContext *graph, InterpreterContex
             }
             continue;
         case NODE_GET_SCREEN_WIDTH:
-            if (node->outputPins[0])
+            if (node->outputPins[0]){
                 node->outputPins[0]->valueIndex = SPECIAL_VALUE_SCREEN_WIDTH;
+            }
             continue;
         case NODE_GET_SCREEN_HEIGHT:
-            if (node->outputPins[0])
+            if (node->outputPins[0]){
                 node->outputPins[0]->valueIndex = SPECIAL_VALUE_SCREEN_HEIGHT;
+            }
             continue;
-        case NODE_GET_MOUSE_X:
-            if (node->outputPins[0])
+        case NODE_GET_MOUSE_POSITION:
+            if (node->outputPins[0]){
                 node->outputPins[0]->valueIndex = SPECIAL_VALUE_MOUSE_X;
+            }
+            if (node->outputPins[1]){
+                node->outputPins[1]->valueIndex = SPECIAL_VALUE_MOUSE_Y;
+            }
             continue;
-        case NODE_GET_MOUSE_Y:
-            if (node->outputPins[0])
-                node->outputPins[0]->valueIndex = SPECIAL_VALUE_MOUSE_Y;
+        case NODE_GET_SCREEN_CENTER:
+            if (node->outputPins[0]){
+                node->outputPins[0]->valueIndex = SPECIAL_VALUE_SCREEN_CENTER_X;
+            }
+            if (node->outputPins[1]){
+                node->outputPins[1]->valueIndex = SPECIAL_VALUE_SCREEN_CENTER_Y;
+            }
             continue;
         default:
             continue;
@@ -1780,7 +1794,6 @@ bool HandleGameScreen(InterpreterContext *intp, RuntimeGraphContext *graph, Vect
 
     if (intp->loopNodeIndex == -1)
     {
-        printf("a\n");
         AddToLogFromInterpreter(intp, (Value){.type = VAL_STRING, .string = "No loop node found{I211}"}, LOG_LEVEL_ERROR);
         return false;
     }

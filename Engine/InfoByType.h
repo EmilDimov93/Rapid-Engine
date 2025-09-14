@@ -26,8 +26,8 @@ typedef enum
     NODE_GET_VARIABLE = 300,
     NODE_GET_SCREEN_WIDTH = 301,
     NODE_GET_SCREEN_HEIGHT = 302,
-    NODE_GET_MOUSE_X = 303,
-    NODE_GET_MOUSE_Y = 304,
+    NODE_GET_MOUSE_POSITION = 303,
+    NODE_GET_SCREEN_CENTER = 304,
     NODE_GET_RANDOM_NUMBER = 305,
 
     NODE_SET_VARIABLE = 400,
@@ -168,8 +168,8 @@ static InfoByType NodeInfoByType[] = {
     {NODE_GET_VARIABLE, 1, 1, 140, 70, {60, 100, 159, 200}, false, {PIN_VARIABLE}, {PIN_UNKNOWN_VALUE}, {"Variable"}, {"Get value"}},
     {NODE_GET_SCREEN_WIDTH, 0, 1, 250, 70, {60, 100, 159, 200}, false, {0}, {PIN_NUM}, {0}, {"Screen Width"}},
     {NODE_GET_SCREEN_HEIGHT, 0, 1, 265, 70, {60, 100, 159, 200}, false, {0}, {PIN_NUM}, {0}, {"Screen Height"}},
-    {NODE_GET_MOUSE_X, 0, 1, 200, 70, {60, 100, 159, 200}, false, {0}, {PIN_NUM}, {0}, {"Mouse X"}},
-    {NODE_GET_MOUSE_Y, 0, 1, 200, 70, {60, 100, 159, 200}, false, {0}, {PIN_NUM}, {0}, {"Mouse Y"}},
+    {NODE_GET_MOUSE_POSITION, 0, 2, 220, 95, {60, 100, 159, 200}, false, {0}, {PIN_NUM, PIN_NUM}, {0}, {"Mouse X", "Mouse Y"}},
+    {NODE_GET_SCREEN_CENTER, 0, 2, 160, 95, {60, 100, 159, 200}, false, {0}, {PIN_NUM, PIN_NUM}, {0}, {"Center X", "Center Y"}, false}, // not implemented
     {NODE_GET_RANDOM_NUMBER, 0, 1, 260, 70, {60, 100, 159, 200}, false, {0}, {0}, {0}, {0}, true}, // not implemented
 
     {NODE_SET_VARIABLE, 3, 2, 140, 130, {60, 100, 159, 200}, false, {PIN_FLOW, PIN_VARIABLE, PIN_UNKNOWN_VALUE}, {PIN_FLOW, PIN_NONE}, {"Prev", "Variable", "Set value"}, {"Next", ""}}, // shouldn't have PIN_NONE
@@ -405,10 +405,10 @@ static inline const char *NodeTypeToString(NodeType type)
         return "Get screen width";
     case NODE_GET_SCREEN_HEIGHT:
         return "Get screen height";
-    case NODE_GET_MOUSE_X:
-        return "Get mouse X";
-    case NODE_GET_MOUSE_Y:
-        return "Get mouse Y";
+    case NODE_GET_MOUSE_POSITION:
+        return "Get mouse pos";
+    case NODE_GET_SCREEN_CENTER:
+        return "Get center";
     case NODE_GET_RANDOM_NUMBER:
         return "Get random num";
 
@@ -515,10 +515,10 @@ static inline NodeType StringToNodeType(const char strType[])
         return NODE_GET_SCREEN_WIDTH;
     if (strcmp(strType, "Get Screen Height") == 0)
         return NODE_GET_SCREEN_HEIGHT;
-    if (strcmp(strType, "Get Mouse X") == 0)
-        return NODE_GET_MOUSE_X;
-    if (strcmp(strType, "Get Mouse Y") == 0)
-        return NODE_GET_MOUSE_Y;
+    if (strcmp(strType, "Get Mouse Positon") == 0)
+        return NODE_GET_MOUSE_POSITION;
+    if (strcmp(strType, "Get Screen Center") == 0)
+        return NODE_GET_SCREEN_CENTER;
     if (strcmp(strType, "Get Random Number") == 0)
         return NODE_GET_RANDOM_NUMBER;
 
