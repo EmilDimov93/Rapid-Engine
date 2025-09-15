@@ -1878,24 +1878,6 @@ bool HandleUICollisions(EngineContext *eng, GraphContext *graph, InterpreterCont
         eng->windowResizeButton = RESIZING_WINDOW_NONE;
     }
 
-    if (eng->sideBarMiddleY >= eng->screenHeight - eng->bottomBarHeight - 60 - eng->sideBarHalfSnap * 40)
-    {
-        eng->sideBarMiddleY = eng->screenHeight - eng->bottomBarHeight - 60 - eng->sideBarHalfSnap * 40;
-    }
-    else if (eng->sideBarMiddleY <= 5)
-    {
-        eng->sideBarMiddleY = 5;
-    }
-    if (eng->screenWidth < eng->screenHeight || eng->screenWidth < 400)
-    {
-        eng->sideBarWidth = 80;
-        eng->sideBarHalfSnap = true;
-    }
-    if (eng->bottomBarHeight >= 3 * eng->screenHeight / 4)
-    {
-        eng->bottomBarHeight = 3 * eng->screenHeight / 4;
-    }
-
     if (eng->menuResizeButton != RESIZING_MENU_NONE)
     {
         if (IsMouseButtonUp(MOUSE_LEFT_BUTTON))
@@ -1915,7 +1897,7 @@ bool HandleUICollisions(EngineContext *eng, GraphContext *graph, InterpreterCont
             eng->bottomBarHeight -= mouseDelta.y;
             if (eng->bottomBarHeight <= 150)
             {
-                eng->bottomBarHeight = 150; // comeback
+                eng->bottomBarHeight = 150;
             }
             else if (eng->bottomBarHeight < 3 * eng->screenHeight / 4)
             {
@@ -1949,6 +1931,24 @@ bool HandleUICollisions(EngineContext *eng, GraphContext *graph, InterpreterCont
         default:
             break;
         }
+    }
+
+    if (eng->sideBarMiddleY >= eng->screenHeight - eng->bottomBarHeight - 60 - eng->sideBarHalfSnap * 40)
+    {
+        eng->sideBarMiddleY = eng->screenHeight - eng->bottomBarHeight - 60 - eng->sideBarHalfSnap * 40;
+    }
+    else if (eng->sideBarMiddleY <= 5)
+    {
+        eng->sideBarMiddleY = 5;
+    }
+    if (eng->screenWidth < eng->screenHeight || eng->screenWidth < 400)
+    {
+        eng->sideBarWidth = 80;
+        eng->sideBarHalfSnap = true;
+    }
+    if (eng->bottomBarHeight >= 3 * eng->screenHeight / 4)
+    {
+        eng->bottomBarHeight = 3 * eng->screenHeight / 4;
     }
 
     for (int i = 0; i < eng->uiElementCount; i++)

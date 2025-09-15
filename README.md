@@ -3,8 +3,7 @@
 ![GitHub commits](https://img.shields.io/github/commit-activity/m/EmilDimov93/Rapid-Engine)
 ![Total Commits](https://img.shields.io/github/commit-activity/t/EmilDimov93/Rapid-Engine)
 ![GitHub last commit](https://img.shields.io/github/last-commit/EmilDimov93/Rapid-Engine)
-![GitHub license](https://img.shields.io/github/license/EmilDimov93/Rapid-Engine)
-![Zlib License](https://img.shields.io/badge/license-Zlib-lightgrey)
+![46 Nodes](https://img.shields.io/badge/Nodes-46-purple)
 ![GitHub repo size](https://img.shields.io/github/repo-size/EmilDimov93/Rapid-Engine)
 ![C](https://img.shields.io/badge/language-C-555555?style=flat-square)
 ![Raylib](https://img.shields.io/badge/Library-Raylib-ff69b4?style=flat-square)
@@ -53,8 +52,7 @@ https://github.com/user-attachments/assets/b6dc9735-5eb8-498a-9802-c1eac80a9a4a
 | Get        | Get variable            |
 | Get        | Get Screen Width        |
 | Get        | Get Screen Height       |
-| Get        | Get Mouse X             |
-| Get        | Get Mouse Y             |
+| Get        | Get Mouse Position      |
 | Get        | Get Random Number       |
 | Set        | Set variable            |
 | Set        | Set Background          |
@@ -86,6 +84,9 @@ https://github.com/user-attachments/assets/b6dc9735-5eb8-498a-9802-c1eac80a9a4a
 | Literal    | Literal string          |
 | Literal    | Literal bool            |
 | Literal    | Literal color           |
+| Camera     | Move Camera             |
+| Camera     | Zoom Camera             |
+| Camera     | Get Camera Center       |
 
 
 ## 🧪 In Development
