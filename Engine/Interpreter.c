@@ -33,6 +33,8 @@ InterpreterContext InitInterpreterContext()
 
     intp.cameraOffset = (Vector2){0, 0};
 
+    intp.zoom = 1.0f;
+
     return intp;
 }
 

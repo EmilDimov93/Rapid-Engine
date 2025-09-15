@@ -1312,7 +1312,8 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
             strmac(temp, MAX_VARIABLE_NAME_SIZE, "%.*s", j, cutMessage);
 
             float textWidth = MeasureTextEx(eng->font, temp, 24, 2).x;
-            if (textWidth + dotsWidth < eng->sideBarWidth - 80){
+            if (textWidth + dotsWidth < eng->sideBarWidth - 80)
+            {
                 continue;
             }
 
@@ -2103,33 +2104,39 @@ int GetEngineFPS(EngineContext *eng, CGEditorContext *cgEd, InterpreterContext *
     return fps;
 }
 
-void SetEngineZoom(EngineContext *eng, CGEditorContext *cgEd)
+void SetEngineZoom(EngineContext *eng, CGEditorContext *cgEd, InterpreterContext *intp)
 {
-    if (eng->viewportMode != VIEWPORT_CG_EDITOR)
+    if (eng->viewportMode == VIEWPORT_CG_EDITOR)
     {
+        eng->zoom = cgEd->zoom;
+        float wheel = GetMouseWheelMove();
+        if (wheel != 0 && eng->isViewportFocused && !cgEd->menuOpen)
+        {
+            cgEd->delayFrames = true;
+
+            float zoom = eng->zoom;
+
+            if (wheel > 0 && zoom < 1.5f)
+            {
+                eng->zoom = zoom + 0.25f;
+            }
+
+            if (wheel < 0 && zoom > 0.5f)
+            {
+                eng->zoom = zoom - 0.25f;
+            }
+
+            cgEd->zoom = eng->zoom;
+        }
+    }
+    else if (eng->viewportMode == VIEWPORT_GAME_SCREEN)
+    {
+        eng->zoom = intp->zoom;
+    }
+    else{
         eng->zoom = 1.0f;
         cgEd->zoom = 1.0f;
-        return;
-    }
-
-    float wheel = GetMouseWheelMove();
-    if (wheel != 0 && eng->isViewportFocused && !cgEd->menuOpen)
-    {
-        cgEd->delayFrames = true;
-
-        float zoom = eng->zoom;
-
-        if (wheel > 0 && zoom < 1.5f)
-        {
-            eng->zoom = zoom + 0.25f;
-        }
-
-        if (wheel < 0 && zoom > 0.5f)
-        {
-            eng->zoom = zoom - 0.25f;
-        }
-
-        cgEd->zoom = eng->zoom;
+        intp->zoom = 1.0f;
     }
 }
 
@@ -2144,7 +2151,7 @@ int main()
     SetWindowIcon(icon);
     UnloadImage(icon);
     char fileName[MAX_FILE_NAME];
-    strmac(fileName, MAX_FILE_NAME, "%s", developerMode ? "Tetris" : HandleProjectManager());
+    strmac(fileName, MAX_FILE_NAME, "%s", DEVELOPER_MODE ? "Tetris" : HandleProjectManager());
 
     SetTargetFPS(60);
 
@@ -2219,7 +2226,7 @@ int main()
 
         SetTargetFPS(GetEngineFPS(&eng, &cgEd, &intp));
 
-        SetEngineZoom(&eng, &cgEd);
+        SetEngineZoom(&eng, &cgEd, &intp);
 
         Vector2 mouseInViewportTex = (Vector2){(eng.mousePos.x - eng.sideBarWidth) / eng.zoom + (eng.viewportTex.texture.width - (eng.isGameFullscreen ? eng.screenWidth : eng.viewportWidth / eng.zoom)) / 2.0f, eng.mousePos.y / eng.zoom + (eng.viewportTex.texture.height - (eng.isGameFullscreen ? eng.screenHeight : eng.viewportHeight / eng.zoom)) / 2.0f};
 
@@ -2248,7 +2255,8 @@ int main()
                 cgEd.isFirstFrame = false;
                 break;
             }
-            if(eng.wasViewportFocusedLastFrame && !eng.isViewportFocused){
+            if (eng.wasViewportFocusedLastFrame && !eng.isViewportFocused)
+            {
                 cgEd.isDraggingScreen = false;
                 cgEd.draggingNodeIndex = -1;
                 cgEd.nodeGlareTime = 0;
@@ -2308,7 +2316,8 @@ int main()
                 cgEd.shouldOpenHitboxEditor = false;
                 eng.viewportMode = VIEWPORT_HITBOX_EDITOR;
             }
-            if(cgEd.hasFatalErrorOccurred){
+            if (cgEd.hasFatalErrorOccurred)
+            {
                 EmergencyExit(&eng, &cgEd, &intp);
             }
 

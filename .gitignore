@@ -3,3 +3,4 @@ RE_resources/
 RapidEngine.exe
 engine_log.txt
 error_codes.txt
+Makefile

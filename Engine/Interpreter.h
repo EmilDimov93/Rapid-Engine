@@ -195,6 +195,8 @@ typedef struct
 
     bool isPaused;
 
+    float zoom;
+
     Vector2 cameraOffset;
 
     RuntimeGraphContext *runtimeGraph;
