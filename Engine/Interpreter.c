@@ -1297,6 +1297,9 @@ void InterpretStringOfNodes(int lastNodeIndex, InterpreterContext *intp, Runtime
     }
     case NODE_ZOOM_CAMERA:
     {
+        if(node->inputPins[1]->valueIndex != -1){
+            intp->zoom += intp->values[node->inputPins[1]->valueIndex].number;
+        }
         break;
     }
     }
@@ -1358,20 +1361,6 @@ void DrawComponents(InterpreterContext *intp)
 {
     ClearBackground(intp->backgroundColor);
 
-    /*if(IsKeyPressed(KEY_M)){
-        intp->cameraOffset.x += 100;
-    }
-    if(IsKeyPressed(KEY_N)){
-        intp->cameraOffset.x -= 100;
-    }
-
-    if(IsKeyPressed(KEY_G)){
-        intp->cameraOffset.y -= 100;
-    }
-    if(IsKeyPressed(KEY_B)){
-        intp->cameraOffset.y += 100;
-    }*/
-
     for (int i = 0; i < intp->componentCount; i++)
     {
         SceneComponent component = intp->components[i];
@@ -1385,8 +1374,8 @@ void DrawComponents(InterpreterContext *intp)
                 component.sprite.texture,
                 (Rectangle){0, 0, (float)component.sprite.texture.width, (float)component.sprite.texture.height},
                 (Rectangle){
-                    component.sprite.position.x + intp->cameraOffset.x,
-                    component.sprite.position.y + intp->cameraOffset.y,
+                    component.sprite.position.x - intp->cameraOffset.x,
+                    component.sprite.position.y - intp->cameraOffset.y,
                     (float)component.sprite.width,
                     (float)component.sprite.height},
                 (Vector2){component.sprite.width / 2.0f, component.sprite.height / 2.0f},
@@ -1396,7 +1385,7 @@ void DrawComponents(InterpreterContext *intp)
             {
                 DrawHitbox(
                     &component.sprite.hitbox,
-                    Vector2Add(component.sprite.position, intp->cameraOffset),
+                    Vector2Subtract(component.sprite.position, intp->cameraOffset),
                     (Vector2){component.sprite.width, component.sprite.height},
                     (Vector2){component.sprite.texture.width, component.sprite.texture.height},
                     RED);
@@ -1410,10 +1399,10 @@ void DrawComponents(InterpreterContext *intp)
             case PROP_TEXTURE:
                 break; //
             case PROP_RECTANGLE:
-                DrawRectangle(component.prop.position.x + intp->cameraOffset.x, component.prop.position.y + intp->cameraOffset.y, component.prop.width, component.prop.height, component.prop.color);
+                DrawRectangle(component.prop.position.x - intp->cameraOffset.x, component.prop.position.y - intp->cameraOffset.y, component.prop.width, component.prop.height, component.prop.color);
                 break;
             case PROP_CIRCLE:
-                DrawCircle(component.prop.position.x + intp->cameraOffset.x, component.prop.position.y + intp->cameraOffset.y, component.prop.width / 2, component.prop.color);
+                DrawCircle(component.prop.position.x - intp->cameraOffset.x, component.prop.position.y - intp->cameraOffset.y, component.prop.width / 2, component.prop.color);
                 break;
             default:
                 AddToLogFromInterpreter(intp, (Value){.type = VAL_STRING, .string = "Out of bounds enum{O201}"}, LOG_LEVEL_ERROR);
@@ -1422,7 +1411,7 @@ void DrawComponents(InterpreterContext *intp)
             {
                 DrawHitbox(
                     &component.prop.hitbox,
-                    Vector2Add(component.prop.position, intp->cameraOffset),
+                    Vector2Subtract(component.prop.position, intp->cameraOffset),
                     (Vector2){component.prop.width, component.prop.height},
                     (Vector2){component.prop.width, component.prop.height},
                     RED);

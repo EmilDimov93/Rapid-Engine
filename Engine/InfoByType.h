@@ -211,9 +211,10 @@ static InfoByType NodeInfoByType[] = {
     {NODE_LITERAL_BOOL, 1, 1, 180, 70, {110, 85, 40, 200}, false, {PIN_FIELD_BOOL}, {PIN_BOOL}, {""}, {"bool"}},
     {NODE_LITERAL_COLOR, 1, 1, 200, 70, {110, 85, 40, 200}, false, {PIN_FIELD_COLOR}, {PIN_COLOR}, {""}, {"color"}},
 
-    {NODE_MOVE_CAMERA, 3, 1, 190, 125, {200, 130, 60, 200}, false, {PIN_FLOW, PIN_NUM, PIN_NUM}, {PIN_FLOW}, {"Prev", "Camera Delta X", "Camera Delta Y"}, {"Next"}},
-    {NODE_ZOOM_CAMERA, 2, 1, 160, 95, {200, 130, 60, 200}, false, {PIN_FLOW, PIN_NUM}, {PIN_FLOW}, {"Prev", "Zoom Delta"}, {"Next"}, true}, // not implemented
-    {NODE_GET_CAMERA_CENTER, 0, 2, 160, 95, {200, 130, 60, 200}, false, {0}, {PIN_NUM, PIN_NUM}, {0}, {"Center X", "Center Y"}}};
+    {NODE_MOVE_CAMERA, 3, 1, 190, 130, {200, 130, 60, 200}, false, {PIN_FLOW, PIN_NUM, PIN_NUM}, {PIN_FLOW}, {"Prev", "Camera Delta X", "Camera Delta Y"}, {"Next"}},
+    {NODE_ZOOM_CAMERA, 2, 1, 190, 100, {200, 130, 60, 200}, false, {PIN_FLOW, PIN_NUM}, {PIN_FLOW}, {"Prev", "Zoom Delta"}, {"Next"}},
+    {NODE_GET_CAMERA_CENTER, 0, 2, 160, 100, {200, 130, 60, 200}, false, {0}, {PIN_NUM, PIN_NUM}, {0}, {"Center X", "Center Y"}}
+};
 
 static inline int NodeTypeToIndex(NodeType type)
 {
