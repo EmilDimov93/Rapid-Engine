@@ -372,7 +372,8 @@ void HandleLiteralNodeField(CGEditorContext *cgEd, GraphContext *graph, int curr
 
     bool isFieldHovered = CheckCollisionPointRec(cgEd->mousePos, textbox);
 
-    if(isFieldHovered && type != PIN_FIELD_BOOL){
+    if (isFieldHovered && type != PIN_FIELD_BOOL)
+    {
         cgEd->cursor = MOUSE_CURSOR_IBEAM;
     }
 
@@ -430,13 +431,16 @@ void HandleLiteralNodeField(CGEditorContext *cgEd, GraphContext *graph, int curr
     }
 
     Color textboxColor;
-    if(cgEd->nodeFieldPinFocused == currPinIndex){
+    if (cgEd->nodeFieldPinFocused == currPinIndex)
+    {
         textboxColor = LIGHTGRAY;
     }
-    else if(isFieldHovered){
+    else if (isFieldHovered)
+    {
         textboxColor = WHITE;
     }
-    else{
+    else
+    {
         textboxColor = GRAY;
     }
 
@@ -526,15 +530,18 @@ void HandleLiteralNodeField(CGEditorContext *cgEd, GraphContext *graph, int curr
                 graph->pins[currPinIndex].textFieldValue[len] = (char)key;
                 graph->pins[currPinIndex].textFieldValue[len + 1] = '\0';
             }
-            else if (
-                key == 46 &&
-                type == PIN_FIELD_NUM &&
-                !graph->pins[currPinIndex].isFloat)
+            else if (type == PIN_FIELD_NUM)
             {
-                cgEd->hasChangedInLastFrame = true;
-                graph->pins[currPinIndex].textFieldValue[len] = (char)key;
-                graph->pins[currPinIndex].textFieldValue[len + 1] = '\0';
-                graph->pins[currPinIndex].isFloat = true;
+                if (key == KEY_PERIOD && !graph->pins[currPinIndex].isFloat)
+                {
+                    cgEd->hasChangedInLastFrame = true;
+                    graph->pins[currPinIndex].textFieldValue[len] = (char)key;
+                    graph->pins[currPinIndex].textFieldValue[len + 1] = '\0';
+                    graph->pins[currPinIndex].isFloat = true;
+                }
+                if(key == KEY_MINUS && len == 0){
+                    graph->pins[currPinIndex].textFieldValue[len] = (char)key;
+                }
             }
 
             key = GetCharPressed();
@@ -1540,7 +1547,8 @@ void DrawFullTexture(CGEditorContext *cgEd, GraphContext *graph, RenderTexture2D
         if (strcmp(createdNode, "NULL") != 0)
         {
             NodeType newNodeType = StringToNodeType(createdNode);
-            if(!CreateNode(graph, newNodeType, cgEd->rightClickPos)){
+            if (!CreateNode(graph, newNodeType, cgEd->rightClickPos))
+            {
                 cgEd->hasFatalErrorOccurred = true;
                 AddToLogFromEditor(cgEd, "Error creating node{C230}", LOG_LEVEL_ERROR);
                 return;
@@ -1605,7 +1613,8 @@ void HandleEditor(CGEditorContext *cgEd, GraphContext *graph, RenderTexture2D *v
 
     if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_V) && cgEd->copiedNode.id != -1 && cgEd->nodeFieldPinFocused == -1 && cgEd->editingNodeNameIndex == -1)
     {
-        if(!DuplicateNode(graph, &cgEd->copiedNode, cgEd->mousePos)){
+        if (!DuplicateNode(graph, &cgEd->copiedNode, cgEd->mousePos))
+        {
             cgEd->hasFatalErrorOccurred = true;
             AddToLogFromEditor(cgEd, "Error duplicating node{C231}", LOG_LEVEL_ERROR);
             return;
