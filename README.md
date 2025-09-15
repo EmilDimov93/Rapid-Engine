@@ -10,7 +10,7 @@
 
 **Rapid Engine** is a game engine written in C, using the Raylib library, that includes a visual scripting language called **CoreGraph**. Designed for speed and full control with node-based logic.
 
-<img width="750" height="414" alt="image" src="https://github.com/user-attachments/assets/7c00ec84-614d-4019-a29f-3f93347fde6c" />
+<img width="375" height="207" alt="image" src="https://github.com/user-attachments/assets/7c00ec84-614d-4019-a29f-3f93347fde6c" />
 
 
 ## ⚡ Core Features
