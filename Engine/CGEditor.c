@@ -707,7 +707,7 @@ void HandleDropdownMenu(GraphContext *graph, int currPinIndex, int hoveredNodeIn
     Rectangle dropdown = {graph->pins[currPinIndex].position.x - 6, graph->pins[currPinIndex].position.y - 10, options.boxWidth, 24};
 
     DrawRectangleRec(dropdown, GRAY);
-    const char *text = AddEllipsis(cgEd->font, options.options[graph->pins[currPinIndex].pickedOption], 20, options.boxWidth - 20, false);
+    const char *text = AddEllipsis(cgEd->font, options.options[graph->pins[currPinIndex].pickedOption], 20, options.boxWidth - 15, false);
     DrawTextEx(cgEd->font, text, (Vector2){(graph->pins[currPinIndex].type == PIN_VARIABLE || graph->pins[currPinIndex].type == PIN_SPRITE_VARIABLE) ? dropdown.x + 20 : dropdown.x + 3, dropdown.y + 3}, 20, 0, BLACK);
     DrawRectangleLinesEx(dropdown, 1, WHITE);
     if (graph->pins[currPinIndex].type == PIN_VARIABLE || graph->pins[currPinIndex].type == PIN_SPRITE_VARIABLE)
@@ -795,7 +795,7 @@ void HandleDropdownMenu(GraphContext *graph, int currPinIndex, int hoveredNodeIn
             }
             Rectangle option = {dropdown.x, dropdown.y - displayedVarsCounter * 30, dropdown.width, 30};
             DrawRectangleRec(option, RAYWHITE);
-            const char *text = AddEllipsis(cgEd->font, options.options[j], 20, options.boxWidth - 10, false);
+            const char *text = AddEllipsis(cgEd->font, options.options[j], 20, options.boxWidth - 15, false);
             DrawTextEx(cgEd->font, text, (Vector2){(graph->pins[currPinIndex].type == PIN_VARIABLE || graph->pins[currPinIndex].type == PIN_SPRITE_VARIABLE) ? option.x + 20 : option.x + 3, option.y + 3}, 20, 0, BLACK);
             DrawRectangleLinesEx(option, 1, DARKGRAY);
 
