@@ -1,4 +1,4 @@
-# <img width="32" height="32" alt="icon" src="https://github.com/user-attachments/assets/5ac34f0a-58cc-4559-b915-caa5beaf684c" /> Rapid Engine
+# <img width="48" height="48" alt="icon" src="https://github.com/user-attachments/assets/5ac34f0a-58cc-4559-b915-caa5beaf684c" /> Rapid Engine
 
 
 ![GitHub commits](https://img.shields.io/github/commit-activity/m/EmilDimov93/Rapid-Engine)
@@ -11,9 +11,7 @@
 
 **Rapid Engine** is a game engine written in C, using the Raylib library, that includes a visual scripting language called **CoreGraph**. Designed for speed and full control with node-based logic.
 
-<p align="center">
-  <img width="610" height="368" alt="my-image" src="https://github.com/user-attachments/assets/a0e63453-6cea-45d2-8531-56069eba1c72" />
-</p>
+<img width="610" height="368" alt="my-image" src="https://github.com/user-attachments/assets/a0e63453-6cea-45d2-8531-56069eba1c72" />
 
 
 ## ⚡ Core Features
