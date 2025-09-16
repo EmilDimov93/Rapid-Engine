@@ -1,4 +1,5 @@
-# Rapid Engine
+# <img width="32" height="32" alt="icon" src="https://github.com/user-attachments/assets/5ac34f0a-58cc-4559-b915-caa5beaf684c" /> Rapid Engine
+
 
 ![GitHub commits](https://img.shields.io/github/commit-activity/m/EmilDimov93/Rapid-Engine)
 ![Total Commits](https://img.shields.io/github/commit-activity/t/EmilDimov93/Rapid-Engine)
@@ -25,7 +26,9 @@
 - ✂️ Hitbox editor: Visual polygon hitbox creation
 - 💾 Save, build and run systems
 
-https://github.com/user-attachments/assets/b6dc9735-5eb8-498a-9802-c1eac80a9a4a
+<p align="center">
+  https://github.com/user-attachments/assets/b6dc9735-5eb8-498a-9802-c1eac80a9a4a
+</p>
 
 
 ## 🔍 In-Depth Capabilities
@@ -112,6 +115,6 @@ gcc Engine/unity.c Engine/raylib/lib/libraylib.a -o ./RapidEngine.exe -Iraylib/i
 ./RapidEngine.exe
 ```
 
-## Support
+## 📧 Support
 
 For assistance, contact [support@rapidengine.eu](mailto:support@rapidengine.eu)
