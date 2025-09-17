@@ -1,4 +1,4 @@
-# Rapid Engine <img width="32" height="32" alt="icon" src="https://github.com/user-attachments/assets/3d30905d-cf88-496b-9ae7-2724e718359c" />
+# <img width="44" height="32" alt="icon" src="https://github.com/user-attachments/assets/6cd5b753-9a23-4d7a-ba2c-b50ac599b534" /> Rapid Engine
 
 
 ![GitHub commits](https://img.shields.io/github/commit-activity/m/EmilDimov93/Rapid-Engine)
