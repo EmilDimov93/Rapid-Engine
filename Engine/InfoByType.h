@@ -69,7 +69,9 @@ typedef enum
 
     NODE_MOVE_CAMERA = 1100,
     NODE_ZOOM_CAMERA = 1101,
-    NODE_GET_CAMERA_CENTER = 1102
+    NODE_GET_CAMERA_CENTER = 1102,
+
+    NODE_PLAY_SOUND = 1200
 } NodeType;
 
 typedef enum
@@ -213,7 +215,9 @@ static InfoByType NodeInfoByType[] = {
 
     {NODE_MOVE_CAMERA, 3, 1, 190, 130, {200, 130, 60, 200}, false, {PIN_FLOW, PIN_NUM, PIN_NUM}, {PIN_FLOW}, {"Prev", "Camera Delta X", "Camera Delta Y"}, {"Next"}},
     {NODE_ZOOM_CAMERA, 2, 1, 190, 100, {200, 130, 60, 200}, false, {PIN_FLOW, PIN_NUM}, {PIN_FLOW}, {"Prev", "Zoom Delta"}, {"Next"}},
-    {NODE_GET_CAMERA_CENTER, 0, 2, 160, 100, {200, 130, 60, 200}, false, {0}, {PIN_NUM, PIN_NUM}, {0}, {"Center X", "Center Y"}}
+    {NODE_GET_CAMERA_CENTER, 0, 2, 160, 100, {200, 130, 60, 200}, false, {0}, {PIN_NUM, PIN_NUM}, {0}, {"Center X", "Center Y"}},
+
+    {NODE_PLAY_SOUND, 2, 1, 190, 100, {150, 255, 80, 200}, false, {PIN_FLOW, PIN_NUM, PIN_NUM}, {PIN_FLOW}, {"Prev", "Sound file name"}, {"Next"}, true} // not implemented
 };
 
 static inline int NodeTypeToIndex(NodeType type)
@@ -491,6 +495,9 @@ static inline const char *NodeTypeToString(NodeType type)
     case NODE_GET_CAMERA_CENTER:
         return "Get center";
 
+    case NODE_PLAY_SOUND:
+        return "Play Sound";
+
     default:
         return "invalid";
     }
@@ -605,6 +612,9 @@ static inline NodeType StringToNodeType(const char strType[])
         return NODE_ZOOM_CAMERA;
     if (strcmp(strType, "Get Camera Center") == 0)
         return NODE_GET_CAMERA_CENTER;
+
+    if(strcmp(strType, "Play Sound") == 0)
+        return NODE_PLAY_SOUND;
 
     return NODE_UNKNOWN;
 }

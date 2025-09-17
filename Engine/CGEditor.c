@@ -1256,7 +1256,7 @@ const char *DrawNodeMenu(CGEditorContext *cgEd, RenderTexture2D view)
     Color BorderColor = {200, 200, 200, 255};
     Color HighlightColor = {80, 80, 80, 255};
 
-    const char *menuItems[] = {"Variable", "Event", "Get", "Set", "Flow", "Sprite", "Draw Prop", "Logical", "Debug", "Literal", "Camera"};
+    const char *menuItems[] = {"Variable", "Event", "Get", "Set", "Flow", "Sprite", "Draw Prop", "Logical", "Debug", "Literal", "Camera", "Sound"};
     const char *subMenuItems[][10] = {
         {"Create number", "Create string", "Create bool", "Create color"},
         {"Event Start", "Event Tick", "Event On Button", "Create Custom Event", "Call Custom Event"},
@@ -1268,9 +1268,11 @@ const char *DrawNodeMenu(CGEditorContext *cgEd, RenderTexture2D view)
         {"Comparison", "Gate", "Arithmetic"},
         {"Print To Log", "Draw Debug Line"},
         {"Literal number", "Literal string", "Literal bool", "Literal color"},
-        {"Move Camera", "Zoom Camera", "Get Camera Center"}};
+        {"Move Camera", "Zoom Camera", "Get Camera Center"},
+        {"Play Sound"}
+    };
     int menuItemCount = sizeof(menuItems) / sizeof(menuItems[0]);
-    int subMenuCounts[] = {4, 5, 5, 3, 6, 9, 3, 3, 2, 4, 3};
+    int subMenuCounts[] = {4, 5, 5, 3, 6, 9, 3, 3, 2, 4, 3, 1};
 
     if (IsMouseButtonPressed(MOUSE_RIGHT_BUTTON))
     {

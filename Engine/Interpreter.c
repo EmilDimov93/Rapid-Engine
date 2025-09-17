@@ -863,17 +863,18 @@ int DoesForceExist(InterpreterContext *intp, int id)
 
 void InterpretStringOfNodes(int lastNodeIndex, InterpreterContext *intp, RuntimeGraphContext *graph, int outFlowPinIndexInNode)
 {
-    if (lastNodeIndex < 0 || lastNodeIndex >= graph->nodeCount)
+    if (lastNodeIndex < 0 || lastNodeIndex >= graph->nodeCount){
         return;
+    }
 
-    if (graph->nodes[lastNodeIndex].outputCount == 0)
+    if (graph->nodes[lastNodeIndex].outputCount == 0 || graph->nodes[lastNodeIndex].outputPins[outFlowPinIndexInNode]->nextNodeIndex == -1){
         return;
+    }
 
-    if (graph->nodes[lastNodeIndex].outputPins[outFlowPinIndexInNode]->nextNodeIndex == -1)
-        return;
     int currNodeIndex = graph->nodes[lastNodeIndex].outputPins[outFlowPinIndexInNode]->nextNodeIndex;
-    if (currNodeIndex < 0 || currNodeIndex >= graph->nodeCount)
+    if (currNodeIndex < 0 || currNodeIndex >= graph->nodeCount){
         return;
+    }
 
     RuntimeNode *node = &graph->nodes[currNodeIndex];
 
@@ -1489,8 +1490,7 @@ bool CheckCollisionPolyCircle(Hitbox *h, Vector2 centerPos, Vector2 spriteSize, 
     return false;
 }
 
-bool CheckCollisionPolyRect(Polygon *poly, Vector2 polyPos, Vector2 polySize, Vector2 polyTexSize,
-                            Vector2 rectPos, Vector2 rectSize)
+bool CheckCollisionPolyRect(Polygon *poly, Vector2 polyPos, Vector2 polySize, Vector2 polyTexSize, Vector2 rectPos, Vector2 rectSize)
 {
     float scaleX = polySize.x / polyTexSize.x;
     float scaleY = polySize.y / polyTexSize.y;
@@ -1701,8 +1701,8 @@ void HandleForces(InterpreterContext *intp)
 
         f->duration -= deltaTime;
 
-        CollisionResult a = CheckCollisions(intp, f->componentIndex);
-        if (a == COLLISION_RESULT_BLOCKING || a == COLLISION_RESULT_EVENT_AND_BLOCKING)
+        CollisionResult result = CheckCollisions(intp, f->componentIndex);
+        if (result == COLLISION_RESULT_BLOCKING || result == COLLISION_RESULT_EVENT_AND_BLOCKING)
         {
             *pos = prevPos;
         }
@@ -1804,7 +1804,7 @@ bool HandleGameScreen(InterpreterContext *intp, RuntimeGraphContext *graph, Vect
 
     if (intp->loopNodeIndex == -1)
     {
-        AddToLogFromInterpreter(intp, (Value){.type = VAL_STRING, .string = "No loop node found{I211}"}, LOG_LEVEL_ERROR);
+        AddToLogFromInterpreter(intp, (Value){.type = VAL_STRING, .string = "No tick node found{I211}"}, LOG_LEVEL_ERROR);
         return false;
     }
     else
