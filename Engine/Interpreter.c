@@ -40,8 +40,9 @@ InterpreterContext InitInterpreterContext()
 
 void FreeRuntimeGraphContext(RuntimeGraphContext *rg)
 {
-    if (!rg)
+    if (!rg){
         return;
+    }
 
     if (rg->nodes)
     {
@@ -150,7 +151,7 @@ char *ValueTypeToString(ValueType type)
 
 char *ValueToString(Value value)
 {
-    char *temp = malloc(MAX_LOG_MESSAGE_SIZE);
+    static char temp[MAX_LOG_MESSAGE_SIZE];
     if (!temp)
         return NULL;
     switch (value.type)
@@ -861,8 +862,9 @@ int DoesForceExist(InterpreterContext *intp, int id)
 {
     for (int i = 0; i < intp->forcesCount; i++)
     {
-        if (intp->forces[i].id == id)
+        if (intp->forces[i].id == id){
             return i;
+        }
     }
     return -1;
 }
