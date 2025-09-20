@@ -117,14 +117,11 @@ void DrawBackgroundGrid(CGEditorContext *cgEd, int gridSpacing, RenderTexture2D 
     static Vector2 offset;
     if (cgEd->isDraggingScreen)
     {
-        Vector2 delta = Vector2Scale(GetMouseDelta(), 1.0f / cgEd->zoom);
-        offset = Vector2Subtract(offset, Vector2Scale(delta, 1.0f / cgEd->zoom));
+        offset = Vector2Subtract(offset, Vector2Scale(GetMouseDelta(), 1.0f / (cgEd->zoom * cgEd->zoom)));
     }
-    gridSpacing /= cgEd->zoom;
+    gridSpacing = (gridSpacing / cgEd->zoom > 1) ? gridSpacing / cgEd->zoom : 1;
 
-    const float maxOffset = 100000.0f;
-    offset.x = Clamp(offset.x, -maxOffset, maxOffset);
-    offset.y = Clamp(offset.y, -maxOffset, maxOffset);
+    offset = Vector2Clamp(offset, (Vector2){-VIEWPORT_BORDER, -VIEWPORT_BORDER}, (Vector2){VIEWPORT_BORDER, VIEWPORT_BORDER});
 
     float worldLeft = offset.x;
     float worldTop = offset.y;
@@ -154,12 +151,16 @@ void DrawBackgroundGrid(CGEditorContext *cgEd, int gridSpacing, RenderTexture2D 
 
 void DrawCurvedWire(Vector2 outputPos, Vector2 inputPos, float thickness, Color color)
 {
+    const float inputOffset = 12.0f;
+    const float outputOffset = 17.0f;
+
     float distance = fabsf(inputPos.x - outputPos.x);
     float controlOffset = distance * 0.5f;
 
-    DrawLineEx(outputPos, (Vector2){outputPos.x + 17, outputPos.y}, thickness, color);
-    outputPos.x += 17;
-    inputPos.x -= 12;
+    DrawLineEx(outputPos, (Vector2){outputPos.x + outputOffset, outputPos.y}, thickness, color);
+
+    inputPos.x -= inputOffset;
+    outputPos.x += outputOffset;
 
     Vector2 p0 = outputPos;
     Vector2 p1 = {outputPos.x + controlOffset, outputPos.y};
@@ -167,7 +168,7 @@ void DrawCurvedWire(Vector2 outputPos, Vector2 inputPos, float thickness, Color 
     Vector2 p3 = inputPos;
 
     Vector2 prev = p0;
-    int segments = 40;
+    int segments = Clamp((int)(distance / 8.0f), 12, 64);
 
     for (int i = 1; i <= segments; i++)
     {
@@ -182,7 +183,7 @@ void DrawCurvedWire(Vector2 outputPos, Vector2 inputPos, float thickness, Color 
         prev = point;
     }
 
-    DrawLineEx(inputPos, (Vector2){inputPos.x + 12, inputPos.y}, thickness, color);
+    DrawLineEx(inputPos, (Vector2){inputPos.x + inputOffset, inputPos.y}, thickness, color);
 }
 
 void HandleVarNameTextBox(CGEditorContext *cgEd, Rectangle bounds, char *text, int index, GraphContext *graph)
@@ -217,7 +218,7 @@ void HandleVarNameTextBox(CGEditorContext *cgEd, Rectangle bounds, char *text, i
     if (key > 0)
     {
         int len = strlen(text);
-        if (len < MAX_VARIABLE_NAME_SIZE && key >= 32 && key <= 125)
+        if (len < MAX_VARIABLE_NAME_SIZE - 1 && key >= 32 && key <= 125)
         {
             text[len] = (char)key;
             text[len + 1] = '\0';
@@ -265,27 +266,44 @@ void HandleVarNameTextBox(CGEditorContext *cgEd, Rectangle bounds, char *text, i
 
     if (hasNameChanged)
     {
-        graph->variables = NULL;
+        for (int i = 0; i < graph->variablesCount; i++)
+        {
+            free(graph->variables[i]);
+        }
+        free(graph->variables);
+        free(graph->variableTypes);
 
-        graph->variables = malloc(sizeof(char *) * 1);
-        graph->variableTypes = malloc(sizeof(NodeType) * 1);
+        int newCount = 1;
+        for (int i = 0; i < graph->nodeCount; i++)
+        {
+            if (graph->nodes[i].type == NODE_CREATE_NUMBER ||
+                graph->nodes[i].type == NODE_CREATE_STRING ||
+                graph->nodes[i].type == NODE_CREATE_BOOL ||
+                graph->nodes[i].type == NODE_CREATE_COLOR ||
+                graph->nodes[i].type == NODE_CREATE_SPRITE)
+            {
+                newCount++;
+            }
+        }
+
+        graph->variables = malloc(sizeof(char *) * newCount);
+        graph->variableTypes = malloc(sizeof(NodeType) * newCount);
+
         graph->variables[0] = strmac(NULL, 5, "NONE");
         graph->variableTypes[0] = NODE_UNKNOWN;
-        graph->variablesCount = 1;
 
+        int idx = 1;
         for (int i = 0; i < graph->nodeCount; i++)
         {
             if (graph->nodes[i].type == NODE_CREATE_NUMBER || graph->nodes[i].type == NODE_CREATE_STRING || graph->nodes[i].type == NODE_CREATE_BOOL || graph->nodes[i].type == NODE_CREATE_COLOR || graph->nodes[i].type == NODE_CREATE_SPRITE)
             {
-                graph->variables = realloc(graph->variables, sizeof(char *) * (graph->variablesCount + 1));
-                graph->variables[graph->variablesCount] = strmac(NULL, MAX_VARIABLE_NAME_SIZE, "%s", graph->nodes[i].name);
-
-                graph->variableTypes = realloc(graph->variableTypes, sizeof(int) * (graph->variablesCount + 1));
-                graph->variableTypes[graph->variablesCount] = graph->nodes[i].type;
-
-                graph->variablesCount++;
+                graph->variables[idx] = strmac(NULL, MAX_VARIABLE_NAME_SIZE, "%s", graph->nodes[i].name);
+                graph->variableTypes[idx] = graph->nodes[i].type;
+                idx++;
             }
         }
+
+        graph->variablesCount = newCount;
     }
 }
 
@@ -362,7 +380,9 @@ void HandleLiteralNodeField(CGEditorContext *cgEd, GraphContext *graph, int curr
 
     float textWidth = MeasureTextEx(cgEd->font, graph->pins[currPinIndex].textFieldValue, 20, 0).x;
     if (cgEd->nodeFieldPinFocused == currPinIndex)
+    {
         textWidth += MeasureTextEx(cgEd->font, "_", 20, 0).x;
+    }
     float boxWidth = (textWidth + 10 > limit) ? limit : textWidth + 10;
     if (boxWidth < 25)
     {
@@ -384,7 +404,7 @@ void HandleLiteralNodeField(CGEditorContext *cgEd, GraphContext *graph, int curr
             if (type == PIN_FIELD_BOOL)
             {
                 cgEd->hasChangedInLastFrame = true;
-                if (strcmp(graph->pins[currPinIndex].textFieldValue, "false") == 0 || strcmp(graph->pins[currPinIndex].textFieldValue, "") == 0)
+                if (strcmp(graph->pins[currPinIndex].textFieldValue, "false") == 0 || graph->pins[currPinIndex].textFieldValue[0] == '\0')
                 {
                     strmac(graph->pins[currPinIndex].textFieldValue, 5, "true");
                 }
@@ -430,27 +450,13 @@ void HandleLiteralNodeField(CGEditorContext *cgEd, GraphContext *graph, int curr
         }
     }
 
-    Color textboxColor;
-    if (cgEd->nodeFieldPinFocused == currPinIndex)
-    {
-        textboxColor = LIGHTGRAY;
-    }
-    else if (isFieldHovered)
-    {
-        textboxColor = WHITE;
-    }
-    else
-    {
-        textboxColor = GRAY;
-    }
+    Color textboxColor = (cgEd->nodeFieldPinFocused == currPinIndex) ? LIGHTGRAY : (isFieldHovered ? WHITE : GRAY);
 
     DrawRectangleRec(textbox, textboxColor);
     DrawRectangleLinesEx(textbox, 1, WHITE);
 
     const char *originalText = graph->pins[currPinIndex].textFieldValue;
     const char *text = originalText;
-
-    static char truncated[MAX_LITERAL_NODE_FIELD_SIZE];
 
     if (boxWidth == limit)
     {
@@ -461,16 +467,9 @@ void HandleLiteralNodeField(CGEditorContext *cgEd, GraphContext *graph, int curr
     {
         static float blinkTime = 0;
         blinkTime += GetFrameTime();
-        if (fmodf(blinkTime, 1.0f) < 0.5f)
-        {
-            char blinking[MAX_LITERAL_NODE_FIELD_SIZE];
-            strmac(blinking, MAX_LITERAL_NODE_FIELD_SIZE, "%s_", text);
-            DrawTextEx(cgEd->font, blinking, (Vector2){textbox.x + 5, textbox.y + 4}, 20, 0, BLACK);
-        }
-        else
-        {
-            DrawTextEx(cgEd->font, text, (Vector2){textbox.x + 5, textbox.y + 4}, 20, 0, BLACK);
-        }
+        char blinking[MAX_LITERAL_NODE_FIELD_SIZE];
+        strmac(blinking, MAX_LITERAL_NODE_FIELD_SIZE, "%s%c", text, (fmodf(blinkTime, 1.0f) < 0.5f) ? '_' : '\0');
+        DrawTextEx(cgEd->font, cgEd->nodeFieldPinFocused == currPinIndex ? blinking : text, (Vector2){textbox.x + 5, textbox.y + 4}, 20, 0, BLACK);
     }
     else
     {
@@ -496,6 +495,7 @@ void HandleLiteralNodeField(CGEditorContext *cgEd, GraphContext *graph, int curr
                     if (!validSymbol)
                     {
                         validClipboard = false;
+                        break;
                     }
                 }
 
@@ -532,14 +532,15 @@ void HandleLiteralNodeField(CGEditorContext *cgEd, GraphContext *graph, int curr
             }
             else if (type == PIN_FIELD_NUM)
             {
-                if (key == KEY_PERIOD && !graph->pins[currPinIndex].isFloat)
+                if (key == KEY_PERIOD && !graph->pins[currPinIndex].isNumFloat)
                 {
                     cgEd->hasChangedInLastFrame = true;
                     graph->pins[currPinIndex].textFieldValue[len] = (char)key;
                     graph->pins[currPinIndex].textFieldValue[len + 1] = '\0';
-                    graph->pins[currPinIndex].isFloat = true;
+                    graph->pins[currPinIndex].isNumFloat = true;
                 }
-                if(key == KEY_MINUS && len == 0){
+                if (key == KEY_MINUS && len == 0)
+                {
                     graph->pins[currPinIndex].textFieldValue[len] = (char)key;
                 }
             }
@@ -560,7 +561,7 @@ void HandleLiteralNodeField(CGEditorContext *cgEd, GraphContext *graph, int curr
                     if (type == PIN_FIELD_NUM &&
                         graph->pins[currPinIndex].textFieldValue[len - 1] == 46)
                     {
-                        graph->pins[currPinIndex].isFloat = false;
+                        graph->pins[currPinIndex].isNumFloat = false;
                     }
                     graph->pins[currPinIndex].textFieldValue[len - 1] = '\0';
                 }
@@ -578,7 +579,7 @@ void HandleLiteralNodeField(CGEditorContext *cgEd, GraphContext *graph, int curr
                         if (type == PIN_FIELD_NUM &&
                             graph->pins[currPinIndex].textFieldValue[len - 1] == 46)
                         {
-                            graph->pins[currPinIndex].isFloat = false;
+                            graph->pins[currPinIndex].isNumFloat = false;
                         }
                         graph->pins[currPinIndex].textFieldValue[len - 1] = '\0';
                     }
@@ -1269,8 +1270,7 @@ const char *DrawNodeMenu(CGEditorContext *cgEd, RenderTexture2D view)
         {"Print To Log", "Draw Debug Line"},
         {"Literal number", "Literal string", "Literal bool", "Literal color"},
         {"Move Camera", "Zoom Camera", "Get Camera Center"},
-        {"Play Sound"}
-    };
+        {"Play Sound"}};
     int menuItemCount = sizeof(menuItems) / sizeof(menuItems[0]);
     int subMenuCounts[] = {4, 5, 5, 3, 6, 9, 3, 3, 2, 4, 3, 1};
 
@@ -1482,7 +1482,7 @@ void HandleDragging(CGEditorContext *cgEd, GraphContext *graph)
 {
     static Vector2 dragOffset;
 
-    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && cgEd->draggingNodeIndex == -1)
+    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && cgEd->draggingNodeIndex == -1 && cgEd->nodeFieldPinFocused == -1)
     {
         cgEd->fps = 140;
         for (int i = 0; i < graph->nodeCount; i++)
@@ -1498,7 +1498,7 @@ void HandleDragging(CGEditorContext *cgEd, GraphContext *graph)
         cgEd->isDraggingScreen = true;
         return;
     }
-    else if (IsMouseButtonDown(MOUSE_LEFT_BUTTON) && cgEd->draggingNodeIndex != -1)
+    else if (IsMouseButtonDown(MOUSE_LEFT_BUTTON) && cgEd->draggingNodeIndex != -1 && cgEd->nodeFieldPinFocused == -1)
     {
         cgEd->cursor = MOUSE_CURSOR_RESIZE_ALL;
         float newX = cgEd->mousePos.x - dragOffset.x;

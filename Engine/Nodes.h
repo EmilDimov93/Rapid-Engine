@@ -35,7 +35,8 @@ typedef struct Pin
     int posInNode;
     bool isInput;
     Vector2 position;
-    bool isFloat;
+
+    bool isNumFloat;
 
     union{
         int pickedOption;
