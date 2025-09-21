@@ -1,13 +1,13 @@
 # <img width="44" height="32" alt="icon" src="https://github.com/user-attachments/assets/6cd5b753-9a23-4d7a-ba2c-b50ac599b534" /> Rapid Engine
 
 
-![GitHub commits](https://img.shields.io/github/commit-activity/m/EmilDimov93/Rapid-Engine)
-![Total Commits](https://img.shields.io/github/commit-activity/t/EmilDimov93/Rapid-Engine)
-![GitHub last commit](https://img.shields.io/github/last-commit/EmilDimov93/Rapid-Engine)
-![46 Nodes](https://img.shields.io/badge/Nodes-46-purple)
-![GitHub repo size](https://img.shields.io/github/repo-size/EmilDimov93/Rapid-Engine)
-![C](https://img.shields.io/badge/language-C-555555?style=flat-square)
-![Raylib](https://img.shields.io/badge/Library-Raylib-ff69b4?style=flat-square)
+![GitHub commits](https://img.shields.io/github/commit-activity/m/EmilDimov93/Rapid-Engine?style=plastic)
+![Total Commits](https://img.shields.io/github/commit-activity/t/EmilDimov93/Rapid-Engine?style=plastic)
+![GitHub last commit](https://img.shields.io/github/last-commit/EmilDimov93/Rapid-Engine?style=plastic)
+![46 Nodes](https://img.shields.io/badge/Nodes-46-purple?style=plastic)
+![RapidEngine stars](https://img.shields.io/github/stars/EmilDimov93/Rapid-Engine?style=plastic&label=⭐%20Rapid%20Engine&color=FFD700)
+![C](https://img.shields.io/badge/language-C-555555?style=plastic)
+![Raylib](https://img.shields.io/badge/Library-Raylib-ff69b4?style=plastic)
 
 **Rapid Engine** is a game engine written in C, using the Raylib library, that includes a visual scripting language called **CoreGraph**. Designed for speed and full control with node-based logic.
 
