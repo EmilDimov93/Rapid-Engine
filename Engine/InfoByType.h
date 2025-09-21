@@ -222,13 +222,36 @@ static InfoByType NodeInfoByType[] = {
 
 static inline int NodeTypeToIndex(NodeType type)
 {
-    for (int i = 0; i < sizeof(NodeInfoByType)/sizeof(NodeInfoByType[0]); i++) {
-        if (NodeInfoByType[i].type == type){
+    for (int i = 0; i < sizeof(NodeInfoByType) / sizeof(NodeInfoByType[0]); i++)
+    {
+        if (NodeInfoByType[i].type == type)
+        {
             return i;
         }
     }
     return -1;
 }
+
+#define subMenuItemCount 10
+
+const char *menuItems[] = {"Variable", "Event", "Get", "Set", "Flow", "Sprite", "Draw Prop", "Logical", "Debug", "Literal", "Camera", "Sound"};
+const char *subMenuItems[][subMenuItemCount] = {
+    {"Create number", "Create string", "Create bool", "Create color"},
+    {"Event Start", "Event Tick", "Event On Button", "Create Custom Event", "Call Custom Event"},
+    {"Get variable", "Get Screen Width", "Get Screen Height", "Get Mouse Positon", "Get Random Number"},
+    {"Set variable", "Set Background", "Set FPS"},
+    {"Branch", "Loop", "Delay", "Flip Flop", "Break", "Return"},
+    {"Create sprite", "Spawn sprite", "Destroy sprite", "Set Sprite Position", "Set Sprite Rotation", "Set Sprite Texture", "Set Sprite Size", "Move To", "Force"},
+    {"Draw Prop Texture", "Draw Prop Rectangle", "Draw Prop Circle"},
+    {"Comparison", "Gate", "Arithmetic"},
+    {"Print To Log", "Draw Debug Line"},
+    {"Literal number", "Literal string", "Literal bool", "Literal color"},
+    {"Move Camera", "Zoom Camera", "Get Camera Center"},
+    {"Play Sound"}};
+
+#define menuItemCount sizeof(menuItems) / sizeof(menuItems[0])
+
+const int subMenuCounts[] = {4, 5, 5, 3, 6, 9, 3, 3, 2, 4, 3, 1};
 
 typedef struct DropdownOptionsByPinType
 {
@@ -605,7 +628,7 @@ static inline NodeType StringToNodeType(const char strType[])
         return NODE_LITERAL_BOOL;
     if (strcmp(strType, "Literal color") == 0)
         return NODE_LITERAL_COLOR;
-    
+
     if (strcmp(strType, "Move Camera") == 0)
         return NODE_MOVE_CAMERA;
     if (strcmp(strType, "Zoom Camera") == 0)
@@ -613,7 +636,7 @@ static inline NodeType StringToNodeType(const char strType[])
     if (strcmp(strType, "Get Camera Center") == 0)
         return NODE_GET_CAMERA_CENTER;
 
-    if(strcmp(strType, "Play Sound") == 0)
+    if (strcmp(strType, "Play Sound") == 0)
         return NODE_PLAY_SOUND;
 
     return NODE_UNKNOWN;
@@ -621,11 +644,13 @@ static inline NodeType StringToNodeType(const char strType[])
 
 static inline char *GetKeyboardKeyName(KeyboardKey key)
 {
-    if(key == -1){
+    if (key == -1)
+    {
         return "NONE";
     }
 
-    if (key >= 'a' && key <= 'z'){
+    if (key >= 'a' && key <= 'z')
+    {
         key -= 32;
     }
 

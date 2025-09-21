@@ -1253,26 +1253,7 @@ const char *Search(const char *haystack, const char *needle)
 const char *DrawNodeMenu(CGEditorContext *cgEd, RenderTexture2D view)
 {
     Color MenuColor = {50, 50, 50, 255};
-    Color ScrollIndicatorColor = {150, 150, 150, 255};
-    Color BorderColor = {200, 200, 200, 255};
     Color HighlightColor = {80, 80, 80, 255};
-
-    const char *menuItems[] = {"Variable", "Event", "Get", "Set", "Flow", "Sprite", "Draw Prop", "Logical", "Debug", "Literal", "Camera", "Sound"};
-    const char *subMenuItems[][10] = {
-        {"Create number", "Create string", "Create bool", "Create color"},
-        {"Event Start", "Event Tick", "Event On Button", "Create Custom Event", "Call Custom Event"},
-        {"Get variable", "Get Screen Width", "Get Screen Height", "Get Mouse Positon", "Get Random Number"},
-        {"Set variable", "Set Background", "Set FPS"},
-        {"Branch", "Loop", "Delay", "Flip Flop", "Break", "Return"},
-        {"Create sprite", "Spawn sprite", "Destroy sprite", "Set Sprite Position", "Set Sprite Rotation", "Set Sprite Texture", "Set Sprite Size", "Move To", "Force"},
-        {"Draw Prop Texture", "Draw Prop Rectangle", "Draw Prop Circle"},
-        {"Comparison", "Gate", "Arithmetic"},
-        {"Print To Log", "Draw Debug Line"},
-        {"Literal number", "Literal string", "Literal bool", "Literal color"},
-        {"Move Camera", "Zoom Camera", "Get Camera Center"},
-        {"Play Sound"}};
-    int menuItemCount = sizeof(menuItems) / sizeof(menuItems[0]);
-    int subMenuCounts[] = {4, 5, 5, 3, 6, 9, 3, 3, 2, 4, 3, 1};
 
     if (IsMouseButtonPressed(MOUSE_RIGHT_BUTTON))
     {
@@ -1285,66 +1266,71 @@ const char *DrawNodeMenu(CGEditorContext *cgEd, RenderTexture2D view)
     int len = strlen(cgEd->nodeMenuSearch);
 
     int key = GetCharPressed();
-    while (key > 0 && len < MAX_SEARCH_BAR_FIELD_SIZE)
+    while (key > 0 && len < MAX_SEARCH_BAR_FIELD_SIZE - 1)
     {
-        if (len < 63 && key >= 32 && key <= 125)
+        if (key >= 32 && key <= 125)
         {
             cgEd->nodeMenuSearch[len] = (char)key;
             cgEd->nodeMenuSearch[len + 1] = '\0';
+            len++;
         }
         key = GetCharPressed();
     }
     if (IsKeyPressed(KEY_BACKSPACE))
     {
-        int len = strlen(cgEd->nodeMenuSearch);
         if (len > 0)
+        {
             cgEd->nodeMenuSearch[len - 1] = '\0';
+            len--;
+        }
     }
 
-    typedef struct
-    {
-        int parentIndex;
-        int subIndex;
-    } SearchResult;
-    SearchResult filtered[128];
+    int filteredItemCategory[subMenuItemCount * menuItemCount];
+    int filteredItem[subMenuItemCount * menuItemCount];
     int filteredCount = 0;
 
     for (int i = 0; i < menuItemCount; i++)
     {
         for (int j = 0; j < subMenuCounts[i]; j++)
         {
-            if (strlen(cgEd->nodeMenuSearch) == 0 ||
-                (subMenuItems[i][j][0] != '\0' && Search(subMenuItems[i][j], cgEd->nodeMenuSearch)))
+            if (strlen(cgEd->nodeMenuSearch) == 0 || (subMenuItems[i][j][0] != '\0' && Search(subMenuItems[i][j], cgEd->nodeMenuSearch)))
             {
-                if (filteredCount < menuItemCount)
-                    filtered[filteredCount++] = (SearchResult){i, j};
+                if (filteredCount < subMenuItemCount * menuItemCount)
+                {
+                    filteredItemCategory[filteredCount] = i;
+                    filteredItem[filteredCount] = j;
+                    filteredCount++;
+                }
             }
         }
     }
 
-    if (strlen(cgEd->nodeMenuSearch) == 0)
+    if (cgEd->nodeMenuSearch[0] == '\0')
+    {
         filteredCount = menuItemCount;
+    }
 
-    if (GetMouseWheelMove() < 0 && cgEd->scrollIndexNodeMenu < filteredCount - MENU_VISIBLE_ITEMS)
+    int wheelMove = GetMouseWheelMove();
+
+    if (wheelMove < 0 && cgEd->scrollIndexNodeMenu < filteredCount - MENU_VISIBLE_ITEMS)
     {
         cgEd->scrollIndexNodeMenu++;
     }
-    if (GetMouseWheelMove() > 0 && cgEd->scrollIndexNodeMenu > 0)
+    else if (wheelMove > 0 && cgEd->scrollIndexNodeMenu > 0)
     {
         cgEd->scrollIndexNodeMenu--;
     }
 
     if (cgEd->createNodeMenuFirstFrame)
     {
-        cgEd->menuPosition.x = cgEd->rightClickPos.x;
-        cgEd->menuPosition.y = cgEd->rightClickPos.y;
+        cgEd->menuPosition = cgEd->rightClickPos;
         if (cgEd->menuPosition.y + menuHeight > cgEd->viewportBoundary.y + cgEd->viewportBoundary.height)
         {
-            cgEd->menuPosition.y -= menuHeight;
+            cgEd->menuPosition.y = cgEd->viewportBoundary.y + cgEd->viewportBoundary.height - menuHeight;
         }
-        if (cgEd->menuPosition.x + MENU_WIDTH > cgEd->viewportBoundary.x + cgEd->viewportBoundary.width)
+        if (cgEd->menuPosition.x + MENU_WIDTH + SUBMENU_WIDTH > cgEd->viewportBoundary.x + cgEd->viewportBoundary.width)
         {
-            cgEd->menuPosition.x -= MENU_WIDTH;
+            cgEd->menuPosition.x = cgEd->viewportBoundary.x + cgEd->viewportBoundary.width - MENU_WIDTH - SUBMENU_WIDTH;
         }
 
         Rectangle menuRect = {cgEd->menuPosition.x, cgEd->menuPosition.y + searchBarHeight + 10, MENU_WIDTH, menuHeight - searchBarHeight - 10};
@@ -1357,9 +1343,9 @@ const char *DrawNodeMenu(CGEditorContext *cgEd, RenderTexture2D view)
     }
 
     DrawRectangleRounded((Rectangle){cgEd->menuPosition.x, cgEd->menuPosition.y, MENU_WIDTH, menuHeight}, 0.1f, 8, MenuColor);
-    DrawRectangleRoundedLinesEx((Rectangle){cgEd->menuPosition.x, cgEd->menuPosition.y, MENU_WIDTH, menuHeight}, 0.1f, 8, MENU_BORDER_THICKNESS, BorderColor);
+    DrawRectangleRoundedLinesEx((Rectangle){cgEd->menuPosition.x, cgEd->menuPosition.y, MENU_WIDTH, menuHeight}, 0.1f, 8, MENU_BORDER_THICKNESS, WHITE);
 
-    if (strlen(cgEd->nodeMenuSearch) > 0)
+    if (cgEd->nodeMenuSearch[0] != '\0')
     {
         for (int i = 0; i < (int)MENU_VISIBLE_ITEMS; i++)
         {
@@ -1367,22 +1353,23 @@ const char *DrawNodeMenu(CGEditorContext *cgEd, RenderTexture2D view)
             if (listIndex >= filteredCount)
                 break;
 
-            SearchResult res = filtered[listIndex];
+            const char *pickedItemName = subMenuItems[filteredItemCategory[listIndex]][filteredItem[listIndex]];
             Rectangle itemRect = {cgEd->menuPosition.x, cgEd->menuPosition.y + searchBarHeight + 10 + i * MENU_ITEM_HEIGHT, MENU_WIDTH, MENU_ITEM_HEIGHT};
 
             if (CheckCollisionPointRec(cgEd->mousePos, itemRect))
             {
+                cgEd->cursor = MOUSE_CURSOR_POINTING_HAND;
                 DrawRectangleRec(itemRect, HighlightColor);
-                if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+                if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
                 {
                     cgEd->delayFrames = true;
                     cgEd->hasChangedInLastFrame = true;
                     cgEd->menuOpen = false;
                     cgEd->nodeMenuSearch[0] = '\0';
-                    return subMenuItems[res.parentIndex][res.subIndex];
+                    return pickedItemName;
                 }
             }
-            DrawTextEx(cgEd->font, subMenuItems[res.parentIndex][res.subIndex], (Vector2){itemRect.x + 20, itemRect.y + 12}, 25, 1, WHITE);
+            DrawTextEx(cgEd->font, pickedItemName, (Vector2){itemRect.x + 20, itemRect.y + 12}, 25, 1, WHITE);
             DrawLine(itemRect.x, itemRect.y + MENU_ITEM_HEIGHT - 1, itemRect.x + MENU_WIDTH, itemRect.y + MENU_ITEM_HEIGHT - 1, DARKGRAY);
         }
     }
@@ -1392,7 +1379,9 @@ const char *DrawNodeMenu(CGEditorContext *cgEd, RenderTexture2D view)
         {
             int listIndex = i + cgEd->scrollIndexNodeMenu;
             if (listIndex >= menuItemCount)
+            {
                 break;
+            }
 
             Rectangle itemRect = {cgEd->menuPosition.x, cgEd->menuPosition.y + searchBarHeight + 10 + i * MENU_ITEM_HEIGHT, MENU_WIDTH, MENU_ITEM_HEIGHT};
 
@@ -1413,44 +1402,36 @@ const char *DrawNodeMenu(CGEditorContext *cgEd, RenderTexture2D view)
         }
     }
 
-    float scrollTrackY = cgEd->menuPosition.y + searchBarHeight + 10 + 6;
-    float scrollTrackHeight = MENU_ITEM_HEIGHT * MENU_VISIBLE_ITEMS - 16;
-
-    int maxScroll = filteredCount - MENU_VISIBLE_ITEMS;
-    if (maxScroll < 1)
+    int maxScroll = (filteredCount > 0 ? filteredCount : menuItemCount) - MENU_VISIBLE_ITEMS;
+    if (maxScroll < 1){
         maxScroll = 1;
-
-    float scrollBarHeight = scrollTrackHeight * ((float)MENU_VISIBLE_ITEMS / ((filteredCount > 5) ? filteredCount : 1));
-    if (scrollBarHeight < 20.0f)
-        scrollBarHeight = 20.0f;
-    if (scrollBarHeight > scrollTrackHeight)
-        scrollBarHeight = scrollTrackHeight;
-
-    float scrollStep = (scrollTrackHeight - scrollBarHeight) / (maxScroll + 1);
-    float scrollBarY = scrollTrackY + cgEd->scrollIndexNodeMenu * scrollStep;
-
-    DrawRectangleRounded((Rectangle){cgEd->menuPosition.x + 2, scrollBarY, 8, scrollBarHeight}, 0.8f, 4, ScrollIndicatorColor);
-
-    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
-    {
-        cgEd->nodeMenuSearch[0] = '\0';
-        cgEd->menuOpen = false;
     }
 
-    if (strlen(cgEd->nodeMenuSearch) == 0 && cgEd->hoveredItem >= 0 && cgEd->hoveredItem < menuItemCount)
+    float scrollTrackHeight = MENU_ITEM_HEIGHT * MENU_VISIBLE_ITEMS - 16;
+
+    float scrollBarHeight = scrollTrackHeight * ((float)MENU_VISIBLE_ITEMS / ((filteredCount > 5) ? filteredCount : 1));
+    if (scrollBarHeight < 20.0f){
+        scrollBarHeight = 20.0f;
+    }
+    if (scrollBarHeight > scrollTrackHeight){
+        scrollBarHeight = scrollTrackHeight;
+    }
+
+    DrawRectangleRounded((Rectangle){cgEd->menuPosition.x + 2, cgEd->menuPosition.y + searchBarHeight + cgEd->scrollIndexNodeMenu * ((scrollTrackHeight - scrollBarHeight) / (maxScroll + 1)) + 16, 8, scrollBarHeight}, 0.8f, 4, (Color){150, 150, 150, 255});
+
+    if (cgEd->nodeMenuSearch[0] == '\0' && cgEd->hoveredItem >= 0 && cgEd->hoveredItem < menuItemCount)
     {
-        int subCount = subMenuCounts[cgEd->hoveredItem];
-        float submenuHeight = subCount * MENU_ITEM_HEIGHT;
-        DrawRectangleRounded((Rectangle){cgEd->submenuPosition.x, cgEd->submenuPosition.y, SUBMENU_WIDTH, submenuHeight}, 0.1f, 2, MenuColor);
-        DrawRectangleRoundedLinesEx((Rectangle){cgEd->submenuPosition.x, cgEd->submenuPosition.y, SUBMENU_WIDTH, submenuHeight}, 0.1f, 2, MENU_BORDER_THICKNESS, BorderColor);
+        DrawRectangleRounded((Rectangle){cgEd->submenuPosition.x, cgEd->submenuPosition.y, SUBMENU_WIDTH, subMenuCounts[cgEd->hoveredItem] * MENU_ITEM_HEIGHT}, 0.1f, 2, MenuColor);
+        DrawRectangleRoundedLinesEx((Rectangle){cgEd->submenuPosition.x, cgEd->submenuPosition.y, SUBMENU_WIDTH, subMenuCounts[cgEd->hoveredItem] * MENU_ITEM_HEIGHT}, 0.1f, 2, MENU_BORDER_THICKNESS, WHITE);
         DrawRectangleGradientH(cgEd->submenuPosition.x - 5, cgEd->submenuPosition.y + 3, 20, MENU_ITEM_HEIGHT, HighlightColor, MenuColor);
-        for (int j = 0; j < subCount; j++)
+        for (int j = 0; j < subMenuCounts[cgEd->hoveredItem]; j++)
         {
             Rectangle subItemRect = {cgEd->submenuPosition.x, cgEd->submenuPosition.y + j * MENU_ITEM_HEIGHT, SUBMENU_WIDTH, MENU_ITEM_HEIGHT};
             if (CheckCollisionPointRec(cgEd->mousePos, subItemRect))
             {
+                cgEd->cursor = MOUSE_CURSOR_POINTING_HAND;
                 DrawRectangleRounded(subItemRect, 0.2f, 2, HighlightColor);
-                if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+                if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
                 {
                     cgEd->delayFrames = true;
                     cgEd->hasChangedInLastFrame = true;
@@ -1462,20 +1443,17 @@ const char *DrawNodeMenu(CGEditorContext *cgEd, RenderTexture2D view)
         }
     }
 
-    Rectangle searchRect = {cgEd->menuPosition.x + 5, cgEd->menuPosition.y + 5, MENU_WIDTH - 10, searchBarHeight};
-    DrawRectangleRec(searchRect, DARKGRAY);
-    char buff[MAX_SEARCH_BAR_FIELD_SIZE];
-    if (cgEd->nodeMenuSearch[0] == '\0')
+    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
     {
-        strmac(buff, 7, "Search");
+        cgEd->nodeMenuSearch[0] = '\0';
+        cgEd->menuOpen = false;
     }
-    else
-    {
-        strmac(buff, MAX_SEARCH_BAR_FIELD_SIZE, cgEd->nodeMenuSearch);
-    }
-    DrawTextEx(cgEd->font, buff, (Vector2){searchRect.x + 5, searchRect.y + 5}, 20, 0, WHITE);
 
-    return "NULL";
+    DrawRectangle(cgEd->menuPosition.x + 5, cgEd->menuPosition.y + 5, MENU_WIDTH - 10, searchBarHeight, DARKGRAY);
+
+    DrawTextEx(cgEd->font, cgEd->nodeMenuSearch[0] == '\0' ? "Type to search" : cgEd->nodeMenuSearch, (Vector2){cgEd->menuPosition.x + 10, cgEd->menuPosition.y + 10}, 20, 0, WHITE);
+
+    return NULL;
 }
 
 void HandleDragging(CGEditorContext *cgEd, GraphContext *graph)
@@ -1546,7 +1524,7 @@ void DrawFullTexture(CGEditorContext *cgEd, GraphContext *graph, RenderTexture2D
     {
         const char *createdNode = DrawNodeMenu(cgEd, view);
 
-        if (strcmp(createdNode, "NULL") != 0)
+        if (createdNode != NULL)
         {
             NodeType newNodeType = StringToNodeType(createdNode);
             if (!CreateNode(graph, newNodeType, cgEd->rightClickPos))
