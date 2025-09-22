@@ -217,7 +217,7 @@ static InfoByType NodeInfoByType[] = {
     {NODE_ZOOM_CAMERA, 2, 1, 190, 100, {200, 130, 60, 200}, false, {PIN_FLOW, PIN_NUM}, {PIN_FLOW}, {"Prev", "Zoom Delta"}, {"Next"}},
     {NODE_GET_CAMERA_CENTER, 0, 2, 160, 100, {200, 130, 60, 200}, false, {0}, {PIN_NUM, PIN_NUM}, {0}, {"Center X", "Center Y"}},
 
-    {NODE_PLAY_SOUND, 2, 1, 190, 100, {150, 255, 80, 200}, false, {PIN_FLOW, PIN_NUM, PIN_NUM}, {PIN_FLOW}, {"Prev", "Sound file name"}, {"Next"}, true} // not implemented
+    {NODE_PLAY_SOUND, 2, 1, 190, 100, {150, 255, 80, 200}, false, {PIN_FLOW, PIN_STRING}, {PIN_FLOW}, {"Prev", "Sound file name"}, {"Next"}}
 };
 
 static inline int NodeTypeToIndex(NodeType type)

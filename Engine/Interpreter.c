@@ -11,7 +11,7 @@ InterpreterContext InitInterpreterContext()
     intp.varCount = 0;
     intp.onButtonNodeIndexesCount = 0;
     intp.componentCount = 0;
-    intp.forcesCount = 0;
+    intp.forceCount = 0;
     intp.loopNodeIndex = -1;
 
     intp.isFirstFrame = true;
@@ -372,7 +372,7 @@ RuntimeGraphContext ConvertToRuntimeGraph(GraphContext *graph, InterpreterContex
         AddToLogFromInterpreter(intp, (Value){.type = VAL_STRING, .string = "Out of memory: forces{I207}"}, LOG_LEVEL_ERROR);
         return runtime;
     }
-    intp->forcesCount = 0;
+    intp->forceCount = 0;
 
     for (int i = 0; i < graph->nodeCount; i++)
     {
@@ -860,7 +860,7 @@ RuntimeGraphContext ConvertToRuntimeGraph(GraphContext *graph, InterpreterContex
 
 int DoesForceExist(InterpreterContext *intp, int id)
 {
-    for (int i = 0; i < intp->forcesCount; i++)
+    for (int i = 0; i < intp->forceCount; i++)
     {
         if (intp->forces[i].id == id){
             return i;
@@ -1171,12 +1171,12 @@ void InterpretStringOfNodes(int lastNodeIndex, InterpreterContext *intp, Runtime
             }
             else if (intp->values[node->inputPins[1]->valueIndex].componentIndex >= 0 && intp->values[node->inputPins[1]->valueIndex].componentIndex < intp->componentCount)
             {
-                intp->forces[intp->forcesCount].id = node->index;
-                intp->forces[intp->forcesCount].componentIndex = intp->values[node->inputPins[1]->valueIndex].componentIndex;
-                intp->forces[intp->forcesCount].pixelsPerSecond = intp->values[node->inputPins[2]->valueIndex].number;
-                intp->forces[intp->forcesCount].angle = intp->values[node->inputPins[3]->valueIndex].number;
-                intp->forces[intp->forcesCount].duration = intp->values[node->inputPins[4]->valueIndex].number;
-                intp->forcesCount++;
+                intp->forces[intp->forceCount].id = node->index;
+                intp->forces[intp->forceCount].componentIndex = intp->values[node->inputPins[1]->valueIndex].componentIndex;
+                intp->forces[intp->forceCount].pixelsPerSecond = intp->values[node->inputPins[2]->valueIndex].number;
+                intp->forces[intp->forceCount].angle = intp->values[node->inputPins[3]->valueIndex].number;
+                intp->forces[intp->forceCount].duration = intp->values[node->inputPins[4]->valueIndex].number;
+                intp->forceCount++;
             }
         }
         break;
@@ -1334,6 +1334,27 @@ void InterpretStringOfNodes(int lastNodeIndex, InterpreterContext *intp, Runtime
         if (node->inputPins[1]->valueIndex != -1)
         {
             intp->zoom += intp->values[node->inputPins[1]->valueIndex].number;
+        }
+        break;
+    }
+    case NODE_PLAY_SOUND:
+    {
+        if(node->inputPins[1]->valueIndex != -1){
+            if(intp->soundCount >= MAX_SOUNDS){
+                AddToLogFromInterpreter(intp, (Value){.type = VAL_STRING, .string = "Maximum sounds reached{I104}"}, LOG_LEVEL_WARNING);
+                break;
+            }
+            Sound temp = LoadSound(TextFormat("%s%c%s", intp->projectPath, PATH_SEPARATOR, intp->values[node->inputPins[1]->valueIndex].string));
+            if(temp.frameCount > 0){
+                intp->sounds[intp->soundCount].sound = temp;
+                intp->sounds[intp->soundCount].timeLeft = (float)intp->sounds[intp->soundCount].sound.frameCount / intp->sounds[intp->soundCount].sound.stream.sampleRate;
+                PlaySound(intp->sounds[intp->soundCount].sound);
+                intp->soundCount++;
+            }
+            else{
+                UnloadSound(intp->sounds[intp->soundCount].sound);
+                AddToLogFromInterpreter(intp, (Value){.type = VAL_STRING, .string = "Invalid sound{I105}"}, LOG_LEVEL_WARNING);
+            }
         }
         break;
     }
@@ -1717,7 +1738,7 @@ CollisionResult CheckCollisions(InterpreterContext *intp, int index)
 void HandleForces(InterpreterContext *intp)
 {
     int i = 0;
-    while (i < intp->forcesCount)
+    while (i < intp->forceCount)
     {
         Force *f = &intp->forces[i];
         Vector2 *pos = &intp->components[f->componentIndex].sprite.position;
@@ -1743,15 +1764,30 @@ void HandleForces(InterpreterContext *intp)
 
         if (f->duration <= 0)
         {
-            for (int j = i; j < intp->forcesCount - 1; j++)
+            for (int j = i; j < intp->forceCount - 1; j++)
             {
                 intp->forces[j] = intp->forces[j + 1];
             }
-            intp->forcesCount--;
+            intp->forceCount--;
             continue;
         }
 
         i++;
+    }
+}
+
+void HandleSounds(InterpreterContext *intp){
+    float frameTime = GetFrameTime();
+    for(int i = 0; i < intp->soundCount; i++){
+        intp->sounds[i].timeLeft -= frameTime;
+        if(intp->sounds[i].timeLeft <= 0){
+            UnloadSound(intp->sounds[i].sound);
+            for (int j = i; j < intp->soundCount - 1; j++) {
+                intp->sounds[j] = intp->sounds[j + 1];
+            }
+            intp->soundCount--;
+            i--;
+        }
     }
 }
 
@@ -1848,6 +1884,8 @@ bool HandleGameScreen(InterpreterContext *intp, RuntimeGraphContext *graph, Vect
     }
 
     HandleForces(intp);
+
+    HandleSounds(intp);
 
     DrawComponents(intp);
 

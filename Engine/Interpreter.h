@@ -10,6 +10,8 @@
 
 #define MAX_LINKS_PER_PIN 16
 
+#define MAX_SOUNDS 32
+
 typedef struct RuntimePin
 {
     int id;
@@ -156,6 +158,12 @@ typedef struct
 
 typedef struct
 {
+    Sound sound;
+    float timeLeft;
+}ActiveSound;
+
+typedef struct
+{
     Value *values;
     int valueCount;
 
@@ -163,10 +171,13 @@ typedef struct
     int varCount;
     
     Force *forces;
-    int forcesCount;
+    int forceCount;
 
     SceneComponent *components;
     int componentCount;
+
+    ActiveSound sounds[MAX_SOUNDS];
+    int soundCount;
 
     char *projectPath;
 
