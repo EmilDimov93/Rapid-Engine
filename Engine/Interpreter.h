@@ -208,6 +208,9 @@ typedef struct
 
     float zoom;
 
+    bool isSoundOn;
+    bool hasSoundOnChanged;
+
     Vector2 cameraOffset;
 
     RuntimeGraphContext *runtimeGraph;

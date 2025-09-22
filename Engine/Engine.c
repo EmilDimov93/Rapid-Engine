@@ -578,6 +578,10 @@ bool DrawSettingsMenu(EngineContext *eng, InterpreterContext *intp)
     case SETTINGS_MODE_ENGINE:
         DrawTextEx(eng->font, "Sound", (Vector2){eng->screenWidth / 4 + 200, 300}, 28, 1, WHITE);
         DrawSlider((Vector2){eng->screenWidth * 3 / 4 - 70, 305}, &eng->isSoundOn, eng->mousePos);
+        if(intp->isSoundOn != eng->isSoundOn){
+            intp->isSoundOn = eng->isSoundOn;
+            intp->hasSoundOnChanged = true;;
+        }
 
         DrawTextEx(eng->font, "Auto Save Every 2 Minutes", (Vector2){eng->screenWidth / 4 + 200, 350}, 28, 1, WHITE);
         DrawSlider((Vector2){eng->screenWidth * 3 / 4 - 70, 355}, &eng->isAutoSaveON, eng->mousePos);

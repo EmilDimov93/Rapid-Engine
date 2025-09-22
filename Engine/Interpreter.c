@@ -13,6 +13,7 @@ InterpreterContext InitInterpreterContext()
     intp.componentCount = 0;
     intp.forceCount = 0;
     intp.loopNodeIndex = -1;
+    intp.soundCount = 0;
 
     intp.isFirstFrame = true;
 
@@ -35,12 +36,16 @@ InterpreterContext InitInterpreterContext()
 
     intp.zoom = 1.0f;
 
+    intp.isSoundOn = true;
+    intp.hasSoundOnChanged = true;
+
     return intp;
 }
 
 void FreeRuntimeGraphContext(RuntimeGraphContext *rg)
 {
-    if (!rg){
+    if (!rg)
+    {
         return;
     }
 
@@ -117,6 +122,11 @@ void FreeInterpreterContext(InterpreterContext *intp)
     }
 
     free(intp->varIndexes);
+
+    for (int i = 0; i < intp->soundCount; i++)
+    {
+        UnloadSound(intp->sounds[i].sound);
+    }
 
     char *projectPath = intp->projectPath;
     *intp = InitInterpreterContext();
@@ -862,7 +872,8 @@ int DoesForceExist(InterpreterContext *intp, int id)
 {
     for (int i = 0; i < intp->forceCount; i++)
     {
-        if (intp->forces[i].id == id){
+        if (intp->forces[i].id == id)
+        {
             return i;
         }
     }
@@ -1189,7 +1200,8 @@ void InterpretStringOfNodes(int lastNodeIndex, InterpreterContext *intp, Runtime
 
     case NODE_DRAW_PROP_RECTANGLE:
     {
-        if(node->outputPins[1]->componentIndex != -1){
+        if (node->outputPins[1]->componentIndex != -1)
+        {
             intp->components[node->outputPins[1]->componentIndex].isVisible = true;
         }
         break;
@@ -1197,7 +1209,8 @@ void InterpretStringOfNodes(int lastNodeIndex, InterpreterContext *intp, Runtime
 
     case NODE_DRAW_PROP_CIRCLE:
     {
-        if(node->outputPins[1]->componentIndex != -1){
+        if (node->outputPins[1]->componentIndex != -1)
+        {
             intp->components[node->outputPins[1]->componentIndex].isVisible = true;
         }
         break;
@@ -1205,7 +1218,8 @@ void InterpretStringOfNodes(int lastNodeIndex, InterpreterContext *intp, Runtime
 
     case NODE_COMPARISON:
     {
-        if(node->inputPins[2]->valueIndex == -1 || node->inputPins[3]->valueIndex == -1 || node->outputPins[1]->valueIndex == -1){
+        if (node->inputPins[2]->valueIndex == -1 || node->inputPins[3]->valueIndex == -1 || node->outputPins[1]->valueIndex == -1)
+        {
             break;
         }
         float numA = intp->values[node->inputPins[2]->valueIndex].number;
@@ -1230,7 +1244,8 @@ void InterpretStringOfNodes(int lastNodeIndex, InterpreterContext *intp, Runtime
 
     case NODE_GATE:
     {
-        if(node->inputPins[2]->valueIndex == -1 || node->inputPins[3]->valueIndex == -1 || node->outputPins[1]->valueIndex == -1){
+        if (node->inputPins[2]->valueIndex == -1 || node->inputPins[3]->valueIndex == -1 || node->outputPins[1]->valueIndex == -1)
+        {
             break;
         }
         bool boolA = intp->values[node->inputPins[2]->valueIndex].boolean;
@@ -1264,7 +1279,8 @@ void InterpretStringOfNodes(int lastNodeIndex, InterpreterContext *intp, Runtime
 
     case NODE_ARITHMETIC:
     {
-        if(node->inputPins[2]->valueIndex == -1 || node->inputPins[3]->valueIndex == -1 || node->outputPins[1]->valueIndex == -1){
+        if (node->inputPins[2]->valueIndex == -1 || node->inputPins[3]->valueIndex == -1 || node->outputPins[1]->valueIndex == -1)
+        {
             break;
         }
         float numA = intp->values[node->inputPins[2]->valueIndex].number;
@@ -1304,7 +1320,8 @@ void InterpretStringOfNodes(int lastNodeIndex, InterpreterContext *intp, Runtime
 
     case NODE_DRAW_DEBUG_LINE:
     {
-        if(node->inputPins[1]->valueIndex == -1 || node->inputPins[2]->valueIndex == -1 || node->inputPins[3]->valueIndex == -1 || node->inputPins[4]->valueIndex == -1 || node->inputPins[5]->valueIndex == -1){
+        if (node->inputPins[1]->valueIndex == -1 || node->inputPins[2]->valueIndex == -1 || node->inputPins[3]->valueIndex == -1 || node->inputPins[4]->valueIndex == -1 || node->inputPins[5]->valueIndex == -1)
+        {
             break;
         }
         DrawLine(
@@ -1312,8 +1329,7 @@ void InterpretStringOfNodes(int lastNodeIndex, InterpreterContext *intp, Runtime
             intp->values[node->inputPins[2]->valueIndex].number,
             intp->values[node->inputPins[3]->valueIndex].number,
             intp->values[node->inputPins[4]->valueIndex].number,
-            intp->values[node->inputPins[5]->valueIndex].color
-        );
+            intp->values[node->inputPins[5]->valueIndex].color);
         break;
     }
 
@@ -1339,19 +1355,23 @@ void InterpretStringOfNodes(int lastNodeIndex, InterpreterContext *intp, Runtime
     }
     case NODE_PLAY_SOUND:
     {
-        if(node->inputPins[1]->valueIndex != -1){
-            if(intp->soundCount >= MAX_SOUNDS){
+        if (node->inputPins[1]->valueIndex != -1)
+        {
+            if (intp->soundCount >= MAX_SOUNDS)
+            {
                 AddToLogFromInterpreter(intp, (Value){.type = VAL_STRING, .string = "Maximum sounds reached{I104}"}, LOG_LEVEL_WARNING);
                 break;
             }
             Sound temp = LoadSound(TextFormat("%s%c%s", intp->projectPath, PATH_SEPARATOR, intp->values[node->inputPins[1]->valueIndex].string));
-            if(temp.frameCount > 0){
+            if (temp.frameCount > 0)
+            {
                 intp->sounds[intp->soundCount].sound = temp;
                 intp->sounds[intp->soundCount].timeLeft = (float)intp->sounds[intp->soundCount].sound.frameCount / intp->sounds[intp->soundCount].sound.stream.sampleRate;
                 PlaySound(intp->sounds[intp->soundCount].sound);
                 intp->soundCount++;
             }
-            else{
+            else
+            {
                 UnloadSound(intp->sounds[intp->soundCount].sound);
                 AddToLogFromInterpreter(intp, (Value){.type = VAL_STRING, .string = "Invalid sound{I105}"}, LOG_LEVEL_WARNING);
             }
@@ -1776,18 +1796,30 @@ void HandleForces(InterpreterContext *intp)
     }
 }
 
-void HandleSounds(InterpreterContext *intp){
+void HandleSounds(InterpreterContext *intp)
+{
     float frameTime = GetFrameTime();
-    for(int i = 0; i < intp->soundCount; i++){
+    for (int i = 0; i < intp->soundCount; i++)
+    {
         intp->sounds[i].timeLeft -= frameTime;
-        if(intp->sounds[i].timeLeft <= 0){
+        if (intp->sounds[i].timeLeft <= 0)
+        {
             UnloadSound(intp->sounds[i].sound);
-            for (int j = i; j < intp->soundCount - 1; j++) {
+            for (int j = i; j < intp->soundCount - 1; j++)
+            {
                 intp->sounds[j] = intp->sounds[j + 1];
             }
             intp->soundCount--;
             i--;
         }
+        if (intp->hasSoundOnChanged)
+        {
+            float volume = intp->isSoundOn ? 1.0f : 0.0f;
+            SetSoundVolume(intp->sounds[i].sound, volume);
+        }
+    }
+    if (intp->hasSoundOnChanged){
+        intp->hasSoundOnChanged = false;
     }
 }
 
