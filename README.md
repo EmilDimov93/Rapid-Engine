@@ -4,7 +4,7 @@
 ![GitHub commits](https://img.shields.io/github/commit-activity/m/EmilDimov93/Rapid-Engine?style=plastic)
 ![Total Commits](https://img.shields.io/github/commit-activity/t/EmilDimov93/Rapid-Engine?style=plastic)
 ![GitHub last commit](https://img.shields.io/github/last-commit/EmilDimov93/Rapid-Engine?style=plastic)
-![46 Nodes](https://img.shields.io/badge/Nodes-46-purple?style=plastic)
+![46 Nodes](https://img.shields.io/badge/Nodes-48-purple?style=plastic)
 ![RapidEngine stars](https://img.shields.io/github/stars/EmilDimov93/Rapid-Engine?style=plastic&label=⭐&color=FFD700)
 ![C](https://img.shields.io/badge/language-C-555555?style=plastic)
 ![Raylib](https://img.shields.io/badge/Library-Raylib-ff69b4?style=plastic)
@@ -91,6 +91,7 @@ https://github.com/user-attachments/assets/b6dc9735-5eb8-498a-9802-c1eac80a9a4a
 | Camera     | Move Camera             |
 | Camera     | Zoom Camera             |
 | Camera     | Get Camera Center       |
+| Sound      | Play Sound              |
 
 
 ## 🧪 In Development
