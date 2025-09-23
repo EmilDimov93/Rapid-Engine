@@ -12,6 +12,7 @@
 
 #define MAX_SOUNDS 32
 #define MAX_TICK_NODES 10
+#define MIN_ZOOM 0.5f
 
 typedef struct RuntimePin
 {

@@ -104,7 +104,7 @@ EngineContext InitEngineContext()
 
     eng.varsFilter = 0;
 
-    eng.isGameFullscreen = false;
+    eng.isViewportFullscreen = false;
 
     eng.isSaveButtonHovered = false;
     eng.isBuildButtonHovered = false;
@@ -955,7 +955,7 @@ void DrawUIElements(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
             eng->isViewportFocused = false;
             if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
             {
-                eng->isGameFullscreen = true;
+                eng->isViewportFullscreen = true;
             }
         }
 
@@ -1678,6 +1678,7 @@ bool HandleUICollisions(EngineContext *eng, GraphContext *graph, InterpreterCont
             eng->viewportMode = VIEWPORT_GAME_SCREEN;
             eng->isGameRunning = true;
             intp->isFirstFrame = true;
+            eng->delayFrames = true;
         }
     }
     else if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_E))
@@ -1688,7 +1689,7 @@ bool HandleUICollisions(EngineContext *eng, GraphContext *graph, InterpreterCont
         cgEd->isFirstFrame = true;
         eng->isGameRunning = false;
         eng->wasBuilt = false;
-        eng->isGameFullscreen = false;
+        eng->isViewportFullscreen = false;
         FreeInterpreterContext(intp);
     }
     else if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_B))
@@ -1725,12 +1726,12 @@ bool HandleUICollisions(EngineContext *eng, GraphContext *graph, InterpreterCont
         cgEd->isFirstFrame = true;
         eng->isGameRunning = false;
         eng->wasBuilt = false;
-        eng->isGameFullscreen = false;
+        eng->isViewportFullscreen = false;
         FreeInterpreterContext(intp);
     }
     else if (IsKeyPressed(KEY_ESCAPE))
     {
-        eng->isGameFullscreen = false;
+        eng->isViewportFullscreen = false;
     }
 
     if (eng->isWindowMoving)
@@ -1985,12 +1986,13 @@ void ContextChangePerFrame(EngineContext *eng)
     eng->screenWidth = GetScreenWidth();
     eng->screenHeight = GetScreenHeight();
 
+    eng->viewportWidth = eng->screenWidth - (eng->isViewportFullscreen ? 0 : eng->sideBarWidth);
+    eng->viewportHeight = eng->screenHeight - (eng->isViewportFullscreen ? 0 : eng->bottomBarHeight);
+
     if (eng->prevScreenWidth != eng->screenWidth || eng->prevScreenHeight != eng->screenHeight || eng->hasResizedBar)
     {
         eng->prevScreenWidth = eng->screenWidth;
         eng->prevScreenHeight = eng->screenHeight;
-        eng->viewportWidth = eng->screenWidth - eng->sideBarWidth;
-        eng->viewportHeight = eng->screenHeight - eng->bottomBarHeight;
         eng->hasResizedBar = false;
         eng->delayFrames = true;
     }
@@ -1998,7 +2000,7 @@ void ContextChangePerFrame(EngineContext *eng)
 
 void SetEngineMouseCursor(EngineContext *eng, CGEditorContext *cgEd)
 {
-    if (!(eng->viewportMode == VIEWPORT_GAME_SCREEN && eng->shouldHideCursorInGameFullscreen && eng->isGameFullscreen))
+    if (!(eng->viewportMode == VIEWPORT_GAME_SCREEN && eng->shouldHideCursorInGameFullscreen && eng->isViewportFullscreen))
     {
         ShowCursor();
     }
@@ -2031,7 +2033,7 @@ void SetEngineMouseCursor(EngineContext *eng, CGEditorContext *cgEd)
         return;
     }
 
-    if (eng->isViewportFocused || eng->isGameFullscreen)
+    if (eng->isViewportFocused || eng->isViewportFullscreen)
     {
         switch (eng->viewportMode)
         {
@@ -2039,7 +2041,7 @@ void SetEngineMouseCursor(EngineContext *eng, CGEditorContext *cgEd)
             SetMouseCursor(cgEd->cursor);
             return;
         case VIEWPORT_GAME_SCREEN:
-            if (eng->shouldHideCursorInGameFullscreen && eng->isGameFullscreen)
+            if (eng->shouldHideCursorInGameFullscreen && eng->isViewportFullscreen)
             {
                 HideCursor();
                 return;
@@ -2210,7 +2212,7 @@ int main()
         int prevHoveredUIIndex = eng.hoveredUIElementIndex;
         eng.isAnyMenuOpen = eng.showSaveWarning == 1 || eng.showSettingsMenu;
 
-        if (HandleUICollisions(&eng, &graph, &intp, &cgEd, &runtimeGraph) && !eng.isGameFullscreen)
+        if (HandleUICollisions(&eng, &graph, &intp, &cgEd, &runtimeGraph) && !eng.isViewportFullscreen)
         {
             if (((prevHoveredUIIndex != eng.hoveredUIElementIndex || IsMouseButtonDown(MOUSE_LEFT_BUTTON)) && eng.showSaveWarning != 1 && eng.showSettingsMenu == false) || eng.delayFrames)
             {
@@ -2219,7 +2221,7 @@ int main()
             }
             eng.delayFrames = true;
         }
-        else if (eng.delayFrames && !eng.isGameFullscreen)
+        else if (eng.delayFrames && !eng.isViewportFullscreen)
         {
             BuildUITexture(&eng, &graph, &cgEd, &intp, &runtimeGraph);
             eng.fps = 60;
@@ -2232,13 +2234,13 @@ int main()
 
         SetEngineZoom(&eng, &cgEd, &intp);
 
-        Vector2 mouseInViewportTex = (Vector2){(eng.mousePos.x - eng.sideBarWidth) / eng.zoom + (eng.viewportTex.texture.width - (eng.isGameFullscreen ? eng.screenWidth : eng.viewportWidth / eng.zoom)) / 2.0f, eng.mousePos.y / eng.zoom + (eng.viewportTex.texture.height - (eng.isGameFullscreen ? eng.screenHeight : eng.viewportHeight / eng.zoom)) / 2.0f};
+        Vector2 mouseInViewportTex = (Vector2){(eng.mousePos.x - eng.sideBarWidth) / eng.zoom + (eng.viewportTex.texture.width - (eng.isViewportFullscreen ? eng.screenWidth : eng.viewportWidth / eng.zoom)) / 2.0f, eng.mousePos.y / eng.zoom + (eng.viewportTex.texture.height - (eng.isViewportFullscreen ? eng.screenHeight : eng.viewportHeight / eng.zoom)) / 2.0f};
 
         Rectangle viewportRecInViewportTex = (Rectangle){
-            (eng.viewportTex.texture.width - (eng.isGameFullscreen ? eng.screenWidth : eng.viewportWidth)) / 2.0f,
-            (eng.viewportTex.texture.height - (eng.isGameFullscreen ? eng.screenHeight : eng.viewportHeight)) / 2.0f,
-            eng.screenWidth - (eng.isGameFullscreen ? 0 : eng.sideBarWidth),
-            eng.screenHeight - (eng.isGameFullscreen ? 0 : eng.bottomBarHeight)};
+            (eng.viewportTex.texture.width - (eng.isViewportFullscreen ? eng.screenWidth : eng.viewportWidth)) / 2.0f,
+            (eng.viewportTex.texture.height - (eng.isViewportFullscreen ? eng.screenHeight : eng.viewportHeight)) / 2.0f,
+            eng.screenWidth - (eng.isViewportFullscreen ? 0 : eng.sideBarWidth),
+            eng.screenHeight - (eng.isViewportFullscreen ? 0 : eng.bottomBarHeight)};
 
         if (eng.showSaveWarning == 1 || eng.showSettingsMenu || eng.windowResizeButton != RESIZING_WINDOW_NONE)
         {
@@ -2446,17 +2448,17 @@ int main()
         }
 
         DrawTexturePro(eng.viewportTex.texture,
-                       (Rectangle){(eng.viewportTex.texture.width - (eng.isGameFullscreen ? eng.screenWidth : eng.viewportWidth / eng.zoom)) / 2.0f,
-                                   (eng.viewportTex.texture.height - (eng.isGameFullscreen ? eng.screenHeight : eng.viewportHeight / eng.zoom)) / 2.0f,
-                                   eng.isGameFullscreen ? eng.screenWidth : eng.viewportWidth / eng.zoom,
-                                   -(eng.isGameFullscreen ? eng.screenHeight : eng.viewportHeight / eng.zoom)},
-                       (Rectangle){eng.isGameFullscreen ? 0 : eng.sideBarWidth,
+                       (Rectangle){(eng.viewportTex.texture.width - eng.viewportWidth / eng.zoom) / 2.0f,
+                                   (eng.viewportTex.texture.height - eng.viewportHeight / eng.zoom) / 2.0f,
+                                   eng.viewportWidth / eng.zoom,
+                                   -eng.viewportHeight / eng.zoom},
+                       (Rectangle){eng.isViewportFullscreen ? 0 : eng.sideBarWidth,
                                    0,
-                                   eng.screenWidth - (eng.isGameFullscreen ? 0 : eng.sideBarWidth),
-                                   eng.screenHeight - (eng.isGameFullscreen ? 0 : eng.bottomBarHeight)},
+                                   eng.screenWidth - (eng.isViewportFullscreen ? 0 : eng.sideBarWidth),
+                                   eng.screenHeight - (eng.isViewportFullscreen ? 0 : eng.bottomBarHeight)},
                        (Vector2){0, 0}, 0.0f, WHITE);
 
-        if (eng.uiTex.texture.id != 0 && !eng.isGameFullscreen)
+        if (eng.uiTex.texture.id != 0 && !eng.isViewportFullscreen)
         {
             DrawTextureRec(eng.uiTex.texture, (Rectangle){0, 0, eng.uiTex.texture.width, -eng.uiTex.texture.height}, (Vector2){0, 0}, WHITE);
         }

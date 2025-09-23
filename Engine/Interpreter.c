@@ -1349,7 +1349,12 @@ void InterpretStringOfNodes(int lastNodeIndex, InterpreterContext *intp, Runtime
     {
         if (node->inputPins[1]->valueIndex != -1)
         {
-            intp->zoom += intp->values[node->inputPins[1]->valueIndex].number;
+            if(intp->zoom + intp->values[node->inputPins[1]->valueIndex].number >= MIN_ZOOM){
+                intp->zoom += intp->values[node->inputPins[1]->valueIndex].number;
+            }
+            else{
+                intp->zoom = MIN_ZOOM;
+            }
         }
         break;
     }

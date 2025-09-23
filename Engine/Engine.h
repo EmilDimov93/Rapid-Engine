@@ -143,7 +143,7 @@ typedef struct EngineContext
     int viewportWidth;
     int viewportHeight;
     float zoom;
-    bool isGameFullscreen;
+    bool isViewportFullscreen;
     bool sideBarHalfSnap;
     int maxScreenWidth;
     int maxScreenHeight;
