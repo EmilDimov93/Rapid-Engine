@@ -158,7 +158,6 @@ void DrawCurvedWire(Vector2 outputPos, Vector2 inputPos, float thickness, Color 
     float controlOffset = distance * 0.5f;
 
     DrawLineEx(outputPos, (Vector2){outputPos.x + outputOffset, outputPos.y}, thickness, color);
-
     inputPos.x -= inputOffset;
     outputPos.x += outputOffset;
 
@@ -167,20 +166,34 @@ void DrawCurvedWire(Vector2 outputPos, Vector2 inputPos, float thickness, Color 
     Vector2 p2 = {inputPos.x - controlOffset, inputPos.y};
     Vector2 p3 = inputPos;
 
-    Vector2 prev = p0;
-    int segments = Clamp((int)(distance / 8.0f), 12, 64);
+    const int segments = Clamp((int)(distance / 8.0f), 12, 64);
 
+    Vector2 points[65];
+    points[0] = p0;
     for (int i = 1; i <= segments; i++)
     {
         float t = (float)i / segments;
         float u = 1.0f - t;
+        points[i] = (Vector2){
+            u*u*u*p0.x + 3*u*u*t*p1.x + 3*u*t*t*p2.x + t*t*t*p3.x,
+            u*u*u*p0.y + 3*u*u*t*p1.y + 3*u*t*t*p2.y + t*t*t*p3.y
+        };
+    }
 
-        Vector2 point = {
-            u * u * u * p0.x + 3 * u * u * t * p1.x + 3 * u * t * t * p2.x + t * t * t * p3.x,
-            u * u * u * p0.y + 3 * u * u * t * p1.y + 3 * u * t * t * p2.y + t * t * t * p3.y};
+    for (int glow = 3; glow > 0; glow--)
+    {
+        float glowThickness = thickness + glow * 1.2f;
+        Color glowColor = color;
+        glowColor.a = 100;
+        for (int i = 1; i <= segments; i++)
+        {
+            DrawLineEx(points[i-1], points[i], glowThickness, glowColor);
+        }
+    }
 
-        DrawLineEx(prev, point, thickness, color);
-        prev = point;
+    for (int i = 1; i <= segments; i++)
+    {
+        DrawLineEx(points[i-1], points[i], thickness, color);
     }
 
     DrawLineEx(inputPos, (Vector2){inputPos.x + inputOffset, inputPos.y}, thickness, color);
@@ -896,7 +909,7 @@ void DrawNodes(CGEditorContext *cgEd, GraphContext *graph)
                 wireColor = (Color){27, 64, 121, 255};
                 break;
             case PIN_COLOR:
-                wireColor = (Color){217, 3, 104, 255};
+                wireColor = (Color){150, 2, 72, 255};
                 break;
             case PIN_SPRITE:
                 wireColor = (Color){3, 206, 164, 255};
@@ -904,7 +917,7 @@ void DrawNodes(CGEditorContext *cgEd, GraphContext *graph)
             default:
                 wireColor = (Color){255, 255, 255, 255};
             }
-            DrawCurvedWire(outputPinPosition, inputPinPosition, 2.0f + 2.0f / cgEd->zoom, wireColor);
+            DrawCurvedWire(outputPinPosition, inputPinPosition, 2.0f + 1.0f / cgEd->zoom + isFlowLink, wireColor);
         }
         else
         {
@@ -1196,14 +1209,10 @@ void DrawNodes(CGEditorContext *cgEd, GraphContext *graph)
     if (cgEd->lastClickedPin.id != -1)
     {
         cgEd->cursor = MOUSE_CURSOR_CROSSHAIR;
-        if (cgEd->lastClickedPin.isInput)
-        {
-            DrawCurvedWire(cgEd->mousePos, cgEd->lastClickedPin.position, 2.0f + 2.0f / cgEd->zoom, (Color){0, 255, 255, 255});
-        }
-        else
-        {
-            DrawCurvedWire(cgEd->lastClickedPin.position, cgEd->mousePos, 2.0f + 2.0f / cgEd->zoom, (Color){0, 255, 255, 255});
-        }
+        Vector2 p1 = cgEd->lastClickedPin.isInput ? cgEd->mousePos : cgEd->lastClickedPin.position;
+        Vector2 p2 = cgEd->lastClickedPin.isInput ? cgEd->lastClickedPin.position : cgEd->mousePos;
+
+        DrawCurvedWire(p1, p2, 2.0f + 1.0f / cgEd->zoom, cgEd->lastClickedPin.type == PIN_FLOW ? (Color){180, 100, 200, 255} : (Color){0, 255, 255, 255});
     }
 
     if (nodeToDelete != -1 && hoveredPinIndex == -1)
@@ -1403,17 +1412,20 @@ const char *DrawNodeMenu(CGEditorContext *cgEd, RenderTexture2D view)
     }
 
     int maxScroll = (filteredCount > 0 ? filteredCount : menuItemCount) - MENU_VISIBLE_ITEMS;
-    if (maxScroll < 1){
+    if (maxScroll < 1)
+    {
         maxScroll = 1;
     }
 
     float scrollTrackHeight = MENU_ITEM_HEIGHT * MENU_VISIBLE_ITEMS - 16;
 
     float scrollBarHeight = scrollTrackHeight * ((float)MENU_VISIBLE_ITEMS / ((filteredCount > 5) ? filteredCount : 1));
-    if (scrollBarHeight < 20.0f){
+    if (scrollBarHeight < 20.0f)
+    {
         scrollBarHeight = 20.0f;
     }
-    if (scrollBarHeight > scrollTrackHeight){
+    if (scrollBarHeight > scrollTrackHeight)
+    {
         scrollBarHeight = scrollTrackHeight;
     }
 

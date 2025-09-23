@@ -1729,7 +1729,8 @@ bool HandleUICollisions(EngineContext *eng, GraphContext *graph, InterpreterCont
         eng->isViewportFullscreen = false;
         FreeInterpreterContext(intp);
     }
-    else if (IsKeyPressed(KEY_ESCAPE))
+    
+    if (IsKeyPressed(KEY_ESCAPE))
     {
         eng->isViewportFullscreen = false;
     }
