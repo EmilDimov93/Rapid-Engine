@@ -11,6 +11,7 @@
 #define MAX_LINKS_PER_PIN 16
 
 #define MAX_SOUNDS 32
+#define MAX_TICK_NODES 10
 
 typedef struct RuntimePin
 {
@@ -181,7 +182,8 @@ typedef struct
 
     char *projectPath;
 
-    int loopNodeIndex;
+    int tickNodeIndexes[MAX_TICK_NODES];
+    int tickNodeIndexesCount;
 
     bool isFirstFrame;
 

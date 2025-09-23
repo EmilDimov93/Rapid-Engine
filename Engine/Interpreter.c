@@ -12,7 +12,7 @@ InterpreterContext InitInterpreterContext()
     intp.onButtonNodeIndexesCount = 0;
     intp.componentCount = 0;
     intp.forceCount = 0;
-    intp.loopNodeIndex = -1;
+    intp.tickNodeIndexesCount = 0;
     intp.soundCount = 0;
 
     intp.isFirstFrame = true;
@@ -1852,9 +1852,10 @@ bool HandleGameScreen(InterpreterContext *intp, RuntimeGraphContext *graph, Vect
                 InterpretStringOfNodes(i, intp, graph, 0);
                 break;
             case NODE_EVENT_TICK:
-                if (intp->loopNodeIndex == -1)
+                if (intp->tickNodeIndexesCount < MAX_TICK_NODES)
                 {
-                    intp->loopNodeIndex = i;
+                    intp->tickNodeIndexes[intp->tickNodeIndexesCount] = i;
+                    intp->tickNodeIndexesCount++;
                 }
                 break;
             case NODE_EVENT_ON_BUTTON:
@@ -1905,14 +1906,16 @@ bool HandleGameScreen(InterpreterContext *intp, RuntimeGraphContext *graph, Vect
         }
     }
 
-    if (intp->loopNodeIndex == -1)
+    if (intp->tickNodeIndexesCount == 0)
     {
         AddToLogFromInterpreter(intp, (Value){.type = VAL_STRING, .string = "No tick node found{I211}"}, LOG_LEVEL_ERROR);
         return false;
     }
     else
     {
-        InterpretStringOfNodes(intp->loopNodeIndex, intp, graph, 0);
+        for(int i = 0; i < intp->tickNodeIndexesCount; i++){
+            InterpretStringOfNodes(intp->tickNodeIndexes[i], intp, graph, 0);
+        }
     }
 
     HandleForces(intp);
