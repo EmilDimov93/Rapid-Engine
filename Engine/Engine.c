@@ -490,7 +490,7 @@ void DrawFPSLimitDropdown(Vector2 pos, int *limit, Vector2 mousePos, Font font)
     }
 }
 
-bool DrawSettingsMenu(EngineContext *eng, InterpreterContext *intp)
+bool DrawSettingsMenu(EngineContext *eng, InterpreterContext *intp, CGEditorContext *cgEd)
 {
 
     DrawRectangle(0, 0, eng->screenWidth, eng->screenHeight, (Color){0, 0, 0, 150});
@@ -591,6 +591,13 @@ bool DrawSettingsMenu(EngineContext *eng, InterpreterContext *intp)
 
         DrawTextEx(eng->font, "Show FPS", (Vector2){eng->screenWidth / 4 + 200, 450}, 28, 1, WHITE);
         DrawSlider((Vector2){eng->screenWidth * 3 / 4 - 70, 455}, &eng->shouldShowFPS, eng->mousePos);
+
+        DrawTextEx(eng->font, "Low-spec mode", (Vector2){eng->screenWidth / 4 + 200, 500}, 28, 1, WHITE);
+        DrawSlider((Vector2){eng->screenWidth * 3 / 4 - 70, 505}, &eng->isLowSpecModeOn, eng->mousePos);
+        if(cgEd->isLowSpecModeOn != eng->isLowSpecModeOn){
+            cgEd->isLowSpecModeOn = eng->isLowSpecModeOn;
+            cgEd->delayFrames = true;
+        }
         break;
     case SETTINGS_MODE_GAME:
         DrawTextEx(eng->font, "Infinite Loop Protection", (Vector2){eng->screenWidth / 4 + 200, 300}, 28, 1, WHITE);
@@ -603,8 +610,10 @@ bool DrawSettingsMenu(EngineContext *eng, InterpreterContext *intp)
         DrawSlider((Vector2){eng->screenWidth * 3 / 4 - 70, 405}, &eng->shouldHideCursorInGameFullscreen, eng->mousePos);
         break;
     case SETTINGS_MODE_KEYBINDS:
+        DrawTextEx(eng->font, "No Keybind settings yet!", (Vector2){eng->screenWidth / 4 + 200, 300}, 28, 1, RED);
         break;
     case SETTINGS_MODE_EXPORT:
+        DrawTextEx(eng->font, "No Export settings yet!", (Vector2){eng->screenWidth / 4 + 200, 300}, 28, 1, RED);
         break;
     default:
         settingsMode = SETTINGS_MODE_ENGINE;
@@ -1729,7 +1738,7 @@ bool HandleUICollisions(EngineContext *eng, GraphContext *graph, InterpreterCont
         eng->isViewportFullscreen = false;
         FreeInterpreterContext(intp);
     }
-    
+
     if (IsKeyPressed(KEY_ESCAPE))
     {
         eng->isViewportFullscreen = false;
@@ -2480,7 +2489,7 @@ int main()
         }
         else if (eng.showSettingsMenu)
         {
-            eng.showSettingsMenu = DrawSettingsMenu(&eng, &intp);
+            eng.showSettingsMenu = DrawSettingsMenu(&eng, &intp, &cgEd);
         }
 
         if (eng.shouldShowFPS)

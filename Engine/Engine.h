@@ -200,6 +200,7 @@ typedef struct EngineContext
     bool shouldShowFPS;
     bool isAutoSaveON;
     bool shouldHideCursorInGameFullscreen;
+    bool isLowSpecModeOn;
 
     bool isSettingsButtonHovered;
 

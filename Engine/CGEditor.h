@@ -72,6 +72,8 @@ typedef struct
 
     bool hasFatalErrorOccurred;
 
+    bool isLowSpecModeOn;
+
     GraphContext *graph;
 } CGEditorContext;
 

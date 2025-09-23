@@ -84,6 +84,8 @@ CGEditorContext InitEditorContext()
 
     cgEd.copiedNode.id = -1;
 
+    cgEd.isLowSpecModeOn = false;
+
     return cgEd;
 }
 
@@ -149,7 +151,7 @@ void DrawBackgroundGrid(CGEditorContext *cgEd, int gridSpacing, RenderTexture2D 
     }
 }
 
-void DrawCurvedWire(Vector2 outputPos, Vector2 inputPos, float thickness, Color color)
+void DrawCurvedWire(Vector2 outputPos, Vector2 inputPos, float thickness, Color color, bool isLowSpecModeOn)
 {
     const float inputOffset = 12.0f;
     const float outputOffset = 17.0f;
@@ -166,7 +168,7 @@ void DrawCurvedWire(Vector2 outputPos, Vector2 inputPos, float thickness, Color 
     Vector2 p2 = {inputPos.x - controlOffset, inputPos.y};
     Vector2 p3 = inputPos;
 
-    const int segments = Clamp((int)(distance / 8.0f), 12, 64);
+    const int segments = isLowSpecModeOn ? 12 : Clamp((int)(distance / 8.0f), 12, 64);
 
     Vector2 points[65];
     points[0] = p0;
@@ -175,25 +177,27 @@ void DrawCurvedWire(Vector2 outputPos, Vector2 inputPos, float thickness, Color 
         float t = (float)i / segments;
         float u = 1.0f - t;
         points[i] = (Vector2){
-            u*u*u*p0.x + 3*u*u*t*p1.x + 3*u*t*t*p2.x + t*t*t*p3.x,
-            u*u*u*p0.y + 3*u*u*t*p1.y + 3*u*t*t*p2.y + t*t*t*p3.y
-        };
+            u * u * u * p0.x + 3 * u * u * t * p1.x + 3 * u * t * t * p2.x + t * t * t * p3.x,
+            u * u * u * p0.y + 3 * u * u * t * p1.y + 3 * u * t * t * p2.y + t * t * t * p3.y};
     }
 
-    for (int glow = 3; glow > 0; glow--)
+    if (!isLowSpecModeOn)
     {
-        float glowThickness = thickness + glow * 1.2f;
-        Color glowColor = color;
-        glowColor.a = 100;
-        for (int i = 1; i <= segments; i++)
+        for (int glow = 3; glow > 0; glow--)
         {
-            DrawLineEx(points[i-1], points[i], glowThickness, glowColor);
+            float glowThickness = thickness + glow * 1.2f;
+            Color glowColor = color;
+            glowColor.a = 100;
+            for (int i = 1; i <= segments; i++)
+            {
+                DrawLineEx(points[i - 1], points[i], glowThickness, glowColor);
+            }
         }
     }
 
     for (int i = 1; i <= segments; i++)
     {
-        DrawLineEx(points[i-1], points[i], thickness, color);
+        DrawLineEx(points[i - 1], points[i], thickness, color);
     }
 
     DrawLineEx(inputPos, (Vector2){inputPos.x + inputOffset, inputPos.y}, thickness, color);
@@ -917,7 +921,7 @@ void DrawNodes(CGEditorContext *cgEd, GraphContext *graph)
             default:
                 wireColor = (Color){255, 255, 255, 255};
             }
-            DrawCurvedWire(outputPinPosition, inputPinPosition, 2.0f + 1.0f / cgEd->zoom + isFlowLink, wireColor);
+            DrawCurvedWire(outputPinPosition, inputPinPosition, 2.0f + 1.0f / cgEd->zoom + isFlowLink, wireColor, cgEd->isLowSpecModeOn);
         }
         else
         {
@@ -977,17 +981,34 @@ void DrawNodes(CGEditorContext *cgEd, GraphContext *graph)
             (Rectangle){x, y, width, height},
             roundness, segments, nodeBackgroundColor);
 
-        DrawCircleSector(
-            (Vector2){x + fullRadius - 2, y + fullRadius - 2},
-            fullRadius, 180, 270, segments, nodeLeftGradientColor);
+        if (cgEd->isLowSpecModeOn)
+        {
+            DrawCircleSector(
+                (Vector2){x + fullRadius - 2, y + fullRadius - 2},
+                fullRadius, 180, 270, segments, nodeColor);
 
-        DrawCircleSector(
-            (Vector2){x + width - fullRadius + 2, y + fullRadius - 2},
-            fullRadius, 270, 360, segments, nodeRightGradientColor);
+            DrawCircleSector(
+                (Vector2){x + width - fullRadius + 2, y + fullRadius - 2},
+                fullRadius, 270, 360, segments, nodeColor);
 
-        DrawRectangleGradientH(x + fullRadius - 2, y - 2, width - 2 * fullRadius + 4, fullRadius, nodeLeftGradientColor, nodeRightGradientColor);
+            DrawRectangle(x + fullRadius - 2, y - 2, width - 2 * fullRadius + 4, fullRadius, nodeColor);
 
-        DrawRectangleGradientH(x - 2, y + fullRadius - 2, width + 4, 38 - fullRadius, nodeLeftGradientColor, nodeRightGradientColor);
+            DrawRectangle(x - 2, y + fullRadius - 2, width + 4, 38 - fullRadius, nodeColor);
+        }
+        else
+        {
+            DrawCircleSector(
+                (Vector2){x + fullRadius - 2, y + fullRadius - 2},
+                fullRadius, 180, 270, segments, nodeLeftGradientColor);
+
+            DrawCircleSector(
+                (Vector2){x + width - fullRadius + 2, y + fullRadius - 2},
+                fullRadius, 270, 360, segments, nodeRightGradientColor);
+
+            DrawRectangleGradientH(x + fullRadius - 2, y - 2, width - 2 * fullRadius + 4, fullRadius, nodeLeftGradientColor, nodeRightGradientColor);
+
+            DrawRectangleGradientH(x - 2, y + fullRadius - 2, width + 4, 38 - fullRadius, nodeLeftGradientColor, nodeRightGradientColor);
+        }
 
         DrawRectangleRoundedLinesEx((Rectangle){x - 1, y - 1, width + 2, height + 2}, roundness, segments, 2.0f + 1.0f / cgEd->zoom, WHITE);
 
@@ -1212,7 +1233,7 @@ void DrawNodes(CGEditorContext *cgEd, GraphContext *graph)
         Vector2 p1 = cgEd->lastClickedPin.isInput ? cgEd->mousePos : cgEd->lastClickedPin.position;
         Vector2 p2 = cgEd->lastClickedPin.isInput ? cgEd->lastClickedPin.position : cgEd->mousePos;
 
-        DrawCurvedWire(p1, p2, 2.0f + 1.0f / cgEd->zoom, cgEd->lastClickedPin.type == PIN_FLOW ? (Color){180, 100, 200, 255} : (Color){0, 255, 255, 255});
+        DrawCurvedWire(p1, p2, 2.0f + 1.0f / cgEd->zoom, cgEd->lastClickedPin.type == PIN_FLOW ? (Color){180, 100, 200, 255} : (Color){0, 255, 255, 255}, cgEd->isLowSpecModeOn);
     }
 
     if (nodeToDelete != -1 && hoveredPinIndex == -1)
