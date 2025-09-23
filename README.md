@@ -1,11 +1,11 @@
 # <img width="44" height="32" alt="icon" src="https://github.com/user-attachments/assets/6cd5b753-9a23-4d7a-ba2c-b50ac599b534" /> Rapid Engine
 
 
+![RapidEngine stars](https://img.shields.io/github/stars/EmilDimov93/Rapid-Engine?style=plastic&label=⭐&color=FFD700)
 ![GitHub commits](https://img.shields.io/github/commit-activity/m/EmilDimov93/Rapid-Engine?style=plastic)
 ![Total Commits](https://img.shields.io/github/commit-activity/t/EmilDimov93/Rapid-Engine?style=plastic)
 ![GitHub last commit](https://img.shields.io/github/last-commit/EmilDimov93/Rapid-Engine?style=plastic)
-![46 Nodes](https://img.shields.io/badge/Nodes-48-purple?style=plastic)
-![RapidEngine stars](https://img.shields.io/github/stars/EmilDimov93/Rapid-Engine?style=plastic&label=⭐&color=FFD700)
+![48 Nodes](https://img.shields.io/badge/Nodes-48-purple?style=plastic)
 ![C](https://img.shields.io/badge/language-C-555555?style=plastic)
 ![Raylib](https://img.shields.io/badge/Library-Raylib-ff69b4?style=plastic)
 
