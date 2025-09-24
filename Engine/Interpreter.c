@@ -489,8 +489,9 @@ RuntimeGraphContext ConvertToRuntimeGraph(GraphContext *graph, InterpreterContex
             if (node->type == NODE_CREATE_NUMBER || node->type == NODE_CREATE_STRING || node->type == NODE_CREATE_BOOL || node->type == NODE_CREATE_COLOR || node->type == NODE_CREATE_SPRITE)
             {
                 isVariable = true;
-                if (node->inputPins[1])
+                if (node->inputPins[1]){
                     node->inputPins[1]->valueIndex = idx;
+                }
             }
 
             switch (pin->type)
@@ -681,7 +682,6 @@ RuntimeGraphContext ConvertToRuntimeGraph(GraphContext *graph, InterpreterContex
                 int fileIndex = -1;
                 int wIndex = -1;
                 int hIndex = -1;
-                int layerIndex = -1;
 
                 if (node->inputPins[1])
                     fileIndex = node->inputPins[1]->valueIndex;
@@ -689,8 +689,6 @@ RuntimeGraphContext ConvertToRuntimeGraph(GraphContext *graph, InterpreterContex
                     wIndex = node->inputPins[2]->valueIndex;
                 if (node->inputPins[3])
                     hIndex = node->inputPins[3]->valueIndex;
-                if (node->inputPins[4])
-                    layerIndex = node->inputPins[4]->valueIndex;
 
                 if (fileIndex != -1 && fileIndex < intp->valueCount && intp->values[fileIndex].string && intp->values[fileIndex].string[0])
                 {
@@ -719,20 +717,8 @@ RuntimeGraphContext ConvertToRuntimeGraph(GraphContext *graph, InterpreterContex
                     intp->components[intp->componentCount].sprite.width = intp->values[wIndex].number;
                 if (hIndex != -1 && hIndex < intp->valueCount)
                     intp->components[intp->componentCount].sprite.height = intp->values[hIndex].number;
-                if (layerIndex != -1 && layerIndex < intp->valueCount)
-                {
-                    if (intp->values[layerIndex].number < COMPONENT_LAYER_COUNT)
-                    {
-                        intp->components[intp->componentCount].sprite.layer = intp->values[layerIndex].number;
-                    }
-                    else if (intp->values[layerIndex].number < 0)
-                    {
-                        intp->components[intp->componentCount].sprite.layer = 0;
-                    }
-                    else
-                    {
-                        intp->components[intp->componentCount].sprite.layer = COMPONENT_LAYER_COLLISION_EVENTS_AND_BLOCKING;
-                    }
+                if(node->inputPins[4]->pickedOption >= 0 && node->inputPins[4]->pickedOption < COMPONENT_LAYER_COUNT){
+                    intp->components[intp->componentCount].sprite.layer = node->inputPins[4]->pickedOption;
                 }
 
                 intp->components[intp->componentCount].sprite.hitbox.type = HITBOX_POLY; // should support all types
@@ -798,20 +784,9 @@ RuntimeGraphContext ConvertToRuntimeGraph(GraphContext *graph, InterpreterContex
                 intp->components[intp->componentCount].prop.position.y = intp->values[node->inputPins[2]->valueIndex].number - intp->components[intp->componentCount].prop.height / 2;
             if (node->inputPins[5] && node->inputPins[5]->valueIndex < intp->valueCount)
                 intp->components[intp->componentCount].prop.color = intp->values[node->inputPins[5]->valueIndex].color;
-            if (node->inputPins[6] && node->inputPins[6]->valueIndex < intp->valueCount)
+            if (node->inputPins[6] && node->inputPins[6]->pickedOption >= 0 && node->inputPins[6]->pickedOption < COMPONENT_LAYER_COUNT)
             {
-                if (intp->values[node->inputPins[6]->valueIndex].number < COMPONENT_LAYER_COUNT)
-                {
-                    intp->components[intp->componentCount].prop.layer = intp->values[node->inputPins[6]->valueIndex].number;
-                }
-                else if (intp->values[node->inputPins[6]->valueIndex].number < 0)
-                {
-                    intp->components[intp->componentCount].prop.layer = 0;
-                }
-                else
-                {
-                    intp->components[intp->componentCount].prop.layer = COMPONENT_LAYER_COLLISION_EVENTS_AND_BLOCKING;
-                }
+                intp->components[intp->componentCount].prop.layer = node->inputPins[6]->pickedOption;
             }
 
             intp->components[intp->componentCount].prop.hitbox.type = HITBOX_RECT;
@@ -836,20 +811,9 @@ RuntimeGraphContext ConvertToRuntimeGraph(GraphContext *graph, InterpreterContex
                 intp->components[intp->componentCount].prop.height = intp->values[node->inputPins[3]->valueIndex].number * 2;
             if (node->inputPins[4] && node->inputPins[4]->valueIndex < intp->valueCount)
                 intp->components[intp->componentCount].prop.color = intp->values[node->inputPins[4]->valueIndex].color;
-            if (node->inputPins[5] && node->inputPins[5]->valueIndex < intp->valueCount)
+            if (node->inputPins[5] && node->inputPins[5]->pickedOption >= 0 && node->inputPins[5]->pickedOption < COMPONENT_LAYER_COUNT)
             {
-                if (intp->values[node->inputPins[5]->valueIndex].number < COMPONENT_LAYER_COUNT)
-                {
-                    intp->components[intp->componentCount].prop.layer = intp->values[node->inputPins[5]->valueIndex].number;
-                }
-                else if (intp->values[node->inputPins[5]->valueIndex].number < 0)
-                {
-                    intp->components[intp->componentCount].prop.layer = 0;
-                }
-                else
-                {
-                    intp->components[intp->componentCount].prop.layer = COMPONENT_LAYER_COLLISION_EVENTS_AND_BLOCKING;
-                }
+                intp->components[intp->componentCount].prop.layer = node->inputPins[5]->pickedOption;
             }
 
             intp->components[intp->componentCount].prop.hitbox.type = HITBOX_CIRCLE;
@@ -1078,9 +1042,9 @@ void InterpretStringOfNodes(int lastNodeIndex, InterpreterContext *intp, Runtime
         {
             sprite->height = intp->values[node->inputPins[3]->valueIndex].number;
         }
-        if (node->inputPins[4]->valueIndex != -1)
+        if (node->inputPins[4]->pickedOption >= 0 && node->inputPins[4]->pickedOption < COMPONENT_LAYER_COUNT)
         {
-            sprite->layer = intp->values[node->inputPins[4]->valueIndex].number;
+            sprite->layer = node->inputPins[4]->pickedOption;
         }
         if (node->outputPins[1]->componentIndex != -1)
         {

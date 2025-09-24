@@ -1096,7 +1096,7 @@ void DrawNodes(CGEditorContext *cgEd, GraphContext *graph)
                 hoveredPinIndex = i;
             }
         }
-        else if (graph->pins[i].type == PIN_DROPDOWN_COMPARISON_OPERATOR || graph->pins[i].type == PIN_DROPDOWN_GATE || graph->pins[i].type == PIN_DROPDOWN_ARITHMETIC || graph->pins[i].type == PIN_DROPDOWN_KEY_ACTION || graph->pins[i].type == PIN_VARIABLE || graph->pins[i].type == PIN_SPRITE_VARIABLE)
+        else if (graph->pins[i].type == PIN_DROPDOWN_COMPARISON_OPERATOR || graph->pins[i].type == PIN_DROPDOWN_GATE || graph->pins[i].type == PIN_DROPDOWN_ARITHMETIC || graph->pins[i].type == PIN_DROPDOWN_KEY_ACTION || graph->pins[i].type == PIN_DROPDOWN_LAYER || graph->pins[i].type == PIN_VARIABLE || graph->pins[i].type == PIN_SPRITE_VARIABLE)
         {
             HandleDropdownMenu(graph, i, hoveredNodeIndex, currNodeIndex, cgEd);
         }

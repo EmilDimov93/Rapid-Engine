@@ -96,7 +96,8 @@ typedef enum
     PIN_SPRITE_VARIABLE,
     PIN_ANY_VALUE,
     PIN_UNKNOWN_VALUE,
-    PIN_EDIT_HITBOX
+    PIN_EDIT_HITBOX,
+    PIN_DROPDOWN_LAYER
 } PinType;
 
 typedef enum
@@ -187,7 +188,7 @@ static InfoByType NodeInfoByType[] = {
     {NODE_BREAK, 1, 0, 130, 100, {90, 90, 90, 200}, false, {PIN_FLOW}, {0}, {"Prev"}, {0}, true},                                     // not implemented
     {NODE_RETURN, 2, 0, 130, 100, {90, 90, 90, 200}, false, {PIN_FLOW, PIN_UNKNOWN_VALUE}, {0}, {"Prev", "Return value"}, {0}, true}, // not implemented
 
-    {NODE_CREATE_SPRITE, 6, 2, 220, 230, {70, 100, 70, 200}, true, {PIN_FLOW, PIN_STRING, PIN_NUM, PIN_NUM, PIN_NUM, PIN_EDIT_HITBOX}, {PIN_FLOW, PIN_SPRITE}, {"Prev", "Texture file name", "Width", "Height", "Layer", "Hitbox"}, {"Next", "Sprite"}},
+    {NODE_CREATE_SPRITE, 6, 2, 220, 230, {70, 100, 70, 200}, true, {PIN_FLOW, PIN_STRING, PIN_NUM, PIN_NUM, PIN_DROPDOWN_LAYER, PIN_EDIT_HITBOX}, {PIN_FLOW, PIN_SPRITE}, {"Prev", "Texture file name", "Width", "Height", "Layer", "Hitbox"}, {"Next", "Sprite"}},
     {NODE_SPAWN_SPRITE, 5, 1, 120, 190, {40, 110, 70, 200}, false, {PIN_FLOW, PIN_SPRITE_VARIABLE, PIN_NUM, PIN_NUM, PIN_NUM}, {PIN_FLOW}, {"Prev", "Sprite", "Pos X", "Pos Y", "Rotation"}, {"Next"}},
     {NODE_DESTROY_SPRITE, 2, 1, 120, 100, {40, 110, 70, 200}, false, {PIN_FLOW, PIN_SPRITE_VARIABLE}, {PIN_FLOW}, {"Prev", "Sprite"}, {"Next"}},
     {NODE_SET_SPRITE_POSITION, 4, 1, 185, 160, {40, 110, 70, 200}, false, {PIN_FLOW, PIN_SPRITE_VARIABLE, PIN_NUM, PIN_NUM}, {PIN_FLOW}, {"Prev", "Sprite", "X", "Y"}, {"Next"}},
@@ -198,8 +199,8 @@ static InfoByType NodeInfoByType[] = {
     {NODE_FORCE_SPRITE, 5, 1, 160, 190, {40, 110, 70, 200}, false, {PIN_FLOW, PIN_SPRITE_VARIABLE, PIN_NUM, PIN_NUM, PIN_NUM}, {PIN_FLOW}, {"Prev", "Sprite", "Pixels / second", "Angle", "Time"}, {"Next"}},
 
     {NODE_DRAW_PROP_TEXTURE, 0, 0, 260, 36, {0, 0, 0, 255}, false, {0}, {0}, {0}, {0}, true},                                                                                                                                                   // not implemented
-    {NODE_DRAW_PROP_RECTANGLE, 7, 2, 230, 250, {40, 110, 70, 200}, false, {PIN_FLOW, PIN_NUM, PIN_NUM, PIN_NUM, PIN_NUM, PIN_COLOR, PIN_NUM}, {PIN_FLOW, PIN_NONE}, {"Prev", "Pos X", "Pos Y", "Width", "Height", "Color", "Layer"}, {"Next"}}, // shouldn't have PIN_NONE
-    {NODE_DRAW_PROP_CIRCLE, 6, 2, 230, 230, {40, 110, 70, 200}, false, {PIN_FLOW, PIN_NUM, PIN_NUM, PIN_NUM, PIN_COLOR, PIN_NUM}, {PIN_FLOW, PIN_NONE}, {"Prev", "Pos X", "Pos Y", "Radius", "Color", "Layer"}, {"Next"}},                      // shouldn't have PIN_NONE
+    {NODE_DRAW_PROP_RECTANGLE, 7, 2, 230, 260, {40, 110, 70, 200}, false, {PIN_FLOW, PIN_NUM, PIN_NUM, PIN_NUM, PIN_NUM, PIN_COLOR, PIN_DROPDOWN_LAYER}, {PIN_FLOW, PIN_NONE}, {"Prev", "Pos X", "Pos Y", "Width", "Height", "Color", "Layer"}, {"Next"}}, // shouldn't have PIN_NONE
+    {NODE_DRAW_PROP_CIRCLE, 6, 2, 230, 240, {40, 110, 70, 200}, false, {PIN_FLOW, PIN_NUM, PIN_NUM, PIN_NUM, PIN_COLOR, PIN_DROPDOWN_LAYER}, {PIN_FLOW, PIN_NONE}, {"Prev", "Pos X", "Pos Y", "Radius", "Color", "Layer"}, {"Next"}},                      // shouldn't have PIN_NONE
 
     {NODE_COMPARISON, 4, 2, 210, 160, {60, 100, 159, 200}, false, {PIN_FLOW, PIN_DROPDOWN_COMPARISON_OPERATOR, PIN_NUM, PIN_NUM}, {PIN_FLOW, PIN_BOOL}, {"Prev", "Operator", "Value A", "Value B"}, {"Next", "Result"}},
     {NODE_GATE, 4, 2, 180, 160, {60, 100, 159, 200}, false, {PIN_FLOW, PIN_DROPDOWN_GATE, PIN_BOOL, PIN_BOOL}, {PIN_FLOW, PIN_BOOL}, {"Prev", "Gate", "Condition A", "Condition B"}, {"Next", "Result"}},
@@ -265,12 +266,15 @@ static char *comparisonOps[] = {"Equal To", "Greater Than", "Less Than"};
 static char *gateOps[] = {"AND", "OR", "NOT", "XOR", "NAND", "NOR"};
 static char *arithmeticOps[] = {"ADD", "SUBTRACT", "MULTIPLY", "DIVIDE", "MODULO"};
 static char *keyActionOps[] = {"Pressed", "Released", "Down", "Not down"};
+static char *layerOps[] = {"No Collision", "Events only", "Block only", "Events & Block"};
 
 static DropdownOptionsByPinType PinDropdownOptionsByType[] = {
     {PIN_DROPDOWN_COMPARISON_OPERATOR, 3, comparisonOps, 130},
     {PIN_DROPDOWN_GATE, 6, gateOps, 70},
     {PIN_DROPDOWN_ARITHMETIC, 5, arithmeticOps, 115},
-    {PIN_DROPDOWN_KEY_ACTION, 4, keyActionOps, 110}};
+    {PIN_DROPDOWN_KEY_ACTION, 4, keyActionOps, 110},
+    {PIN_DROPDOWN_LAYER, 4, layerOps, 150}
+};
 
 static inline DropdownOptionsByPinType getPinDropdownOptionsByType(PinType type)
 {
