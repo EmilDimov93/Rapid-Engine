@@ -2084,7 +2084,7 @@ void SetEngineMouseCursor(EngineContext *eng, CGEditorContext *cgEd)
     return;
 }
 
-int GetEngineFPS(EngineContext *eng, CGEditorContext *cgEd, InterpreterContext *intp)
+int SetEngineFPS(EngineContext *eng, CGEditorContext *cgEd, InterpreterContext *intp)
 {
     int fps;
 
@@ -2117,7 +2117,7 @@ int GetEngineFPS(EngineContext *eng, CGEditorContext *cgEd, InterpreterContext *
         fps = eng->fpsLimit;
     }
 
-    return fps;
+    SetTargetFPS(fps);
 }
 
 void SetEngineZoom(EngineContext *eng, CGEditorContext *cgEd, InterpreterContext *intp)
@@ -2240,7 +2240,7 @@ int main()
 
         SetEngineMouseCursor(&eng, &cgEd);
 
-        SetTargetFPS(GetEngineFPS(&eng, &cgEd, &intp));
+        SetEngineFPS(&eng, &cgEd, &intp);
 
         SetEngineZoom(&eng, &cgEd, &intp);
 
