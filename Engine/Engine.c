@@ -291,9 +291,13 @@ FileType GetFileType(const char *folderPath, const char *fileName)
     if (!ext || *(ext + 1) == '\0')
     {
         if (DirectoryExists(fullPath))
+        {
             return FILE_FOLDER;
+        }
         else
+        {
             return FILE_OTHER;
+        }
     }
 
     if (strcmp(ext + 1, "cg") == 0)
@@ -340,10 +344,8 @@ int DrawSaveWarning(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
     eng->isViewportFocused = false;
     int popupWidth = 500;
     int popupHeight = 150;
-    int screenWidth = eng->screenWidth;
-    int screenHeight = eng->screenHeight;
-    int popupX = (screenWidth - popupWidth) / 2;
-    int popupY = (screenHeight - popupHeight) / 2 - 100;
+    int popupX = (eng->screenWidth - popupWidth) / 2;
+    int popupY = (eng->screenHeight - popupHeight) / 2 - 100;
 
     const char *message = "Save changes before exiting?";
     int textWidth = MeasureTextEx(eng->font, message, 30, 0).x;
@@ -360,7 +362,7 @@ int DrawSaveWarning(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
     Rectangle closeBtn = {btnStartX + btnWidth + btnSpacing, btnY, btnWidth + 20, btnHeight};
     Rectangle cancelBtn = {btnStartX + 2 * (btnWidth + btnSpacing) + 20, btnY, btnWidth, btnHeight};
 
-    DrawRectangle(0, 0, screenWidth, screenHeight, (Color){0, 0, 0, 150});
+    DrawRectangle(0, 0, eng->screenWidth, eng->screenHeight, (Color){0, 0, 0, 150});
 
     DrawRectangleRounded((Rectangle){popupX, popupY, popupWidth, popupHeight}, 0.4f, 8, (Color){30, 30, 30, 255});
     DrawRectangleRoundedLines((Rectangle){popupX, popupY, popupWidth, popupHeight}, 0.4f, 8, (Color){200, 200, 200, 255});
@@ -578,9 +580,11 @@ bool DrawSettingsMenu(EngineContext *eng, InterpreterContext *intp, CGEditorCont
     case SETTINGS_MODE_ENGINE:
         DrawTextEx(eng->font, "Sound", (Vector2){eng->screenWidth / 4 + 200, 300}, 28, 1, WHITE);
         DrawSlider((Vector2){eng->screenWidth * 3 / 4 - 70, 305}, &eng->isSoundOn, eng->mousePos);
-        if(intp->isSoundOn != eng->isSoundOn){
+        if (intp->isSoundOn != eng->isSoundOn)
+        {
             intp->isSoundOn = eng->isSoundOn;
-            intp->hasSoundOnChanged = true;;
+            intp->hasSoundOnChanged = true;
+            ;
         }
 
         DrawTextEx(eng->font, "Auto Save Every 2 Minutes", (Vector2){eng->screenWidth / 4 + 200, 350}, 28, 1, WHITE);
@@ -594,7 +598,8 @@ bool DrawSettingsMenu(EngineContext *eng, InterpreterContext *intp, CGEditorCont
 
         DrawTextEx(eng->font, "Low-spec mode", (Vector2){eng->screenWidth / 4 + 200, 500}, 28, 1, WHITE);
         DrawSlider((Vector2){eng->screenWidth * 3 / 4 - 70, 505}, &eng->isLowSpecModeOn, eng->mousePos);
-        if(cgEd->isLowSpecModeOn != eng->isLowSpecModeOn){
+        if (cgEd->isLowSpecModeOn != eng->isLowSpecModeOn)
+        {
             cgEd->isLowSpecModeOn = eng->isLowSpecModeOn;
             cgEd->delayFrames = true;
         }
@@ -633,9 +638,9 @@ FilePathList LoadAndSortFiles(const char *path)
 
     for (int i = 0; i < files.count - 1; i++)
     {
+        FileType ti = GetFileType(path, GetFileName(files.paths[i]));
         for (int j = i + 1; j < files.count; j++)
         {
-            FileType ti = GetFileType(path, GetFileName(files.paths[i]));
             FileType tj = GetFileType(path, GetFileName(files.paths[j]));
 
             if (ti > tj || (ti == tj && strcmp(files.paths[i], files.paths[j]) > 0))
@@ -652,16 +657,16 @@ FilePathList LoadAndSortFiles(const char *path)
 
 void CountingSortByLayer(EngineContext *eng)
 {
-    int **elements = malloc(MAX_LAYER_COUNT * sizeof(int *));
-    int *layerCount = calloc(MAX_LAYER_COUNT, sizeof(int));
-    for (int i = 0; i < MAX_LAYER_COUNT; i++)
+    int **elements = malloc(UI_LAYER_COUNT * sizeof(int *));
+    int *layerCount = calloc(UI_LAYER_COUNT, sizeof(int));
+    for (int i = 0; i < UI_LAYER_COUNT; i++)
     {
         elements[i] = malloc(eng->uiElementCount * sizeof(int));
     }
 
     for (int i = 0; i < eng->uiElementCount; i++)
     {
-        if (eng->uiElements[i].layer < MAX_LAYER_COUNT)
+        if (eng->uiElements[i].layer < UI_LAYER_COUNT)
         {
             elements[eng->uiElements[i].layer][layerCount[eng->uiElements[i].layer]] = i;
             layerCount[eng->uiElements[i].layer]++;
@@ -671,7 +676,7 @@ void CountingSortByLayer(EngineContext *eng)
     UIElement *sorted = malloc(sizeof(UIElement) * eng->uiElementCount);
     int sortedCount = 0;
 
-    for (int i = 0; i < MAX_LAYER_COUNT; i++)
+    for (int i = 0; i < UI_LAYER_COUNT; i++)
     {
         for (int j = 0; j < layerCount[i]; j++)
         {
@@ -683,7 +688,7 @@ void CountingSortByLayer(EngineContext *eng)
     free(sorted);
     free(layerCount);
 
-    for (int i = 0; i < MAX_LAYER_COUNT; i++)
+    for (int i = 0; i < UI_LAYER_COUNT; i++)
     {
         free(elements[i]);
     }
@@ -938,16 +943,16 @@ void DrawUIElements(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
             break;
 
         case UI_ACTION_VAR_TOOLTIP_RUNTIME:
-            strmac(temp, MAX_VARIABLE_TOOLTIP_SIZE, "%s %s = %s", ValueTypeToString(intp->values[eng->uiElements[eng->hoveredUIElementIndex].valueIndex].type), intp->values[eng->uiElements[eng->hoveredUIElementIndex].valueIndex].name, ValueToString(intp->values[eng->uiElements[eng->hoveredUIElementIndex].valueIndex]));
             AddUIElement(eng, (UIElement){
                                   .name = "VarTooltip",
                                   .shape = UIRectangle,
                                   .type = UI_ACTION_NO_COLLISION_ACTION,
-                                  .rect = {.pos = {eng->sideBarWidth, eng->uiElements[eng->hoveredUIElementIndex].rect.pos.y}, .recSize = {MeasureTextEx(eng->font, temp, 20, 0).x + 20, 40}, .roundness = 0.4f, .roundSegments = 8},
+                                  .rect = {.pos = {eng->sideBarWidth, eng->uiElements[eng->hoveredUIElementIndex].rect.pos.y}, .recSize = {0, 40}, .roundness = 0.4f, .roundSegments = 8},
                                   .color = DARKGRAY,
                                   .layer = 1,
                                   .text = {.textPos = {eng->sideBarWidth + 10, eng->uiElements[eng->hoveredUIElementIndex].rect.pos.y + 10}, .textSize = 20, .textSpacing = 0, .textColor = WHITE}});
-            strmac(eng->uiElements[eng->uiElementCount - 1].text.string, MAX_VARIABLE_TOOLTIP_SIZE, "%s", temp);
+            strmac(eng->uiElements[eng->uiElementCount - 1].text.string, MAX_VARIABLE_TOOLTIP_SIZE, "%s %s = %s", ValueTypeToString(intp->values[eng->uiElements[eng->hoveredUIElementIndex].valueIndex].type), intp->values[eng->uiElements[eng->hoveredUIElementIndex].valueIndex].name, ValueToString(intp->values[eng->uiElements[eng->hoveredUIElementIndex].valueIndex]));
+            eng->uiElements[eng->uiElementCount - 1].rect.recSize.x = MeasureTextEx(eng->font, eng->uiElements[eng->uiElementCount - 1].text.string, 20, 0).x + 20;
             break;
 
         case UI_ACTION_CHANGE_VARS_FILTER:
@@ -976,7 +981,7 @@ void DrawUIElements(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                                   .type = UI_ACTION_NO_COLLISION_ACTION,
                                   .rect = {.pos = {eng->uiElements[eng->hoveredUIElementIndex].rect.pos.x, eng->uiElements[eng->hoveredUIElementIndex].rect.pos.y}, .recSize = {eng->uiElements[eng->hoveredUIElementIndex].rect.recSize.x, eng->uiElements[eng->hoveredUIElementIndex].rect.recSize.y}, .roundness = eng->uiElements[eng->hoveredUIElementIndex].rect.roundness, .roundSegments = eng->uiElements[eng->hoveredUIElementIndex].rect.roundSegments},
                                   .color = eng->uiElements[eng->hoveredUIElementIndex].rect.hoverColor,
-                                  .layer = 99});
+                                  .layer = 3});
         }
     }
 
@@ -1106,20 +1111,21 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
     }
 
     int logY = eng->screenHeight - eng->bottomBarHeight - 30;
-    char cutMessage[256];
+    char cutMessage[MAX_LOG_MESSAGE_SIZE];
     for (int i = eng->logs.count - 1; i >= 0 && logY > eng->sideBarMiddleY + 60 + eng->sideBarHalfSnap * 40; i--)
     {
         const char *msgNoTimestamp = eng->logs.entries[i].message + 9;
 
-        char finalMsg[256];
+        char finalMsg[MAX_LOG_MESSAGE_SIZE];
         strmac(finalMsg, MAX_LOG_MESSAGE_SIZE, "%s", eng->logs.entries[i].message);
 
         int repeatCount = 1;
         while (i - repeatCount >= 0)
         {
             const char *prevMsgNoTimestamp = eng->logs.entries[i - repeatCount].message + 9;
-            if (strcmp(msgNoTimestamp, prevMsgNoTimestamp) != 0)
+            if (strcmp(msgNoTimestamp, prevMsgNoTimestamp) != 0){
                 break;
+            }
             repeatCount++;
         }
 
@@ -1137,7 +1143,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
         int j;
         for (j = 0; j < (int)strlen(finalMsg); j++)
         {
-            char temp[256];
+            char temp[MAX_LOG_MESSAGE_SIZE];
             strmac(temp, MAX_LOG_MESSAGE_SIZE, "%.*s", j, finalMsg);
             temp[j] = '\0';
 
@@ -1612,11 +1618,11 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
     // Top bar background
     DrawCircleSector((Vector2){eng->screenWidth - 150, 1}, 50, 90, 180, 8, (Color){40, 40, 40, 255});
 
-    DrawCircleLines(eng->screenWidth - 150, 1, 50, WHITE);
+    DrawRing((Vector2){eng->screenWidth - 150, 2.5f}, 47, 50, 0, 360, 64, WHITE);
 
     DrawRectangle(eng->screenWidth - 150, 0, 150, 50, (Color){40, 40, 40, 255});
 
-    DrawLine(eng->screenWidth - 150, 50, eng->screenWidth, 50, WHITE);
+    DrawLineEx((Vector2){eng->screenWidth - 150, 50}, (Vector2){eng->screenWidth, 50}, 3, WHITE);
 
     DrawUIElements(eng, graph, cgEd, intp, runtimeGraph);
 
@@ -2149,7 +2155,8 @@ void SetEngineZoom(EngineContext *eng, CGEditorContext *cgEd, InterpreterContext
     {
         eng->zoom = intp->zoom;
     }
-    else{
+    else
+    {
         eng->zoom = 1.0f;
         cgEd->zoom = 1.0f;
         intp->zoom = 1.0f;

@@ -10,7 +10,7 @@
 
 const double doubleClickThreshold = 0.3;
 
-#define MAX_LAYER_COUNT 100
+#define UI_LAYER_COUNT 4
 
 #define MIN_WINDOW_WIDTH 300
 #define MIN_WINDOW_HEIGHT 300
