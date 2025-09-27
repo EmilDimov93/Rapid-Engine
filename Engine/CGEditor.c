@@ -328,8 +328,9 @@ const char *AddEllipsis(Font font, const char *text, float fontSize, float maxWi
 {
     static char result[MAX_LITERAL_NODE_FIELD_SIZE];
     float fullWidth = MeasureTextEx(font, text, fontSize, 0).x;
-    if (fullWidth <= maxWidth)
+    if (fullWidth <= maxWidth){
         return text;
+    }
 
     int len = strlen(text);
     int maxChars = 0;
@@ -345,8 +346,9 @@ const char *AddEllipsis(Font font, const char *text, float fontSize, float maxWi
         temp[c] = '\0';
 
         float width = MeasureTextEx(font, temp, fontSize, 0).x + MeasureTextEx(font, "...", fontSize, 0).x;
-        if (width > maxWidth)
+        if (width > maxWidth){
             break;
+        }
 
         maxChars = c;
     }

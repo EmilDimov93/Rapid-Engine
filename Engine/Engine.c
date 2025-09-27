@@ -1266,7 +1266,6 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
         }
 
         Color varColor;
-        strmac(cutMessage, MAX_VARIABLE_NAME_SIZE, "%s", eng->isGameRunning ? intp->values[i].name : graph->variables[i]);
         switch (eng->isGameRunning ? intp->values[i].type : graph->variableTypes[i])
         {
         case VAL_NUMBER:
@@ -1322,35 +1321,16 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                               .layer = 1,
                               .valueIndex = i});
 
-        float dotsWidth = MeasureTextEx(eng->font, "...", 24, 2).x;
-        int j;
-        bool wasCut = false;
-        for (j = 1; j <= strlen(cutMessage); j++)
-        {
-            char temp[MAX_VARIABLE_NAME_SIZE];
-            strmac(temp, MAX_VARIABLE_NAME_SIZE, "%.*s", j, cutMessage);
+        char varName[MAX_VARIABLE_NAME_SIZE];
 
-            float textWidth = MeasureTextEx(eng->font, temp, 24, 2).x;
-            if (textWidth + dotsWidth < eng->sideBarWidth - 80)
-            {
-                continue;
-            }
-
-            wasCut = true;
-            j--;
-            break;
-        }
-
+        strmac(varName, MAX_VARIABLE_NAME_SIZE, "%s", eng->isGameRunning ? intp->values[i].name : graph->variables[i]);
         bool textHidden = false;
-
-        if (wasCut && j < MAX_VARIABLE_NAME_SIZE - 4)
-        {
-            strmac(cutMessage, MAX_VARIABLE_NAME_SIZE, "%s...", cutMessage);
-        }
-        if (wasCut && j == 0)
-        {
-            cutMessage[0] = '\0';
+        if(eng->sideBarHalfSnap || MeasureTextEx(eng->font, "...", 24, 2).x > eng->sideBarWidth - 80 - 20){
             textHidden = true;
+            varName[0] = '\0';
+        }
+        else{
+            strmac(varName, MAX_VARIABLE_NAME_SIZE, "%s", AddEllipsis(eng->font, varName, 24, eng->sideBarWidth - 80, false));
         }
 
         AddUIElement(eng, (UIElement){
@@ -1362,7 +1342,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                               .text = {.textPos = {25, varsY}, .textSize = 24, .textSpacing = 2, .textColor = WHITE},
                               .layer = 2});
 
-        strmac(eng->uiElements[eng->uiElementCount - 1].text.string, MAX_VARIABLE_NAME_SIZE, "%s", cutMessage);
+        strmac(eng->uiElements[eng->uiElementCount - 1].text.string, MAX_VARIABLE_NAME_SIZE, "%s", varName);
         varsY += 40;
     }
 
