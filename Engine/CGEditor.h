@@ -81,6 +81,4 @@ CGEditorContext InitEditorContext(void);
 
 void FreeEditorContext(CGEditorContext *editor);
 
-const char *AddEllipsis(Font font, const char *text, float fontSize, float maxWidth, bool showEnd);
-
 void HandleEditor(CGEditorContext *editor, GraphContext *graph, RenderTexture2D *viewport, Vector2 mousePos, bool draggingDisabled, bool isSecondFrame);

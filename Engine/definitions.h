@@ -127,3 +127,41 @@ char* strmac(char* buf, size_t max_size, const char* format, ...) {
 
     return temp;
 }
+
+const char *AddEllipsis(Font font, const char *text, float fontSize, float maxWidth, bool showEnd)
+{
+    if (MeasureTextEx(font, text, fontSize, 0).x <= maxWidth){
+        return text;
+    }
+
+    int len = strlen(text);
+    int maxChars = 0;
+    char temp[MAX_LITERAL_NODE_FIELD_SIZE];
+
+    float ellipsisWidth = MeasureTextEx(font, "...", fontSize, 0).x;
+
+    for (int i = 1; i <= len; i++)
+    {
+        if (showEnd){
+            strmac(temp, i, "%s", text + len - i);
+        }
+        else{
+            strmac(temp, i, "%.*s", i, text);
+        }
+
+        if (MeasureTextEx(font, temp, fontSize, 0).x + ellipsisWidth > maxWidth){
+            break;
+        }
+
+        maxChars = i;
+    }
+
+    if (showEnd)
+    {
+        return TextFormat("...%s", text + len - maxChars);
+    }
+    else
+    {
+        return TextFormat("%.*s...", maxChars, text);
+    }
+}

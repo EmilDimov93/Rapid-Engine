@@ -1111,52 +1111,23 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
     }
 
     int logY = eng->screenHeight - eng->bottomBarHeight - 30;
-    char cutMessage[MAX_LOG_MESSAGE_SIZE];
     for (int i = eng->logs.count - 1; i >= 0 && logY > eng->sideBarMiddleY + 60 + eng->sideBarHalfSnap * 40; i--)
     {
-        const char *msgNoTimestamp = eng->logs.entries[i].message + 9;
+        char logMessage[MAX_LOG_MESSAGE_SIZE];
+        strmac(logMessage, MAX_LOG_MESSAGE_SIZE, "%s", eng->logs.entries[i]);
 
-        char finalMsg[MAX_LOG_MESSAGE_SIZE];
-        strmac(finalMsg, MAX_LOG_MESSAGE_SIZE, "%s", eng->logs.entries[i].message);
-
-        int repeatCount = 1;
-        while (i - repeatCount >= 0)
+        if (eng->sideBarHalfSnap)
         {
-            const char *prevMsgNoTimestamp = eng->logs.entries[i - repeatCount].message + 9;
-            if (strcmp(msgNoTimestamp, prevMsgNoTimestamp) != 0){
-                break;
-            }
-            repeatCount++;
+            logMessage[5] = '\0';
         }
-
-        if (repeatCount > 1)
+        else
         {
-            strmac(finalMsg, MAX_LOG_MESSAGE_SIZE, "[x%d] %s", repeatCount, eng->logs.entries[i].message);
-            i -= (repeatCount - 1);
-        }
-
-        if (eng->logs.entries[i].level != LOG_LEVEL_DEBUG)
-        {
-            finalMsg[strlen(finalMsg) - 6] = '\0';
-        }
-
-        int j;
-        for (j = 0; j < (int)strlen(finalMsg); j++)
-        {
-            char temp[MAX_LOG_MESSAGE_SIZE];
-            strmac(temp, MAX_LOG_MESSAGE_SIZE, "%.*s", j, finalMsg);
-            temp[j] = '\0';
-
-            if (MeasureTextEx(eng->font, temp, 20, 2).x < eng->sideBarWidth - 25)
+            if (eng->logs.entries[i].level != LOG_LEVEL_DEBUG)
             {
-                continue;
+                logMessage[strlen(logMessage) - 6] = '\0';
             }
-            else
-            {
-                break;
-            }
+            strmac(logMessage, MAX_LOG_MESSAGE_SIZE, "%s", AddEllipsis(eng->font, logMessage, 24, eng->sideBarWidth - 40, false));
         }
-        strmac(cutMessage, MAX_LOG_MESSAGE_SIZE, "%.*s", j, finalMsg);
 
         Color logColor;
         switch (eng->logs.entries[i].level)
@@ -1188,7 +1159,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                               .text = {.textPos = {10, logY}, .textSize = 20, .textSpacing = 2, .textColor = logColor},
                               .layer = 0});
 
-        strmac(eng->uiElements[eng->uiElementCount - 1].text.string, MAX_LOG_MESSAGE_SIZE, cutMessage);
+        strmac(eng->uiElements[eng->uiElementCount - 1].text.string, MAX_LOG_MESSAGE_SIZE, logMessage);
 
         logY -= 25;
     }
@@ -1325,11 +1296,13 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
 
         strmac(varName, MAX_VARIABLE_NAME_SIZE, "%s", eng->isGameRunning ? intp->values[i].name : graph->variables[i]);
         bool textHidden = false;
-        if(eng->sideBarHalfSnap || MeasureTextEx(eng->font, "...", 24, 2).x > eng->sideBarWidth - 80 - 20){
+        if (eng->sideBarHalfSnap || MeasureTextEx(eng->font, "...", 24, 2).x > eng->sideBarWidth - 80 - 20)
+        {
             textHidden = true;
             varName[0] = '\0';
         }
-        else{
+        else
+        {
             strmac(varName, MAX_VARIABLE_NAME_SIZE, "%s", AddEllipsis(eng->font, varName, 24, eng->sideBarWidth - 80, false));
         }
 

@@ -324,51 +324,6 @@ void HandleVarNameTextBox(CGEditorContext *cgEd, Rectangle bounds, char *text, i
     }
 }
 
-const char *AddEllipsis(Font font, const char *text, float fontSize, float maxWidth, bool showEnd)
-{
-    static char result[MAX_LITERAL_NODE_FIELD_SIZE];
-    float fullWidth = MeasureTextEx(font, text, fontSize, 0).x;
-    if (fullWidth <= maxWidth){
-        return text;
-    }
-
-    int len = strlen(text);
-    int maxChars = 0;
-    char temp[MAX_LITERAL_NODE_FIELD_SIZE];
-
-    for (int c = 1; c <= len; c++)
-    {
-        if (showEnd)
-            strmac(temp, c, "%s", text + len - c);
-        else
-            strmac(temp, c, "%.*s", c, text);
-
-        temp[c] = '\0';
-
-        float width = MeasureTextEx(font, temp, fontSize, 0).x + MeasureTextEx(font, "...", fontSize, 0).x;
-        if (width > maxWidth){
-            break;
-        }
-
-        maxChars = c;
-    }
-
-    if (showEnd)
-    {
-        strmac(temp, maxChars, "%s", text + len - maxChars);
-        temp[maxChars] = '\0';
-        strmac(result, sizeof(result), "...%s", temp);
-    }
-    else
-    {
-        strmac(temp, maxChars, "%.*s", maxChars, text);
-        temp[maxChars] = '\0';
-        strmac(result, sizeof(result), "%s...", temp);
-    }
-
-    return result;
-}
-
 void HandleLiteralNodeField(CGEditorContext *cgEd, GraphContext *graph, int currPinIndex)
 {
     PinType type = graph->pins[currPinIndex].type;
