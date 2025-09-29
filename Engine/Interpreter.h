@@ -205,6 +205,8 @@ typedef struct
     bool buildFailed;
     bool buildErrorOccured;
 
+    bool *isGameRunning;
+
     bool shouldShowHitboxes;
 
     bool isPaused;

@@ -2138,7 +2138,7 @@ int main()
     EngineContext eng = InitEngineContext();
     CGEditorContext cgEd = InitEditorContext();
     GraphContext graph = InitGraphContext();
-    InterpreterContext intp = InitInterpreterContext();
+    InterpreterContext intp = InitInterpreterContext(); intp.isGameRunning = &eng.isGameRunning;
     RuntimeGraphContext runtimeGraph = {0};
 
     eng.currentPath = SetProjectFolderPath(&eng, fileName);

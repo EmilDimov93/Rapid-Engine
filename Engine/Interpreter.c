@@ -489,7 +489,8 @@ RuntimeGraphContext ConvertToRuntimeGraph(GraphContext *graph, InterpreterContex
             if (node->type == NODE_CREATE_NUMBER || node->type == NODE_CREATE_STRING || node->type == NODE_CREATE_BOOL || node->type == NODE_CREATE_COLOR || node->type == NODE_CREATE_SPRITE)
             {
                 isVariable = true;
-                if (node->inputPins[1]){
+                if (node->inputPins[1])
+                {
                     node->inputPins[1]->valueIndex = idx;
                 }
             }
@@ -717,7 +718,8 @@ RuntimeGraphContext ConvertToRuntimeGraph(GraphContext *graph, InterpreterContex
                     intp->components[intp->componentCount].sprite.width = intp->values[wIndex].number;
                 if (hIndex != -1 && hIndex < intp->valueCount)
                     intp->components[intp->componentCount].sprite.height = intp->values[hIndex].number;
-                if(node->inputPins[4]->pickedOption >= 0 && node->inputPins[4]->pickedOption < COMPONENT_LAYER_COUNT){
+                if (node->inputPins[4]->pickedOption >= 0 && node->inputPins[4]->pickedOption < COMPONENT_LAYER_COUNT)
+                {
                     intp->components[intp->componentCount].sprite.layer = node->inputPins[4]->pickedOption;
                 }
 
@@ -1313,10 +1315,12 @@ void InterpretStringOfNodes(int lastNodeIndex, InterpreterContext *intp, Runtime
     {
         if (node->inputPins[1]->valueIndex != -1)
         {
-            if(intp->zoom + intp->values[node->inputPins[1]->valueIndex].number >= MIN_ZOOM){
+            if (intp->zoom + intp->values[node->inputPins[1]->valueIndex].number >= MIN_ZOOM)
+            {
                 intp->zoom += intp->values[node->inputPins[1]->valueIndex].number;
             }
-            else{
+            else
+            {
                 intp->zoom = MIN_ZOOM;
             }
         }
@@ -1592,7 +1596,9 @@ bool CheckCollisionPolyRect(Polygon *poly, Vector2 polyPos, Vector2 polySize, Ve
 CollisionResult CheckCollisions(InterpreterContext *intp, int index)
 {
     if (index < 0 || index >= intp->componentCount)
-        return false;
+    {
+        return COLLISION_RESULT_NONE;
+    }
 
     SceneComponent *a = &intp->components[index];
     int layerA = a->isSprite ? a->sprite.layer : a->prop.layer;
@@ -1602,10 +1608,20 @@ CollisionResult CheckCollisions(InterpreterContext *intp, int index)
     Vector2 sizeA = a->isSprite ? (Vector2){a->sprite.width, a->sprite.height} : (Vector2){a->prop.width, a->prop.height};
     Vector2 texA = a->isSprite ? (Vector2){a->sprite.texture.width, a->sprite.texture.height} : (Vector2){a->prop.texture.width, a->prop.texture.height};
 
+    Rectangle aSimplifiedHitbox = (Rectangle){posA.x - sizeA.x / 2, posA.y - sizeA.y / 2, sizeA.x, sizeA.y};
+
+    if (hitA->type != HITBOX_POLY)
+    {
+        AddToLogFromInterpreter(intp, (Value){.type = VAL_STRING, .string = "Invalid sprite hitbox{I106}"}, LOG_LEVEL_WARNING);
+        return COLLISION_RESULT_NONE;
+    }
+
     for (int j = 0; j < intp->componentCount; j++)
     {
         if (j == index)
+        {
             continue;
+        }
 
         SceneComponent *b = &intp->components[j];
         int layerB = b->isSprite ? b->sprite.layer : b->prop.layer;
@@ -1626,85 +1642,50 @@ CollisionResult CheckCollisions(InterpreterContext *intp, int index)
         Vector2 sizeB = b->isSprite ? (Vector2){b->sprite.width, b->sprite.height} : (Vector2){b->prop.width, b->prop.height};
         Vector2 texB = b->isSprite ? (Vector2){b->sprite.texture.width, b->sprite.texture.height} : (Vector2){b->prop.texture.width, b->prop.texture.height};
 
+        Rectangle bSimplifiedHitbox;
+
+        switch(hitB->type){
+            case HITBOX_RECT:
+                bSimplifiedHitbox = (Rectangle){posB.x, posB.y, sizeB.x, sizeB.y};
+                break;
+            case HITBOX_CIRCLE:
+                bSimplifiedHitbox = (Rectangle){posB.x - sizeB.x / 2, posB.y - sizeB.y / 2, sizeB.x, sizeB.y};
+                break;
+            case HITBOX_POLY:
+                bSimplifiedHitbox = (Rectangle){posB.x - sizeB.x / 2, posB.y - sizeB.y / 2, sizeB.x, sizeB.y};
+                break;
+            default:
+                AddToLogFromInterpreter(intp, (Value){.type = VAL_STRING, .string = "Out of bounds enum{O201}"}, LOG_LEVEL_WARNING);
+                break;
+        }
+
+        if(!CheckCollisionRecs(aSimplifiedHitbox, bSimplifiedHitbox)){
+            continue;
+        }
+
         bool collided = false;
 
-        if (hitA->type == HITBOX_RECT && hitB->type == HITBOX_RECT)
+        switch (hitB->type)
         {
-            Rectangle rA = {posA.x + hitA->offset.x, posA.y + hitA->offset.y,
-                            hitA->rectHitboxSize.x * (sizeA.x / texA.x),
-                            hitA->rectHitboxSize.y * (sizeA.y / texA.y)};
-            Rectangle rB = {posB.x + hitB->offset.x, posB.y + hitB->offset.y,
-                            hitB->rectHitboxSize.x * (sizeB.x / texB.x),
-                            hitB->rectHitboxSize.y * (sizeB.y / texB.y)};
-            collided = CheckCollisionRecs(rA, rB);
-        }
-        else if (hitA->type == HITBOX_CIRCLE && hitB->type == HITBOX_CIRCLE)
-        {
-            Vector2 cA = {posA.x + hitA->offset.x * (sizeA.x / texA.x),
-                          posA.y + hitA->offset.y * (sizeA.y / texA.y)};
-            Vector2 cB = {posB.x + hitB->offset.x * (sizeB.x / texB.x),
-                          posB.y + hitB->offset.y * (sizeB.y / texB.y)};
-            collided = CheckCollisionCircles(cA, hitA->circleHitboxRadius * ((sizeA.x / texA.x + sizeA.y / texA.y) / 2),
-                                             cB, hitB->circleHitboxRadius * ((sizeB.x / texB.x + sizeB.y / texB.y) / 2));
-        }
-        else if (hitA->type == HITBOX_POLY && hitB->type == HITBOX_POLY)
-        {
-            collided = CheckCollisionPolyPoly(&hitA->polygonHitbox, posA, sizeA, texA,
-                                              &hitB->polygonHitbox, posB, sizeB, texB);
-        }
-        else if (hitA->type == HITBOX_RECT && hitB->type == HITBOX_CIRCLE)
-        {
-            Rectangle rA = {posA.x + hitA->offset.x, posA.y + hitA->offset.y,
-                            hitA->rectHitboxSize.x * (sizeA.x / texA.x),
-                            hitA->rectHitboxSize.y * (sizeA.y / texA.y)};
-            Vector2 cB = {posB.x + hitB->offset.x * (sizeB.x / texB.x),
-                          posB.y + hitB->offset.y * (sizeB.y / texB.y)};
-            collided = CheckCollisionCircleRec(cB,
-                                               hitB->circleHitboxRadius * ((sizeB.x / texB.x + sizeB.y / texB.y) / 2), rA);
-        }
-        else if (hitA->type == HITBOX_CIRCLE && hitB->type == HITBOX_RECT)
-        {
-            Rectangle rB = {posB.x + hitB->offset.x, posB.y + hitB->offset.y,
-                            hitB->rectHitboxSize.x * (sizeB.x / texB.x),
-                            hitB->rectHitboxSize.y * (sizeB.y / texB.y)};
-            Vector2 cA = {posA.x + hitA->offset.x * (sizeA.x / texA.x),
-                          posA.y + hitA->offset.y * (sizeA.y / texA.y)};
-            collided = CheckCollisionCircleRec(cA,
-                                               hitA->circleHitboxRadius * ((sizeA.x / texA.x + sizeA.y / texA.y) / 2), rB);
-        }
-        else if (hitA->type == HITBOX_POLY && hitB->type == HITBOX_CIRCLE)
-        {
+        case HITBOX_POLY:
+            collided = CheckCollisionPolyPoly(&hitA->polygonHitbox, posA, sizeA, texA, &hitB->polygonHitbox, posB, sizeB, texB);
+            break;
+        case HITBOX_CIRCLE:
             float scaleX = texB.x != 0 ? sizeB.x / texB.x : 1.0f;
             float scaleY = texB.y != 0 ? sizeB.y / texB.y : 1.0f;
 
-            Vector2 cB = {
+            posB = (Vector2){
                 posB.x + hitB->offset.x * scaleX,
                 posB.y + hitB->offset.y * scaleY};
 
-            collided = CheckCollisionPolyCircle(hitA, posA, sizeA, texA, cB, hitB->circleHitboxRadius * ((scaleX + scaleY) / 2));
-        }
-        else if (hitA->type == HITBOX_CIRCLE && hitB->type == HITBOX_POLY)
-        {
-            float scaleX = sizeA.x / texA.x;
-            float scaleY = sizeA.y / texA.y;
-
-            Vector2 cA = {
-                posA.x + hitA->offset.x * scaleX,
-                posA.y + hitA->offset.y * scaleY};
-
-            float radius = hitA->circleHitboxRadius * ((scaleX + scaleY) / 2);
-
-            collided = CheckCollisionPolyCircle(hitB, posB, sizeB, texB, cA, radius);
-        }
-        else if (hitA->type == HITBOX_POLY && hitB->type == HITBOX_RECT)
-        {
-            collided = CheckCollisionPolyRect(&hitA->polygonHitbox, posA, sizeA, texA,
-                                              posB, hitB->rectHitboxSize);
-        }
-        else if (hitA->type == HITBOX_RECT && hitB->type == HITBOX_POLY)
-        {
-            collided = CheckCollisionPolyRect(&hitB->polygonHitbox, posB, sizeB, texB,
-                                              posA, hitA->rectHitboxSize);
+            collided = CheckCollisionPolyCircle(hitA, posA, sizeA, texA, posB, hitB->circleHitboxRadius * ((scaleX + scaleY) / 2));
+            break;
+        case HITBOX_RECT:
+            collided = CheckCollisionPolyRect(&hitA->polygonHitbox, posA, sizeA, texA, posB, hitB->rectHitboxSize);
+            break;
+        default:
+            AddToLogFromInterpreter(intp, (Value){.type = VAL_STRING, .string = "Out of bounds enum{O201}"}, LOG_LEVEL_WARNING);
+            break;
         }
 
         if (collided)
@@ -1712,12 +1693,15 @@ CollisionResult CheckCollisions(InterpreterContext *intp, int index)
             bool triggerEvent = aEvents || bEvents;
             bool triggerBlock = aBlocks && bBlocks;
 
-            if (triggerEvent && triggerBlock)
+            if (triggerEvent && triggerBlock){
                 return COLLISION_RESULT_EVENT_AND_BLOCKING;
-            if (triggerEvent)
+            }
+            if (triggerEvent){
                 return COLLISION_RESULT_EVENT;
-            if (triggerBlock)
+            }
+            if (triggerBlock){
                 return COLLISION_RESULT_BLOCKING;
+            }
         }
     }
 
@@ -1787,7 +1771,8 @@ void HandleSounds(InterpreterContext *intp)
             SetSoundVolume(intp->sounds[i].sound, volume);
         }
     }
-    if (intp->hasSoundOnChanged){
+    if (intp->hasSoundOnChanged)
+    {
         intp->hasSoundOnChanged = false;
     }
 }
@@ -1882,7 +1867,8 @@ bool HandleGameScreen(InterpreterContext *intp, RuntimeGraphContext *graph, Vect
     }
     else
     {
-        for(int i = 0; i < intp->tickNodeIndexesCount; i++){
+        for (int i = 0; i < intp->tickNodeIndexesCount; i++)
+        {
             InterpretStringOfNodes(intp->tickNodeIndexes[i], intp, graph, 0);
         }
     }
