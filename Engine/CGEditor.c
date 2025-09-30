@@ -11,14 +11,6 @@
 #define MENU_BORDER_THICKNESS 3
 #define SUBMENU_WIDTH 250
 
-typedef struct
-{
-    Rectangle bounds;
-    bool editing;
-    char text[256];
-    int length;
-} TextBox;
-
 void AddToLogFromEditor(CGEditorContext *cgEd, char *message, int level);
 
 CGEditorContext InitEditorContext()

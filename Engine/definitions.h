@@ -81,11 +81,9 @@ typedef enum
 extern bool STRING_ALLOCATION_FAILURE;
 
 char* strmac(char* buf, size_t max_size, const char* format, ...) {
-    static const char empty[] = "";
-
     if (!format || max_size == 0){
         STRING_ALLOCATION_FAILURE = true;
-        return (buf) ? buf : strdup(empty);
+        return (buf) ? buf : strdup("");
     }
 
     char* temp = buf;
@@ -95,7 +93,7 @@ char* strmac(char* buf, size_t max_size, const char* format, ...) {
         temp = malloc(max_size);
         if (!temp){
             STRING_ALLOCATION_FAILURE = true;
-            return strdup(empty);
+            return strdup("");
         }
         needs_free = true;
     }
@@ -109,7 +107,7 @@ char* strmac(char* buf, size_t max_size, const char* format, ...) {
         if (needs_free) {
             STRING_ALLOCATION_FAILURE = true;
             free(temp);
-            return strdup(empty);
+            return strdup("");
         }
         temp[0] = '\0';
         return temp;

@@ -1219,6 +1219,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
     }
 
     int varsY = 60;
+    int ellipsisSize = MeasureTextEx(eng->font, "...", 24, 2).x;
     for (int i = 0; i < (eng->isGameRunning ? intp->valueCount : graph->variablesCount) && varsY < eng->sideBarMiddleY - 40; i++)
     {
         if (eng->isGameRunning)
@@ -1296,7 +1297,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
 
         strmac(varName, MAX_VARIABLE_NAME_SIZE, "%s", eng->isGameRunning ? intp->values[i].name : graph->variables[i]);
         bool textHidden = false;
-        if (eng->sideBarHalfSnap || MeasureTextEx(eng->font, "...", 24, 2).x > eng->sideBarWidth - 80 - 20)
+        if (eng->sideBarHalfSnap || ellipsisSize > eng->sideBarWidth - 80 - 20)
         {
             textHidden = true;
             varName[0] = '\0';

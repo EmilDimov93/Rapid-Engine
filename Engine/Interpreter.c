@@ -162,8 +162,6 @@ char *ValueTypeToString(ValueType type)
 char *ValueToString(Value value)
 {
     static char temp[MAX_LOG_MESSAGE_SIZE];
-    if (!temp)
-        return NULL;
     switch (value.type)
     {
     case VAL_NULL:
@@ -345,7 +343,7 @@ RuntimeGraphContext ConvertToRuntimeGraph(GraphContext *graph, InterpreterContex
         return runtime;
     }
 
-    intp->values[SPECIAL_VALUE_ERROR] = (Value){.type = VAL_STRING, .string = strmac(NULL, 11, "Error value"), .name = strmac(NULL, MAX_VARIABLE_NAME_SIZE, "Error value")};
+    intp->values[SPECIAL_VALUE_ERROR] = (Value){.type = VAL_STRING, .string = strmac(NULL, 12, "Error value"), .name = strmac(NULL, MAX_VARIABLE_NAME_SIZE, "Error value")};
     intp->values[SPECIAL_VALUE_MOUSE_X] = (Value){.type = VAL_NUMBER, .number = 0, .name = strmac(NULL, MAX_VARIABLE_NAME_SIZE, "Mouse X")};
     intp->values[SPECIAL_VALUE_MOUSE_Y] = (Value){.type = VAL_NUMBER, .number = 0, .name = strmac(NULL, MAX_VARIABLE_NAME_SIZE, "Mouse Y")};
     intp->values[SPECIAL_VALUE_SCREEN_WIDTH] = (Value){.type = VAL_NUMBER, .number = 0, .name = strmac(NULL, MAX_VARIABLE_NAME_SIZE, "Screen Width")};
@@ -677,99 +675,107 @@ RuntimeGraphContext ConvertToRuntimeGraph(GraphContext *graph, InterpreterContex
         switch (node->type)
         {
         case NODE_CREATE_SPRITE:
+        {
             intp->components[intp->componentCount].isSprite = true;
             intp->components[intp->componentCount].isVisible = false;
+            int fileIndex = -1;
+            int wIndex = -1;
+            int hIndex = -1;
+
+            if (node->inputPins[1])
             {
-                int fileIndex = -1;
-                int wIndex = -1;
-                int hIndex = -1;
+                fileIndex = node->inputPins[1]->valueIndex;
+            }
+            if (node->inputPins[2])
+            {
+                wIndex = node->inputPins[2]->valueIndex;
+            }
+            if (node->inputPins[3])
+            {
+                hIndex = node->inputPins[3]->valueIndex;
+            }
 
-                if (node->inputPins[1])
-                    fileIndex = node->inputPins[1]->valueIndex;
-                if (node->inputPins[2])
-                    wIndex = node->inputPins[2]->valueIndex;
-                if (node->inputPins[3])
-                    hIndex = node->inputPins[3]->valueIndex;
-
-                if (fileIndex != -1 && fileIndex < intp->valueCount && intp->values[fileIndex].string && intp->values[fileIndex].string[0])
+            if (fileIndex != -1 && fileIndex < intp->valueCount && intp->values[fileIndex].string && intp->values[fileIndex].string[0])
+            {
+                char path[MAX_FILE_PATH];
+                strmac(path, MAX_FILE_PATH, "%s%c%s", intp->projectPath, PATH_SEPARATOR, intp->values[fileIndex].string);
+                Texture2D tex = LoadTexture(path);
+                if (tex.id == 0)
                 {
-                    char path[MAX_FILE_PATH];
-                    strmac(path, MAX_FILE_PATH, "%s%c%s", intp->projectPath, PATH_SEPARATOR, intp->values[fileIndex].string);
-                    Texture2D tex = LoadTexture(path);
-                    if (tex.id == 0)
-                    {
-                        intp->buildErrorOccured = true;
-                        AddToLogFromInterpreter(intp, (Value){.type = VAL_STRING, .string = "Failed to load texture{I20C}"}, LOG_LEVEL_ERROR);
-                        return runtime;
-                    }
-                    else
-                    {
-                        intp->components[intp->componentCount].sprite.texture = tex;
-                    }
+                    intp->buildErrorOccured = true;
+                    AddToLogFromInterpreter(intp, (Value){.type = VAL_STRING, .string = "Failed to load texture{I20C}"}, LOG_LEVEL_ERROR);
+                    return runtime;
                 }
                 else
                 {
-                    intp->buildErrorOccured = true;
-                    AddToLogFromInterpreter(intp, (Value){.type = VAL_STRING, .string = "Invalid texture input{I20D}"}, LOG_LEVEL_ERROR);
-                    return runtime;
+                    intp->components[intp->componentCount].sprite.texture = tex;
                 }
+            }
+            else
+            {
+                intp->buildErrorOccured = true;
+                AddToLogFromInterpreter(intp, (Value){.type = VAL_STRING, .string = "Invalid texture input{I20D}"}, LOG_LEVEL_ERROR);
+                return runtime;
+            }
 
-                if (wIndex != -1 && wIndex < intp->valueCount)
-                    intp->components[intp->componentCount].sprite.width = intp->values[wIndex].number;
-                if (hIndex != -1 && hIndex < intp->valueCount)
-                    intp->components[intp->componentCount].sprite.height = intp->values[hIndex].number;
-                if (node->inputPins[4]->pickedOption >= 0 && node->inputPins[4]->pickedOption < COMPONENT_LAYER_COUNT)
+            if (wIndex != -1 && wIndex < intp->valueCount)
+                intp->components[intp->componentCount].sprite.width = intp->values[wIndex].number;
+            if (hIndex != -1 && hIndex < intp->valueCount)
+                intp->components[intp->componentCount].sprite.height = intp->values[hIndex].number;
+            if (node->inputPins[4]->pickedOption >= 0 && node->inputPins[4]->pickedOption < COMPONENT_LAYER_COUNT)
+            {
+                intp->components[intp->componentCount].sprite.layer = node->inputPins[4]->pickedOption;
+            }
+
+            intp->components[intp->componentCount].sprite.hitbox.type = HITBOX_POLY; // should support all types
+
+            for (int j = 0; j < graph->pinCount; j++)
+            {
+                if (graph->nodes[i].inputPins[5] && graph->pins[j].id == graph->nodes[i].inputPins[5])
                 {
-                    intp->components[intp->componentCount].sprite.layer = node->inputPins[4]->pickedOption;
+                    intp->components[intp->componentCount].sprite.hitbox.polygonHitbox = graph->pins[j].hitbox;
                 }
+            }
 
-                intp->components[intp->componentCount].sprite.hitbox.type = HITBOX_POLY; // should support all types
+            if (node->outputPins[1])
+                node->outputPins[1]->componentIndex = intp->componentCount;
 
-                for (int j = 0; j < graph->pinCount; j++)
+            for (int j = 0; j < runtime.nodeCount; j++)
+            {
+                for (int k = 0; k < runtime.nodes[j].inputCount; k++)
                 {
-                    if (graph->nodes[i].inputPins[5] && graph->pins[j].id == graph->nodes[i].inputPins[5])
-                    {
-                        intp->components[intp->componentCount].sprite.hitbox.polygonHitbox = graph->pins[j].hitbox;
+                    if (!runtime.nodes[j].inputPins[k]){
+                        continue;
                     }
-                }
-
-                if (node->outputPins[1])
-                    node->outputPins[1]->componentIndex = intp->componentCount;
-
-                for (int j = 0; j < runtime.nodeCount; j++)
-                {
-                    for (int k = 0; k < runtime.nodes[j].inputCount; k++)
+                    if (runtime.nodes[j].inputPins[k]->type == PIN_SPRITE_VARIABLE && runtime.nodes[j].inputPins[k]->pickedOption != 0)
                     {
-                        if (!runtime.nodes[j].inputPins[k])
+                        const char *varPtr = graph->nodes[i].name;
+                        int picked = runtime.nodes[j].inputPins[k]->pickedOption - 1;
+                        if (picked < 0 || picked >= intp->varCount){
                             continue;
-                        if (runtime.nodes[j].inputPins[k]->type == PIN_SPRITE_VARIABLE && runtime.nodes[j].inputPins[k]->pickedOption != 0)
+                        }
+                        const char *valPtr = intp->values[intp->varIndexes[picked]].name;
+
+                        if (varPtr && valPtr)
                         {
-                            const char *varPtr = graph->nodes[i].name;
-                            int picked = runtime.nodes[j].inputPins[k]->pickedOption - 1;
-                            if (picked < 0 || picked >= intp->varCount)
-                                continue;
-                            const char *valPtr = intp->values[intp->varIndexes[picked]].name;
+                            char varName[MAX_VARIABLE_NAME_SIZE];
+                            char valName[MAX_VARIABLE_NAME_SIZE];
+                            strmac(varName, MAX_VARIABLE_NAME_SIZE, "%s", varPtr);
+                            strmac(valName, MAX_VARIABLE_NAME_SIZE, "%s", valPtr);
 
-                            if (varPtr && valPtr)
+                            if (strcmp(varName, valName) == 0)
                             {
-                                char varName[MAX_VARIABLE_NAME_SIZE];
-                                char valName[MAX_VARIABLE_NAME_SIZE];
-                                strmac(varName, MAX_VARIABLE_NAME_SIZE, "%s", varPtr);
-                                strmac(valName, MAX_VARIABLE_NAME_SIZE, "%s", valPtr);
-
-                                if (strcmp(varName, valName) == 0)
-                                {
-                                    intp->values[intp->varIndexes[picked]].componentIndex = intp->componentCount;
-                                    runtime.nodes[j].inputPins[k]->valueIndex = intp->varIndexes[picked];
-                                }
+                                intp->values[intp->varIndexes[picked]].componentIndex = intp->componentCount;
+                                runtime.nodes[j].inputPins[k]->valueIndex = intp->varIndexes[picked];
                             }
                         }
                     }
                 }
-
-                intp->componentCount++;
             }
-            break;
+
+            intp->componentCount++;
+        }
+        break;
         case NODE_DRAW_PROP_TEXTURE:
             continue;
         case NODE_DRAW_PROP_RECTANGLE:
@@ -1644,22 +1650,24 @@ CollisionResult CheckCollisions(InterpreterContext *intp, int index)
 
         Rectangle bSimplifiedHitbox;
 
-        switch(hitB->type){
-            case HITBOX_RECT:
-                bSimplifiedHitbox = (Rectangle){posB.x, posB.y, sizeB.x, sizeB.y};
-                break;
-            case HITBOX_CIRCLE:
-                bSimplifiedHitbox = (Rectangle){posB.x - sizeB.x / 2, posB.y - sizeB.y / 2, sizeB.x, sizeB.y};
-                break;
-            case HITBOX_POLY:
-                bSimplifiedHitbox = (Rectangle){posB.x - sizeB.x / 2, posB.y - sizeB.y / 2, sizeB.x, sizeB.y};
-                break;
-            default:
-                AddToLogFromInterpreter(intp, (Value){.type = VAL_STRING, .string = "Out of bounds enum{O201}"}, LOG_LEVEL_WARNING);
-                break;
+        switch (hitB->type)
+        {
+        case HITBOX_RECT:
+            bSimplifiedHitbox = (Rectangle){posB.x, posB.y, sizeB.x, sizeB.y};
+            break;
+        case HITBOX_CIRCLE:
+            bSimplifiedHitbox = (Rectangle){posB.x - sizeB.x / 2, posB.y - sizeB.y / 2, sizeB.x, sizeB.y};
+            break;
+        case HITBOX_POLY:
+            bSimplifiedHitbox = (Rectangle){posB.x - sizeB.x / 2, posB.y - sizeB.y / 2, sizeB.x, sizeB.y};
+            break;
+        default:
+            AddToLogFromInterpreter(intp, (Value){.type = VAL_STRING, .string = "Out of bounds enum{O201}"}, LOG_LEVEL_WARNING);
+            break;
         }
 
-        if(!CheckCollisionRecs(aSimplifiedHitbox, bSimplifiedHitbox)){
+        if (!CheckCollisionRecs(aSimplifiedHitbox, bSimplifiedHitbox))
+        {
             continue;
         }
 
@@ -1693,13 +1701,16 @@ CollisionResult CheckCollisions(InterpreterContext *intp, int index)
             bool triggerEvent = aEvents || bEvents;
             bool triggerBlock = aBlocks && bBlocks;
 
-            if (triggerEvent && triggerBlock){
+            if (triggerEvent && triggerBlock)
+            {
                 return COLLISION_RESULT_EVENT_AND_BLOCKING;
             }
-            if (triggerEvent){
+            if (triggerEvent)
+            {
                 return COLLISION_RESULT_EVENT;
             }
-            if (triggerBlock){
+            if (triggerBlock)
+            {
                 return COLLISION_RESULT_BLOCKING;
             }
         }
