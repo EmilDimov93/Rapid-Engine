@@ -223,8 +223,9 @@ typedef struct Settings{
 typedef enum {
     FILE_FOLDER = 0,
     FILE_CG     = 1,
-    FILE_IMAGE  = 2,
-    FILE_OTHER  = 3
+    FILE_CONFIG = 2,
+    FILE_IMAGE  = 3,
+    FILE_OTHER  = 4
 } FileType;
 
 typedef enum

@@ -308,6 +308,9 @@ FileType GetFileType(const char *folderPath, const char *fileName)
     {
         return FILE_IMAGE;
     }
+    else if (strcmp(ext + 1, "config") == 0){
+        return FILE_CONFIG;
+    }
 
     return FILE_OTHER;
 }
@@ -419,7 +422,7 @@ int DrawSaveWarning(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
     return 1;
 }
 
-void DrawSlider(Vector2 pos, bool *value, Vector2 mousePos)
+void DrawSlider(Vector2 pos, bool *value, Vector2 mousePos, bool *hasChanged)
 {
     if (CheckCollisionPointRec(mousePos, (Rectangle){pos.x, pos.y, 40, 25}))
     {
@@ -427,6 +430,7 @@ void DrawSlider(Vector2 pos, bool *value, Vector2 mousePos)
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
         {
             *value = !*value;
+            *hasChanged = true;
             DrawRectangleRounded((Rectangle){pos.x, pos.y, 40, 24}, 1.0f, 8, (Color){65, 179, 89, 255});
             DrawCircle(pos.x + 20, pos.y + 12, 10, WHITE);
             return;
@@ -445,7 +449,7 @@ void DrawSlider(Vector2 pos, bool *value, Vector2 mousePos)
     }
 }
 
-void DrawFPSLimitDropdown(Vector2 pos, int *limit, Vector2 mousePos, Font font)
+void DrawFPSLimitDropdown(Vector2 pos, int *limit, Vector2 mousePos, Font font, bool *hasChanged)
 {
     static bool dropdownOpen = false;
     int fpsOptions[] = {240, 90, 60, 30};
@@ -473,6 +477,7 @@ void DrawFPSLimitDropdown(Vector2 pos, int *limit, Vector2 mousePos, Font font)
                 {
                     *limit = fpsOptions[i];
                     dropdownOpen = false;
+                    *hasChanged = true;
                 }
             }
         }
@@ -493,11 +498,12 @@ void DrawFPSLimitDropdown(Vector2 pos, int *limit, Vector2 mousePos, Font font)
 }
 
 bool SaveSettings(EngineContext *eng, InterpreterContext *intp, CGEditorContext *cgEd){
-    FILE *fptr = fopen(TextFormat("%s%cengine.config", eng->projectPath, PATH_SEPARATOR), "w");
+    FILE *fptr = fopen(TextFormat("%s%c%s.config", eng->projectPath, PATH_SEPARATOR, GetFileName(eng->projectPath)), "w");
     if(!fptr){
         return false;
     }
 
+    fprintf(fptr, "Engine:");
     fprintf(fptr, "Sound=%s\n", eng->isSoundOn ? "true" : "false");
     fprintf(fptr, "FPSLimit=%d\n", eng->fpsLimit);
     fprintf(fptr, "ShowFPS=%s\n", eng->shouldShowFPS ? "true" : "false");
@@ -505,15 +511,19 @@ bool SaveSettings(EngineContext *eng, InterpreterContext *intp, CGEditorContext 
     fprintf(fptr, "HideCursorinFullscreen=%s\n", eng->shouldHideCursorInGameFullscreen ? "true" : "false");
     fprintf(fptr, "LowSpecMode=%s\n", eng->isLowSpecModeOn ? "true" : "false");
 
+    fprintf(fptr, "Interpreter:");
     fprintf(fptr, "InfiniteLoopProtection=%s\n", intp->isInfiniteLoopProtectionOn ? "true" : "false");
     fprintf(fptr, "ShowHitboxes=%s\n", intp->shouldShowHitboxes ? "true" : "false");
+
+    //fprintf(fptr, "Keybinds:");
+    //fprintf(fptr, "Export:");
 
     fclose(fptr);
     return true;
 }
 
 bool LoadSettingsConfig(EngineContext *eng, InterpreterContext *intp, CGEditorContext *cgEd){
-    FILE *fptr = fopen(TextFormat("%s%cengine.config", eng->projectPath, PATH_SEPARATOR), "r");
+    FILE *fptr = fopen(TextFormat("%s%c%s.config", eng->projectPath, PATH_SEPARATOR, GetFileName(eng->projectPath)), "r");
     if(!fptr){
         if(!SaveSettings(eng, intp, cgEd)){
             return false;
@@ -604,24 +614,6 @@ bool DrawSettingsMenu(EngineContext *eng, InterpreterContext *intp, CGEditorCont
 
     DrawTextEx(eng->font, "Settings", (Vector2){eng->screenWidth / 2 - MeasureTextEx(eng->font, "Settings", 50, 1).x / 2, 130}, 50, 1, WHITE);
 
-    DrawRectangleRounded((Rectangle){eng->screenWidth * 3 / 4 - 140, 135, 64, 30}, 0.6f, 4, DARKGREEN);
-    DrawTextEx(eng->font, "Save", (Vector2){eng->screenWidth * 3 / 4 - 133, 139}, 22, 1.0f, WHITE);
-    if(CheckCollisionPointRec(eng->mousePos, (Rectangle){eng->screenWidth * 3 / 4 - 140, 135, 64, 30})){
-        SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
-        DrawRectangleRounded((Rectangle){eng->screenWidth * 3 / 4 - 140, 135, 64, 30}, 0.6f, 4, (Color){255, 255, 255, 40});
-        if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON)){
-            if(SaveSettings(eng, intp, cgEd)){
-                if(eng->isSoundOn){
-                    PlaySound(eng->saveSound);
-                }
-                AddToLog(eng, "Settings saved successfully{E300}", LOG_LEVEL_SUCCESS);
-            }
-            else{
-                AddToLog(eng, "Error saving settings{E100}", LOG_LEVEL_ERROR);
-            }
-        }
-    }
-
     DrawTextEx(eng->font, "Engine", (Vector2){eng->screenWidth / 4 + 30, 300}, 30, 1, settingsMode == SETTINGS_MODE_ENGINE ? WHITE : GRAY);
 
     if (CheckCollisionPointRec(eng->mousePos, (Rectangle){eng->screenWidth / 4 + 20, 290, MeasureTextEx(eng->font, "eng", 30, 1).x + 20, 50}) && settingsMode != SETTINGS_MODE_ENGINE)
@@ -668,11 +660,33 @@ bool DrawSettingsMenu(EngineContext *eng, InterpreterContext *intp, CGEditorCont
 
     DrawRectangleGradientV(eng->screenWidth / 4 + 180, 300, 2, eng->screenHeight - 400, (Color){100, 100, 100, 255}, (Color){30, 30, 30, 255});
 
+    static bool hasChanged = false;
+
+    float glowOffset = (sinf(GetTime() * 5.0f) + 1.0f) * 50.0f;
+    DrawRectangleRounded((Rectangle){eng->screenWidth * 3 / 4 - 140, 135, 64, 30}, 0.6f, 4, hasChanged ? (Color){153 + glowOffset, 76  + glowOffset, glowOffset, 255} : DARKGRAY);
+    DrawTextEx(eng->font, hasChanged ? "Save*" : "Save", (Vector2){eng->screenWidth * 3 / 4 - 133 - hasChanged * 3, 139}, 22, 1.0f, WHITE);
+    if(CheckCollisionPointRec(eng->mousePos, (Rectangle){eng->screenWidth * 3 / 4 - 140, 135, 64, 30})){
+        SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+        DrawRectangleRounded((Rectangle){eng->screenWidth * 3 / 4 - 140, 135, 64, 30}, 0.6f, 4, (Color){255, 255, 255, 40});
+        if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON)){
+            if(SaveSettings(eng, intp, cgEd)){
+                if(eng->isSoundOn){
+                    PlaySound(eng->saveSound);
+                }
+                AddToLog(eng, "Settings saved successfully{E300}", LOG_LEVEL_SUCCESS);
+                hasChanged = false;
+            }
+            else{
+                AddToLog(eng, "Error saving settings{E100}", LOG_LEVEL_ERROR);
+            }
+        }
+    }
+
     switch (settingsMode)
     {
     case SETTINGS_MODE_ENGINE:
         DrawTextEx(eng->font, "Sound", (Vector2){eng->screenWidth / 4 + 200, 300}, 28, 1, WHITE);
-        DrawSlider((Vector2){eng->screenWidth * 3 / 4 - 70, 305}, &eng->isSoundOn, eng->mousePos);
+        DrawSlider((Vector2){eng->screenWidth * 3 / 4 - 70, 305}, &eng->isSoundOn, eng->mousePos, &hasChanged);
         if (intp->isSoundOn != eng->isSoundOn)
         {
             intp->isSoundOn = eng->isSoundOn;
@@ -680,16 +694,16 @@ bool DrawSettingsMenu(EngineContext *eng, InterpreterContext *intp, CGEditorCont
         }
 
         DrawTextEx(eng->font, "Auto Save Every 2 Minutes", (Vector2){eng->screenWidth / 4 + 200, 350}, 28, 1, WHITE);
-        DrawSlider((Vector2){eng->screenWidth * 3 / 4 - 70, 355}, &eng->isAutoSaveON, eng->mousePos);
+        DrawSlider((Vector2){eng->screenWidth * 3 / 4 - 70, 355}, &eng->isAutoSaveON, eng->mousePos, &hasChanged);
 
         DrawTextEx(eng->font, "FPS Limit", (Vector2){eng->screenWidth / 4 + 200, 400}, 28, 1, WHITE);
-        DrawFPSLimitDropdown((Vector2){eng->screenWidth * 3 / 4 - 100, 405}, &eng->fpsLimit, eng->mousePos, eng->font);
+        DrawFPSLimitDropdown((Vector2){eng->screenWidth * 3 / 4 - 100, 405}, &eng->fpsLimit, eng->mousePos, eng->font, &hasChanged);
 
         DrawTextEx(eng->font, "Show FPS", (Vector2){eng->screenWidth / 4 + 200, 450}, 28, 1, WHITE);
-        DrawSlider((Vector2){eng->screenWidth * 3 / 4 - 70, 455}, &eng->shouldShowFPS, eng->mousePos);
+        DrawSlider((Vector2){eng->screenWidth * 3 / 4 - 70, 455}, &eng->shouldShowFPS, eng->mousePos, &hasChanged);
 
         DrawTextEx(eng->font, "Low-spec mode", (Vector2){eng->screenWidth / 4 + 200, 500}, 28, 1, WHITE);
-        DrawSlider((Vector2){eng->screenWidth * 3 / 4 - 70, 505}, &eng->isLowSpecModeOn, eng->mousePos);
+        DrawSlider((Vector2){eng->screenWidth * 3 / 4 - 70, 505}, &eng->isLowSpecModeOn, eng->mousePos, &hasChanged);
         if (cgEd->isLowSpecModeOn != eng->isLowSpecModeOn)
         {
             cgEd->isLowSpecModeOn = eng->isLowSpecModeOn;
@@ -698,13 +712,13 @@ bool DrawSettingsMenu(EngineContext *eng, InterpreterContext *intp, CGEditorCont
         break;
     case SETTINGS_MODE_GAME:
         DrawTextEx(eng->font, "Infinite Loop Protection", (Vector2){eng->screenWidth / 4 + 200, 300}, 28, 1, WHITE);
-        DrawSlider((Vector2){eng->screenWidth * 3 / 4 - 70, 305}, &intp->isInfiniteLoopProtectionOn, eng->mousePos);
+        DrawSlider((Vector2){eng->screenWidth * 3 / 4 - 70, 305}, &intp->isInfiniteLoopProtectionOn, eng->mousePos, &hasChanged);
 
         DrawTextEx(eng->font, "Show Hitboxes", (Vector2){eng->screenWidth / 4 + 200, 350}, 28, 1, WHITE);
-        DrawSlider((Vector2){eng->screenWidth * 3 / 4 - 70, 355}, &intp->shouldShowHitboxes, eng->mousePos);
+        DrawSlider((Vector2){eng->screenWidth * 3 / 4 - 70, 355}, &intp->shouldShowHitboxes, eng->mousePos, &hasChanged);
 
         DrawTextEx(eng->font, "Hide Mouse Cursor in Fullscreen", (Vector2){eng->screenWidth / 4 + 200, 400}, 28, 1, WHITE);
-        DrawSlider((Vector2){eng->screenWidth * 3 / 4 - 70, 405}, &eng->shouldHideCursorInGameFullscreen, eng->mousePos);
+        DrawSlider((Vector2){eng->screenWidth * 3 / 4 - 70, 405}, &eng->shouldHideCursorInGameFullscreen, eng->mousePos, &hasChanged);
         break;
     case SETTINGS_MODE_KEYBINDS:
         DrawTextEx(eng->font, "No Keybind settings yet!", (Vector2){eng->screenWidth / 4 + 200, 300}, 28, 1, RED);
@@ -995,7 +1009,8 @@ void DrawUIElements(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
 
                 if (currentTime - lastClickTime <= doubleClickThreshold)
                 {
-                    if (GetFileType(eng->currentPath, GetFileName(eng->uiElements[eng->hoveredUIElementIndex].name)) == FILE_CG)
+                    FileType fileType = GetFileType(eng->currentPath, GetFileName(eng->uiElements[eng->hoveredUIElementIndex].name));
+                    if (fileType == FILE_CG)
                     {
                         char openedFileName[MAX_FILE_NAME];
                         strmac(openedFileName, MAX_FILE_NAME, "%s", eng->uiElements[eng->hoveredUIElementIndex].text.string);
@@ -1012,7 +1027,7 @@ void DrawUIElements(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
 
                         eng->viewportMode = VIEWPORT_CG_EDITOR;
                     }
-                    else if (GetFileType(eng->currentPath, GetFileName(eng->uiElements[eng->hoveredUIElementIndex].name)) != FILE_FOLDER)
+                    else if (fileType != FILE_FOLDER)
                     {
                         OpenFile(TextFormat("%s%c%s", eng->currentPath, PATH_SEPARATOR, eng->uiElements[eng->hoveredUIElementIndex].text.string));
                     }
@@ -1437,7 +1452,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                           .rect = {.pos = {30, eng->screenHeight - eng->bottomBarHeight + 10}, .recSize = {65, 30}, .roundness = 0, .roundSegments = 0, .hoverColor = Fade(WHITE, 0.2f)},
                           .color = (Color){40, 40, 40, 255},
                           .layer = 1,
-                          .text = {.string = "Back", .textPos = {35, eng->screenHeight - eng->bottomBarHeight + 12}, .textSize = 25, .textSpacing = 0, .textColor = WHITE}});
+                          .text = {.string = "Back", .textPos = {39, eng->screenHeight - eng->bottomBarHeight + 14}, .textSize = 22, .textSpacing = 0, .textColor = WHITE}});
 
     AddUIElement(eng, (UIElement){
                           .name = "RefreshButton",
@@ -1446,7 +1461,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                           .rect = {.pos = {110, eng->screenHeight - eng->bottomBarHeight + 10}, .recSize = {100, 30}, .roundness = 0, .roundSegments = 0, .hoverColor = Fade(WHITE, 0.2f)},
                           .color = (Color){40, 40, 40, 255},
                           .layer = 1,
-                          .text = {.string = "Refresh", .textPos = {119, eng->screenHeight - eng->bottomBarHeight + 12}, .textSize = 25, .textSpacing = 0, .textColor = WHITE}});
+                          .text = {.string = "Refresh", .textPos = {123, eng->screenHeight - eng->bottomBarHeight + 14}, .textSize = 22, .textSpacing = 0, .textColor = WHITE}});
 
     AddUIElement(eng, (UIElement){
                           .name = "CurrentPath",
@@ -1490,6 +1505,10 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
         case FILE_IMAGE:
             fileOutlineColor = (Color){44, 88, 148, 255};
             fileTextColor = (Color){140, 185, 245, 255};
+            break;
+        case FILE_CONFIG:
+            fileOutlineColor = (Color){80, 80, 80, 255};
+            fileTextColor = (Color){80, 80, 80, 255};
             break;
         case FILE_OTHER:
             fileOutlineColor = (Color){124, 123, 120, 255};
