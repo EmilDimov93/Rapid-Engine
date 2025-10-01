@@ -1638,7 +1638,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                           .name = "TopBarMoveWindow",
                           .shape = UIRectangle,
                           .type = UI_ACTION_MOVE_WINDOW,
-                          .rect = {.pos = {eng->screenWidth - 200, 0}, .recSize = {50, 50}, .roundness = 0.0f, .roundSegments = 0, .hoverColor = (Color){0, 0, 0, 0}},
+                          .rect = {.pos = {eng->screenWidth - 200, 0}, .recSize = {50, 50}, .roundness = 0.0f, .roundSegments = 0, .hoverColor = COLOR_TRANSPARENT},
                           .color = COLOR_TRANSPARENT,
                           .layer = 1,
                       });

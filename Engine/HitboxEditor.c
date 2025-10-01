@@ -178,7 +178,7 @@ bool UpdateHitboxEditor(HitboxEditorContext *hbEd, Vector2 mouseLocal, GraphCont
 
 void DrawHitboxEditor(HitboxEditorContext *hbEd, Vector2 mouseLocal)
 {
-    ClearBackground((Color){80, 0, 90, 100});
+    ClearBackground(COLOR_HE_BACKGROUND);
 
     DrawTexture(
         hbEd->texture,

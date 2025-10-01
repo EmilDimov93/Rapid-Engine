@@ -175,6 +175,7 @@ const char *AddEllipsis(Font font, const char *text, float fontSize, float maxWi
 #define GRAY_60 (Color){60, 60, 60, 255}
 #define GRAY_70 (Color){70, 70, 70, 255}
 #define GRAY_80 (Color){80, 80, 80, 255}
+#define GRAY_128 (Color){128, 128, 128, 255}
 #define GRAY_150 (Color){150, 150, 150, 255}
 
 #define COLOR_BACKGROUND_BLUR (Color){0, 0, 0, 150}
@@ -219,3 +220,21 @@ const char *AddEllipsis(Font font, const char *text, float fontSize, float maxWi
 #define COLOR_PM_CREATE_BTN_HOVER (Color){255, 255, 255, 150}
 #define COLOR_PM_CHECKBOX_X (Color){202, 97, 255, 255}
 #define COLOR_PM_CHECKBOX_HOVER (Color){255, 255, 255, 100}
+
+#define COLOR_HE_BACKGROUND (Color){80, 0, 90, 100}
+
+#define COLOR_INTP_PAUSE_BLUR (Color){80, 80, 80, 50}
+
+#define COLOR_CGED_WIRE_FLOW (Color){180, 100, 200, 255}
+#define COLOR_CGED_WIRE_NUM (Color){24, 119, 149, 255}
+#define COLOR_CGED_WIRE_STRING (Color){180, 178, 40, 255}
+#define COLOR_CGED_WIRE_BOOL (Color){27, 64, 121, 255}
+#define COLOR_CGED_WIRE_COLOR (Color){150, 2, 72, 255}
+#define COLOR_CGED_WIRE_SPRITE (Color){3, 206, 164, 255}
+#define COLOR_CGED_WIRE_UNKNOWN WHITE
+#define COLOR_CGED_WIRE_NEON_BLUE (Color){0, 255, 255, 255}
+#define COLOR_CGED_EDIT_HITBOX_BTN_HOVER (Color){255, 255, 255, 100}
+#define COLOR_CGED_NODE_HOVER (Color){255, 255, 255, 5}
+#define COLOR_CGED_BACKGROUND (Color){40, 42, 54, 255}
+#define COLOR_CGED_BACKGROUND_DOT (Color){255, 255, 255, 15}
+

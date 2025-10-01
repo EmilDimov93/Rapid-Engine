@@ -24,7 +24,7 @@ InterpreterContext InitInterpreterContext()
 
     intp.isInfiniteLoopProtectionOn = true;
 
-    intp.backgroundColor = (Color){0, 0, 0, 255};
+    intp.backgroundColor = BLACK;
 
     intp.fps = 60;
 
@@ -514,7 +514,7 @@ RuntimeGraphContext ConvertToRuntimeGraph(GraphContext *graph, InterpreterContex
                 intp->values[idx].name = strmac(NULL, MAX_VARIABLE_NAME_SIZE, srcNode->name);
                 break;
             case PIN_COLOR:
-                intp->values[idx].color = (Color){255, 255, 255, 255};
+                intp->values[idx].color = WHITE;
                 intp->values[idx].type = VAL_COLOR;
                 intp->values[idx].isVariable = isVariable;
                 intp->values[idx].name = strmac(NULL, MAX_VARIABLE_NAME_SIZE, srcNode->name);
@@ -1800,7 +1800,7 @@ bool HandleGameScreen(InterpreterContext *intp, RuntimeGraphContext *graph, Vect
     if (intp->isPaused)
     {
         DrawComponents(intp);
-        DrawRectangleRec(screenBoundary, (Color){80, 80, 80, 50});
+        DrawRectangleRec(screenBoundary, COLOR_INTP_PAUSE_BLUR);
         return true;
     }
 

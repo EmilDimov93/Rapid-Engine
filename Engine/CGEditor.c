@@ -138,7 +138,7 @@ void DrawBackgroundGrid(CGEditorContext *cgEd, int gridSpacing, RenderTexture2D 
             float screenX = (drawX - offset.x) * cgEd->zoom;
             float screenY = (drawY - offset.y) * cgEd->zoom;
 
-            DrawTextureRec(dot.texture, (Rectangle){0, 0, (float)dot.texture.width, (float)-dot.texture.height}, (Vector2){screenX, screenY}, (Color){255, 255, 255, 15});
+            DrawTextureRec(dot.texture, (Rectangle){0, 0, (float)dot.texture.width, (float)-dot.texture.height}, (Vector2){screenX, screenY}, COLOR_CGED_BACKGROUND_DOT);
         }
     }
 }
@@ -684,23 +684,23 @@ void HandleDropdownMenu(GraphContext *graph, int currPinIndex, int hoveredNodeIn
         switch (graph->variableTypes[graph->pins[currPinIndex].pickedOption])
         {
         case NODE_CREATE_NUMBER:
-            varTypeColor = (Color){24, 119, 149, 255};
+            varTypeColor = COLOR_VAR_NUMBER;
             varType = PIN_NUM;
             break;
         case NODE_CREATE_STRING:
-            varTypeColor = (Color){180, 178, 40, 255};
+            varTypeColor = COLOR_VAR_STRING;
             varType = PIN_STRING;
             break;
         case NODE_CREATE_BOOL:
-            varTypeColor = (Color){27, 64, 121, 255};
+            varTypeColor = COLOR_VAR_BOOL;
             varType = PIN_BOOL;
             break;
         case NODE_CREATE_COLOR:
-            varTypeColor = (Color){217, 3, 104, 255};
+            varTypeColor = COLOR_VAR_COLOR;
             varType = PIN_COLOR;
             break;
         case NODE_CREATE_SPRITE:
-            varTypeColor = (Color){3, 206, 164, 255};
+            varTypeColor = COLOR_VAR_SPRITE;
             varType = PIN_SPRITE;
             break;
         default:
@@ -772,19 +772,19 @@ void HandleDropdownMenu(GraphContext *graph, int currPinIndex, int hoveredNodeIn
                 switch (graph->variableTypes[j])
                 {
                 case NODE_CREATE_NUMBER:
-                    varTypeColor = (Color){24, 119, 149, 255};
+                    varTypeColor = COLOR_VAR_NUMBER;
                     break;
                 case NODE_CREATE_STRING:
-                    varTypeColor = (Color){180, 178, 40, 255};
+                    varTypeColor = COLOR_VAR_STRING;
                     break;
                 case NODE_CREATE_BOOL:
-                    varTypeColor = (Color){27, 64, 121, 255};
+                    varTypeColor = COLOR_VAR_BOOL;
                     break;
                 case NODE_CREATE_COLOR:
-                    varTypeColor = (Color){217, 3, 104, 255};
+                    varTypeColor = COLOR_VAR_COLOR;
                     break;
                 case NODE_CREATE_SPRITE:
-                    varTypeColor = (Color){3, 206, 164, 255};
+                    varTypeColor = COLOR_VAR_SPRITE;
                     break;
                 default:
                     varTypeColor = LIGHTGRAY;
@@ -850,25 +850,25 @@ void DrawNodes(CGEditorContext *cgEd, GraphContext *graph)
             switch (linkType)
             {
             case PIN_FLOW:
-                wireColor = (Color){180, 100, 200, 255};
+                wireColor = COLOR_CGED_WIRE_FLOW;
                 break;
             case PIN_NUM:
-                wireColor = (Color){24, 119, 149, 255};
+                wireColor = COLOR_CGED_WIRE_NUM;
                 break;
             case PIN_STRING:
-                wireColor = (Color){180, 178, 40, 255};
+                wireColor = COLOR_CGED_WIRE_STRING;
                 break;
             case PIN_BOOL:
-                wireColor = (Color){27, 64, 121, 255};
+                wireColor = COLOR_CGED_WIRE_BOOL;
                 break;
             case PIN_COLOR:
-                wireColor = (Color){150, 2, 72, 255};
+                wireColor = COLOR_CGED_WIRE_COLOR;
                 break;
             case PIN_SPRITE:
-                wireColor = (Color){3, 206, 164, 255};
+                wireColor = COLOR_CGED_WIRE_SPRITE;
                 break;
             default:
-                wireColor = (Color){255, 255, 255, 255};
+                wireColor = COLOR_CGED_WIRE_UNKNOWN;
             }
             DrawCurvedWire(outputPinPosition, inputPinPosition, 2.0f + 1.0f / cgEd->zoom + isFlowLink, wireColor, cgEd->isLowSpecModeOn);
         }
@@ -1062,7 +1062,7 @@ void DrawNodes(CGEditorContext *cgEd, GraphContext *graph)
             DrawRectangleRounded((Rectangle){graph->pins[i].position.x - 6, graph->pins[i].position.y - 10, 96, 24}, 0.4f, 4, DARKPURPLE);
             if (CheckCollisionPointRec(cgEd->mousePos, (Rectangle){graph->pins[i].position.x - 6, graph->pins[i].position.y - 10, 96, 24}))
             {
-                DrawRectangleRounded((Rectangle){graph->pins[i].position.x - 6, graph->pins[i].position.y - 10, 96, 24}, 0.4f, 4, (Color){255, 255, 255, 100});
+                DrawRectangleRounded((Rectangle){graph->pins[i].position.x - 6, graph->pins[i].position.y - 10, 96, 24}, 0.4f, 4, COLOR_CGED_EDIT_HITBOX_BTN_HOVER);
                 if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
                 {
                     // Find texture file name from linked literal node(shouldn't only work with literal nodes)
@@ -1167,7 +1167,7 @@ void DrawNodes(CGEditorContext *cgEd, GraphContext *graph)
 
     if (hoveredPinIndex == -1 && hoveredNodeIndex != -1)
     {
-        DrawRectangleRounded((Rectangle){graph->nodes[hoveredNodeIndex].position.x - 1, graph->nodes[hoveredNodeIndex].position.y - 1, getNodeInfoByType(graph->nodes[hoveredNodeIndex].type, WIDTH) + 2, getNodeInfoByType(graph->nodes[hoveredNodeIndex].type, HEIGHT) + 2}, 0.2f, 8, (Color){255, 255, 255, 5});
+        DrawRectangleRounded((Rectangle){graph->nodes[hoveredNodeIndex].position.x - 1, graph->nodes[hoveredNodeIndex].position.y - 1, getNodeInfoByType(graph->nodes[hoveredNodeIndex].type, WIDTH) + 2, getNodeInfoByType(graph->nodes[hoveredNodeIndex].type, HEIGHT) + 2}, 0.2f, 8, COLOR_CGED_NODE_HOVER);
         if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_C))
         {
             cgEd->copiedNode = graph->nodes[hoveredNodeIndex];
@@ -1182,7 +1182,7 @@ void DrawNodes(CGEditorContext *cgEd, GraphContext *graph)
         Vector2 p1 = cgEd->lastClickedPin.isInput ? cgEd->mousePos : cgEd->lastClickedPin.position;
         Vector2 p2 = cgEd->lastClickedPin.isInput ? cgEd->lastClickedPin.position : cgEd->mousePos;
 
-        DrawCurvedWire(p1, p2, 2.0f + 1.0f / cgEd->zoom, cgEd->lastClickedPin.type == PIN_FLOW ? (Color){180, 100, 200, 255} : (Color){0, 255, 255, 255}, cgEd->isLowSpecModeOn);
+        DrawCurvedWire(p1, p2, 2.0f + 1.0f / cgEd->zoom, cgEd->lastClickedPin.type == PIN_FLOW ? COLOR_CGED_WIRE_FLOW : COLOR_CGED_WIRE_NEON_BLUE, cgEd->isLowSpecModeOn);
     }
 
     if (nodeToDelete != -1 && hoveredPinIndex == -1)
@@ -1399,7 +1399,7 @@ const char *DrawNodeMenu(CGEditorContext *cgEd, RenderTexture2D view)
         scrollBarHeight = scrollTrackHeight;
     }
 
-    DrawRectangleRounded((Rectangle){cgEd->menuPosition.x + 2, cgEd->menuPosition.y + searchBarHeight + cgEd->scrollIndexNodeMenu * ((scrollTrackHeight - scrollBarHeight) / (maxScroll + 1)) + 16, 8, scrollBarHeight}, 0.8f, 4, (Color){150, 150, 150, 255});
+    DrawRectangleRounded((Rectangle){cgEd->menuPosition.x + 2, cgEd->menuPosition.y + searchBarHeight + cgEd->scrollIndexNodeMenu * ((scrollTrackHeight - scrollBarHeight) / (maxScroll + 1)) + 16, 8, scrollBarHeight}, 0.8f, 4, GRAY_150);
 
     if (cgEd->nodeMenuSearch[0] == '\0' && cgEd->hoveredItem >= 0 && cgEd->hoveredItem < menuItemCount)
     {
@@ -1469,7 +1469,7 @@ void HandleDragging(CGEditorContext *cgEd, GraphContext *graph)
         }
         graph->nodes[cgEd->draggingNodeIndex].position.x = newX;
         graph->nodes[cgEd->draggingNodeIndex].position.y = newY;
-        DrawRectangleRounded((Rectangle){graph->nodes[cgEd->draggingNodeIndex].position.x, graph->nodes[cgEd->draggingNodeIndex].position.y, getNodeInfoByType(graph->nodes[cgEd->draggingNodeIndex].type, WIDTH), getNodeInfoByType(graph->nodes[cgEd->draggingNodeIndex].type, HEIGHT)}, 0.2f, 8, CLITERAL(Color){255, 255, 255, 50});
+        DrawRectangleRounded((Rectangle){graph->nodes[cgEd->draggingNodeIndex].position.x, graph->nodes[cgEd->draggingNodeIndex].position.y, getNodeInfoByType(graph->nodes[cgEd->draggingNodeIndex].type, WIDTH), getNodeInfoByType(graph->nodes[cgEd->draggingNodeIndex].type, HEIGHT)}, 0.2f, 8, COLOR_CGED_NODE_HOVER);
     }
     else if (IsMouseButtonDown(MOUSE_LEFT_BUTTON) && cgEd->isDraggingScreen)
     {
@@ -1494,7 +1494,7 @@ void HandleDragging(CGEditorContext *cgEd, GraphContext *graph)
 void DrawFullTexture(CGEditorContext *cgEd, GraphContext *graph, RenderTexture2D view, RenderTexture2D dot)
 {
     BeginTextureMode(view);
-    ClearBackground((Color){40, 42, 54, 255});
+    ClearBackground(COLOR_CGED_BACKGROUND);
 
     HandleDragging(cgEd, graph);
 
@@ -1554,7 +1554,7 @@ void HandleEditor(CGEditorContext *cgEd, GraphContext *graph, RenderTexture2D *v
         SetTextureFilter(dot.texture, TEXTURE_FILTER_BILINEAR);
         BeginTextureMode(dot);
         ClearBackground(BLANK);
-        DrawRectangleRounded((Rectangle){0, 0, 15, 15}, 1.0f, 8, (Color){128, 128, 128, 255});
+        DrawRectangleRounded((Rectangle){0, 0, 15, 15}, 1.0f, 8, GRAY_128);
         EndTextureMode();
 
         cgEd->isFirstFrame = false;

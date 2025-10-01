@@ -367,7 +367,7 @@ static inline Color getNodeColorByType(NodeType type)
     int index = NodeTypeToIndex(type);
     if (index == -1)
     {
-        return (Color){0, 0, 0, 255};
+        return BLACK;
     }
 
     if (type == NodeInfoByType[index].type)
