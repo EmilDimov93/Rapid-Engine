@@ -228,6 +228,8 @@ void EmergencyExit(EngineContext *eng, CGEditorContext *cgEd, InterpreterContext
     FILE *logFile = fopen("engine_log.txt", "w");
     if (logFile)
     {
+        fprintf(logFile, "Crash Report - Date: %02d-%02d-%04d\n\n", tm_info->tm_mday, tm_info->tm_mon + 1, tm_info->tm_year + 1900);
+
         for (int i = 0; i < eng->logs.count; i++)
         {
             fprintf(logFile, "[ENGINE %s] %s\n", LogLevelToString(eng->logs.entries[i].level), eng->logs.entries[i].message);
@@ -235,12 +237,12 @@ void EmergencyExit(EngineContext *eng, CGEditorContext *cgEd, InterpreterContext
 
         for (int i = 0; i < cgEd->logMessageCount; i++)
         {
-            fprintf(logFile, "[CGEDITOR %s] %s %s\n", LogLevelToString(cgEd->logMessageLevels[i]), TextFormat("%02d:%02d:%02d", tm_info->tm_hour, tm_info->tm_min, tm_info->tm_sec), cgEd->logMessages[i]);
+            fprintf(logFile, "[CGEDITOR %s] %02d:%02d:%02d %s\n", LogLevelToString(cgEd->logMessageLevels[i]), tm_info->tm_hour, tm_info->tm_min, tm_info->tm_sec, cgEd->logMessages[i]);
         }
 
         for (int i = 0; i < intp->logMessageCount; i++)
         {
-            fprintf(logFile, "[INTERPRETER %s] %s %s\n", LogLevelToString(intp->logMessageLevels[i]), TextFormat("%02d:%02d:%02d", tm_info->tm_hour, tm_info->tm_min, tm_info->tm_sec), intp->logMessages[i]);
+            fprintf(logFile, "[INTERPRETER %s] %02d:%02d:%02d %s\n", LogLevelToString(intp->logMessageLevels[i]), tm_info->tm_hour, tm_info->tm_min, tm_info->tm_sec, intp->logMessages[i]);
         }
 
         fprintf(logFile, "\nTo submit a crash report, please email support@rapidengine.eu");
@@ -261,7 +263,7 @@ void EmergencyExit(EngineContext *eng, CGEditorContext *cgEd, InterpreterContext
 
     CloseWindow();
 
-    exit(1);
+    exit(EXIT_FAILURE);
 }
 
 char *SetProjectFolderPath(EngineContext *eng, const char *fileName)
