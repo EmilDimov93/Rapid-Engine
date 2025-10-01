@@ -45,7 +45,7 @@ void DrawMovingDotAlongRectangle()
         dotY = y + h - (t - w - h - w);
     }
 
-    DrawCircle((int)dotX, (int)dotY, 5, (Color){180, 100, 200, 255});
+    DrawCircle((int)dotX, (int)dotY, 5, COLOR_PM_MOVING_DOT);
 }
 
 void DrawX(Vector2 center, float size, float thickness, Color color)
@@ -109,7 +109,7 @@ int MainWindow(Font font, Font fontRE)
     static MainWindowButton hoveredButton = MAIN_WINDOW_BUTTON_NONE;
 
     BeginDrawing();
-    ClearBackground((Color){40, 42, 54, 255});
+    ClearBackground(COLOR_PM_BACKGROUND);
 
     if (GetMouseDelta().x != 0 || GetMouseDelta().y != 0)
     {
@@ -161,7 +161,7 @@ int MainWindow(Font font, Font fontRE)
 
     if (hoveredButton == MAIN_WINDOW_BUTTON_LOAD)
     {
-        DrawRectangle(0, 0, 800, 1000, (Color){128, 128, 128, 20});
+        DrawRectangle(0, 0, 800, 1000, COLOR_PM_MAIN_WINDOW_BTNS_HOVER);
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && hoveredButton == MAIN_WINDOW_BUTTON_LOAD)
         {
             SetMouseCursor(MOUSE_CURSOR_DEFAULT);
@@ -170,7 +170,7 @@ int MainWindow(Font font, Font fontRE)
     }
     else if (hoveredButton == MAIN_WINDOW_BUTTON_CREATE)
     {
-        DrawRectangle(800, 0, 1600, 1000, (Color){128, 128, 128, 20});
+        DrawRectangle(800, 0, 1600, 1000, COLOR_PM_MAIN_WINDOW_BTNS_HOVER);
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && hoveredButton == MAIN_WINDOW_BUTTON_CREATE && !CheckCollisionPointRec(mousePos, (Rectangle){1500, 0, 100, 50}))
         {
             SetMouseCursor(MOUSE_CURSOR_DEFAULT);
@@ -183,10 +183,10 @@ int MainWindow(Font font, Font fontRE)
     DrawLineEx((Vector2){800, 0}, (Vector2){800, 1000}, 4.0f, WHITE);
 
     DrawRectangleRounded((Rectangle){482, 187, 636, 126}, 0.6f, 16, WHITE);
-    DrawRectangleRounded((Rectangle){485, 190, 630, 120}, 0.6f, 16, (Color){202, 97, 255, 255});
+    DrawRectangleRounded((Rectangle){485, 190, 630, 120}, 0.6f, 16, COLOR_PM_MAIN_WINDOW_TITLE_BOX);
 
-    DrawTextEx(fontRE, "R", (Vector2){500, 180}, 130, 0, (Color){255, 255, 255, 255});
-    DrawTextEx(font, "apid Engine", (Vector2){605, 200}, 100, 0, (Color){255, 255, 255, 255});
+    DrawTextEx(fontRE, "R", (Vector2){500, 180}, 130, 0, WHITE);
+    DrawTextEx(font, "apid Engine", (Vector2){605, 200}, 100, 0, WHITE);
 
     DrawTextEx(font, "Load", (Vector2){290, 540}, 80, 0, WHITE);
     DrawTextEx(font, "project", (Vector2){260, 630}, 80, 0, WHITE);
@@ -216,15 +216,15 @@ int WindowLoadProject(char *projectFileName, Font font)
     }
 
     BeginDrawing();
-    ClearBackground((Color){40, 42, 54, 255});
+    ClearBackground(COLOR_PM_BACKGROUND);
 
     DrawTopButtons();
 
-    DrawRectangleRec(backButton, CLITERAL(Color){70, 70, 70, 150});
+    DrawRectangleRec(backButton, COLOR_PM_BACK_BTN);
 
     if (CheckCollisionPointRec(mousePos, backButton))
     {
-        DrawRectangleRec(backButton, CLITERAL(Color){255, 255, 255, 50});
+        DrawRectangleRec(backButton, COLOR_PM_BACK_BTN_HOVER);
         DrawTextEx(font, "<", (Vector2){10, 490}, 70, 0, WHITE);
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
         {
@@ -234,16 +234,6 @@ int WindowLoadProject(char *projectFileName, Font font)
     else
     {
         DrawTextEx(font, "<", (Vector2){15, 500}, 50, 0, WHITE);
-    }
-
-    if (CheckCollisionPointRec(mousePos, backButton))
-    {
-        DrawRectangleRec(backButton, CLITERAL(Color){255, 255, 255, 100});
-
-        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
-        {
-            return PROJECT_MANAGER_WINDOW_MODE_MAIN;
-        }
     }
 
     if (!DirectoryExists("Projects"))
@@ -320,8 +310,8 @@ int WindowLoadProject(char *projectFileName, Font font)
     if (showSelectorArrow)
     {
         int fileNameLength = MeasureTextEx(font, GetFileName(files.paths[selectedProject]), 35, 1).x;
-        DrawTextEx(font, ">", (Vector2){(GetScreenWidth() - fileNameLength) / 2 - 30, 80 + selectedProject * 50}, 35, 0, (Color){202, 97, 255, 255});
-        DrawTextEx(font, "<", (Vector2){(GetScreenWidth() + fileNameLength) / 2 + 10, 80 + selectedProject * 50}, 35, 0, (Color){202, 97, 255, 255});
+        DrawTextEx(font, ">", (Vector2){(GetScreenWidth() - fileNameLength) / 2 - 30, 80 + selectedProject * 50}, 35, 0, COLOR_PM_SELECTOR_ARROWS);
+        DrawTextEx(font, "<", (Vector2){(GetScreenWidth() + fileNameLength) / 2 + 10, 80 + selectedProject * 50}, 35, 0, COLOR_PM_SELECTOR_ARROWS);
     }
 
     if (IsKeyPressed(KEY_ENTER))
@@ -428,7 +418,7 @@ int WindowCreateProject(char *projectFileName, Font font)
     if (shouldDrawFailureScreen)
     {
         static float timer = 5.0f;
-        ClearBackground((Color){40, 42, 54, 255});
+        ClearBackground(COLOR_PM_BACKGROUND);
         DrawTextEx(font, "FAILED TO CREATE PROJECT", (Vector2){(GetScreenWidth() - MeasureTextEx(font, "FAILED TO CREATE PROJECT", 40, 0).x) / 2, (GetScreenHeight() - MeasureTextEx(font, "FAILED TO CREATE PROJECT", 40, 0).y) / 2 - 50}, 40, 0, RED);
         DrawTextEx(font, TextFormat("Exiting in %.1f", timer), (Vector2){(GetScreenWidth() - MeasureTextEx(font, TextFormat("Exiting in %.1f", timer), 40, 0).x) / 2, (GetScreenHeight() - MeasureTextEx(font, TextFormat("Exiting in %.1f", timer), 40, 0).y) / 2 + 50}, 40, 0, RED);
         timer -= GetFrameTime();
@@ -481,15 +471,15 @@ int WindowCreateProject(char *projectFileName, Font font)
     }
 
     BeginDrawing();
-    ClearBackground((Color){40, 42, 54, 255});
+    ClearBackground(COLOR_PM_BACKGROUND);
 
     DrawTopButtons();
 
-    DrawRectangleRec(backButton, CLITERAL(Color){70, 70, 70, 150});
+    DrawRectangleRec(backButton, COLOR_PM_BACK_BTN);
 
     if (CheckCollisionPointRec(mousePos, backButton))
     {
-        DrawRectangleRec(backButton, CLITERAL(Color){255, 255, 255, 50});
+        DrawRectangleRec(backButton, COLOR_PM_BACK_BTN_HOVER);
         DrawTextEx(font, "<", (Vector2){10, 490}, 70, 0, WHITE);
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
         {
@@ -538,15 +528,15 @@ int WindowCreateProject(char *projectFileName, Font font)
     DrawRectangleLinesEx((Rectangle){750, 330, 30, 30}, 3, BLACK);
     if (!PO.is3D && CheckCollisionPointRec(mousePos, (Rectangle){750, 330, 30, 30}))
     {
-        DrawX((Vector2){765, 345}, 20, 5, (Color){202, 97, 255, 255});
+        DrawX((Vector2){765, 345}, 20, 5, COLOR_PM_CHECKBOX_X);
     }
     else if (!PO.is3D)
     {
-        DrawX((Vector2){765, 345}, 15, 3, (Color){202, 97, 255, 255});
+        DrawX((Vector2){765, 345}, 15, 3, COLOR_PM_CHECKBOX_X);
     }
     if (CheckCollisionPointRec(mousePos, (Rectangle){750, 330, 30, 30}))
     {
-        DrawRectangle(750, 330, 30, 30, (Color){255, 255, 255, 150});
+        DrawRectangle(750, 330, 30, 30, COLOR_PM_CHECKBOX_HOVER);
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
         {
             PO.is3D = false;
@@ -558,15 +548,15 @@ int WindowCreateProject(char *projectFileName, Font font)
     DrawRectangleLinesEx((Rectangle){890, 330, 30, 30}, 3, BLACK);
     if (PO.is3D && CheckCollisionPointRec(mousePos, (Rectangle){890, 330, 30, 30}))
     {
-        DrawX((Vector2){905, 345}, 20, 5, (Color){202, 97, 255, 255});
+        DrawX((Vector2){905, 345}, 20, 5, COLOR_PM_CHECKBOX_X);
     }
     else if (PO.is3D)
     {
-        DrawX((Vector2){905, 345}, 15, 3, (Color){202, 97, 255, 255});
+        DrawX((Vector2){905, 345}, 15, 3, COLOR_PM_CHECKBOX_X);
     }
     if (CheckCollisionPointRec(mousePos, (Rectangle){890, 330, 30, 30}))
     {
-        DrawRectangle(890, 330, 30, 30, (Color){255, 255, 255, 150});
+        DrawRectangle(890, 330, 30, 30, COLOR_PM_CHECKBOX_HOVER);
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
         {
             PO.is3D = true;
@@ -580,12 +570,12 @@ int WindowCreateProject(char *projectFileName, Font font)
 
     if (letterCount > 0 && !PO.is3D)
     {
-        DrawRectangleRounded((Rectangle){700, 500, 250, 50}, 2.0f, 8, (Color){202, 97, 255, 255});
+        DrawRectangleRounded((Rectangle){700, 500, 250, 50}, 2.0f, 8, COLOR_PM_CREATE_BTN);
         DrawRectangleRoundedLinesEx((Rectangle){700, 500, 250, 50}, 2.0f, 8, 3, WHITE);
         DrawTextEx(font, "Create project", (Vector2){730, 507}, 32, 0, WHITE);
         if (CheckCollisionPointRec(mousePos, (Rectangle){700, 500, 250, 50}))
         {
-            DrawRectangleRounded((Rectangle){700, 500, 250, 50}, 2.0f, 8, (Color){255, 255, 255, 150});
+            DrawRectangleRounded((Rectangle){700, 500, 250, 50}, 2.0f, 8, COLOR_PM_CREATE_BTN_HOVER);
             if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
             {
                 strmac(PO.projectName, MAX_FILE_NAME, "%s", inputText);

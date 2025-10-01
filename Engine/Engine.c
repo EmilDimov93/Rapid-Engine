@@ -367,20 +367,20 @@ int DrawSaveWarning(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
     Rectangle closeBtn = {btnStartX + btnWidth + btnSpacing, btnY, btnWidth + 20, btnHeight};
     Rectangle cancelBtn = {btnStartX + 2 * (btnWidth + btnSpacing) + 20, btnY, btnWidth, btnHeight};
 
-    DrawRectangle(0, 0, eng->screenWidth, eng->screenHeight, (Color){0, 0, 0, 150});
+    DrawRectangle(0, 0, eng->screenWidth, eng->screenHeight, COLOR_BACKGROUND_BLUR);
 
-    DrawRectangleRounded((Rectangle){popupX, popupY, popupWidth, popupHeight}, 0.4f, 8, (Color){30, 30, 30, 255});
-    DrawRectangleRoundedLines((Rectangle){popupX, popupY, popupWidth, popupHeight}, 0.4f, 8, (Color){200, 200, 200, 255});
+    DrawRectangleRounded((Rectangle){popupX, popupY, popupWidth, popupHeight}, 0.4f, 8, GRAY_30);
+    DrawRectangleRoundedLines((Rectangle){popupX, popupY, popupWidth, popupHeight}, 0.4f, 8, WHITE);
 
     DrawTextEx(eng->font, message, (Vector2){popupX + (popupWidth - textWidth) / 2, popupY + 20}, 30, 0, WHITE);
 
     DrawRectangleRounded(saveBtn, 0.2f, 2, DARKGREEN);
     DrawTextEx(eng->font, "Save", (Vector2){saveBtn.x + 35, saveBtn.y + 4}, 24, 0, WHITE);
 
-    DrawRectangleRounded(closeBtn, 0.2f, 2, (Color){210, 21, 35, 255});
+    DrawRectangleRounded(closeBtn, 0.2f, 2, COLOR_SAVE_MENU_DONT_SAVE_BTN);
     DrawTextEx(eng->font, "Don't save", (Vector2){closeBtn.x + 18, closeBtn.y + 4}, 24, 0, WHITE);
 
-    DrawRectangleRounded(cancelBtn, 0.2f, 2, (Color){80, 80, 80, 255});
+    DrawRectangleRounded(cancelBtn, 0.2f, 2, GRAY_80);
     DrawTextEx(eng->font, "Cancel", (Vector2){cancelBtn.x + 25, cancelBtn.y + 4}, 24, 0, WHITE);
 
     if (CheckCollisionPointRec(eng->mousePos, saveBtn))
@@ -433,7 +433,7 @@ void DrawSlider(Vector2 pos, bool *value, Vector2 mousePos, bool *hasChanged)
         {
             *value = !*value;
             *hasChanged = true;
-            DrawRectangleRounded((Rectangle){pos.x, pos.y, 40, 24}, 1.0f, 8, (Color){65, 179, 89, 255});
+            DrawRectangleRounded((Rectangle){pos.x, pos.y, 40, 24}, 1.0f, 8, COLOR_SETTINGS_MENU_SLIDER_MID_GREEN);
             DrawCircle(pos.x + 20, pos.y + 12, 10, WHITE);
             return;
         }
@@ -441,7 +441,7 @@ void DrawSlider(Vector2 pos, bool *value, Vector2 mousePos, bool *hasChanged)
 
     if (*value)
     {
-        DrawRectangleRounded((Rectangle){pos.x, pos.y, 40, 24}, 1.0f, 8, (Color){0, 128, 0, 255});
+        DrawRectangleRounded((Rectangle){pos.x, pos.y, 40, 24}, 1.0f, 8, COLOR_SETTINGS_MENU_SLIDER_FULL_GREEN);
         DrawCircle(pos.x + 28, pos.y + 12, 10, WHITE);
     }
     else
@@ -460,7 +460,7 @@ void DrawFPSLimitDropdown(Vector2 pos, int *limit, Vector2 mousePos, Font font, 
     float blockHeight = 30;
 
     Rectangle mainBox = {pos.x, pos.y, 90, blockHeight};
-    DrawRectangle(pos.x, pos.y, 90, blockHeight, (Color){60, 60, 60, 255});
+    DrawRectangle(pos.x, pos.y, 90, blockHeight, GRAY_60);
     DrawTextEx(font, TextFormat("%d FPS", *limit), (Vector2){pos.x + 14 - 4 * (*limit) / 100, pos.y + 4}, 20, 1, WHITE);
     DrawRectangleLines(pos.x, pos.y, 90, blockHeight, WHITE);
 
@@ -469,7 +469,7 @@ void DrawFPSLimitDropdown(Vector2 pos, int *limit, Vector2 mousePos, Font font, 
         for (int i = 0; i < fpsCount; i++)
         {
             Rectangle optionBox = {mainBox.x - (i + 1) * 40, mainBox.y, 40, blockHeight};
-            DrawRectangle(mainBox.x - (i + 1) * 40 - 2, mainBox.y, 40, blockHeight, (*limit == fpsOptions[i]) ? (Color){0, 128, 0, 255} : (Color){60, 60, 60, 255});
+            DrawRectangle(mainBox.x - (i + 1) * 40 - 2, mainBox.y, 40, blockHeight, (*limit == fpsOptions[i]) ? COLOR_SETTINGS_MENU_DROPDOWN_SELECTED_OPTION : GRAY_60);
             DrawTextEx(font, TextFormat("%d", fpsOptions[i]), (Vector2){optionBox.x + 10 - 4 * fpsOptions[i] / 100, optionBox.y + 4}, 20, 1, WHITE);
 
             if (CheckCollisionPointRec(mousePos, optionBox))
@@ -582,11 +582,11 @@ bool LoadSettingsConfig(EngineContext *eng, InterpreterContext *intp, CGEditorCo
 bool DrawSettingsMenu(EngineContext *eng, InterpreterContext *intp, CGEditorContext *cgEd)
 {
 
-    DrawRectangle(0, 0, eng->screenWidth, eng->screenHeight, (Color){0, 0, 0, 150});
+    DrawRectangle(0, 0, eng->screenWidth, eng->screenHeight, COLOR_BACKGROUND_BLUR);
 
     static SettingsMode settingsMode = SETTINGS_MODE_ENGINE;
 
-    DrawRectangleRounded((Rectangle){eng->screenWidth / 4, 100, eng->screenWidth * 2 / 4, eng->screenHeight - 200}, 0.08f, 4, (Color){30, 30, 30, 255});
+    DrawRectangleRounded((Rectangle){eng->screenWidth / 4, 100, eng->screenWidth * 2 / 4, eng->screenHeight - 200}, 0.08f, 4, GRAY_30);
     DrawRectangleRoundedLines((Rectangle){eng->screenWidth / 4, 100, eng->screenWidth * 2 / 4, eng->screenHeight - 200}, 0.08f, 4, WHITE);
 
     static bool skipClickOnFirstFrame = true;
@@ -660,16 +660,16 @@ bool DrawSettingsMenu(EngineContext *eng, InterpreterContext *intp, CGEditorCont
         }
     }
 
-    DrawRectangleGradientV(eng->screenWidth / 4 + 180, 300, 2, eng->screenHeight - 400, (Color){100, 100, 100, 255}, (Color){30, 30, 30, 255});
+    DrawRectangleGradientV(eng->screenWidth / 4 + 180, 300, 2, eng->screenHeight - 400, GRAY, GRAY_30);
 
     static bool hasChanged = false;
 
     float glowOffset = (sinf(GetTime() * 5.0f) + 1.0f) * 50.0f;
-    DrawRectangleRounded((Rectangle){eng->screenWidth * 3 / 4 - 140, 135, 64, 30}, 0.6f, 4, hasChanged ? (Color){153 + glowOffset, 76  + glowOffset, glowOffset, 255} : DARKGRAY);
+    DrawRectangleRounded((Rectangle){eng->screenWidth * 3 / 4 - 140, 135, 64, 30}, 0.6f, 4, hasChanged ? (Color){COLOR_WARNING_ORANGE.r + glowOffset, COLOR_WARNING_ORANGE.g  + glowOffset, COLOR_WARNING_ORANGE.b + glowOffset, COLOR_WARNING_ORANGE.a} : DARKGRAY);
     DrawTextEx(eng->font, hasChanged ? "Save*" : "Save", (Vector2){eng->screenWidth * 3 / 4 - 133 - hasChanged * 3, 139}, 22, 1.0f, WHITE);
     if(CheckCollisionPointRec(eng->mousePos, (Rectangle){eng->screenWidth * 3 / 4 - 140, 135, 64, 30})){
         SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
-        DrawRectangleRounded((Rectangle){eng->screenWidth * 3 / 4 - 140, 135, 64, 30}, 0.6f, 4, (Color){255, 255, 255, 40});
+        DrawRectangleRounded((Rectangle){eng->screenWidth * 3 / 4 - 140, 135, 64, 30}, 0.6f, 4, COLOR_SETTINGS_MENU_SAVE_BTN_HOVER);
         if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON)){
             if(SaveSettings(eng, intp, cgEd)){
                 if(eng->isSoundOn){
@@ -964,7 +964,7 @@ void DrawUIElements(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
             break;
         case UI_ACTION_MOVE_WINDOW:
             eng->isViewportFocused = false;
-            DrawCircleSector((Vector2){eng->screenWidth - 152, 7}, 38, 90, 180, 8, (Color){150, 150, 150, 255});
+            DrawCircleSector((Vector2){eng->screenWidth - 152, 7}, 38, 90, 180, 8, GRAY_150);
             if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
             {
                 eng->isWindowMoving = true;
@@ -1122,14 +1122,14 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
     eng->uiElementCount = 0;
 
     BeginTextureMode(eng->uiTex);
-    ClearBackground((Color){0, 0, 0, 0});
+    ClearBackground(COLOR_TRANSPARENT);
 
     AddUIElement(eng, (UIElement){
                           .name = "SideBarVars",
                           .shape = UIRectangle,
                           .type = UI_ACTION_NO_COLLISION_ACTION,
                           .rect = {.pos = {0, 0}, .recSize = {eng->sideBarWidth, eng->sideBarMiddleY}, .roundness = 0.0f, .roundSegments = 0},
-                          .color = (Color){28, 28, 28, 255},
+                          .color = GRAY_28,
                           .layer = 0,
                       });
 
@@ -1138,7 +1138,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                           .shape = UIRectangle,
                           .type = UI_ACTION_NO_COLLISION_ACTION,
                           .rect = {.pos = {0, eng->sideBarMiddleY}, .recSize = {eng->sideBarWidth, eng->screenHeight - eng->bottomBarHeight}, .roundness = 0.0f, .roundSegments = 0},
-                          .color = (Color){15, 15, 15, 255},
+                          .color = GRAY_15,
                           .layer = 0,
                       });
 
@@ -1168,8 +1168,8 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                           .name = "SaveButton",
                           .shape = UIRectangle,
                           .type = UI_ACTION_SAVE_CG,
-                          .rect = {.pos = saveButtonPos, .recSize = {64, 30}, .roundness = 0.2f, .roundSegments = 8, .hoverColor = (eng->viewportMode == VIEWPORT_CG_EDITOR ? Fade(WHITE, 0.2f) : (Color){0, 0, 0, 0})},
-                          .color = (Color){50, 50, 50, 255},
+                          .rect = {.pos = saveButtonPos, .recSize = {64, 30}, .roundness = 0.2f, .roundSegments = 8, .hoverColor = (eng->viewportMode == VIEWPORT_CG_EDITOR ? Fade(WHITE, 0.2f) : COLOR_TRANSPARENT)},
+                          .color = GRAY_50,
                           .layer = 1,
                           .text = {.textPos = {cgEd->hasChanged ? saveButtonPos.x + 5 : saveButtonPos.x + 8, saveButtonPos.y + 5}, .textSize = 20, .textSpacing = 2, .textColor = (eng->viewportMode == VIEWPORT_CG_EDITOR ? WHITE : GRAY)},
                       });
@@ -1212,8 +1212,8 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                               .name = "BuildButton",
                               .shape = UIRectangle,
                               .type = UI_ACTION_BUILD_GRAPH,
-                              .rect = {.pos = {eng->sideBarWidth - 70, eng->sideBarMiddleY + 15}, .recSize = {64, 30}, .roundness = 0.2f, .roundSegments = 8, .hoverColor = ((!cgEd->hasChanged && eng->viewportMode == VIEWPORT_CG_EDITOR) ? Fade(WHITE, 0.2f) : (Color){0, 0, 0, 0})},
-                              .color = (Color){50, 50, 50, 255},
+                              .rect = {.pos = {eng->sideBarWidth - 70, eng->sideBarMiddleY + 15}, .recSize = {64, 30}, .roundness = 0.2f, .roundSegments = 8, .hoverColor = ((!cgEd->hasChanged && eng->viewportMode == VIEWPORT_CG_EDITOR) ? Fade(WHITE, 0.2f) : COLOR_TRANSPARENT)},
+                              .color = GRAY_50,
                               .layer = 1,
                               .text = {.string = "Build", .textPos = {eng->sideBarWidth - 64, eng->sideBarMiddleY + 20}, .textSize = 20, .textSpacing = 2, .textColor = ((!cgEd->hasChanged && eng->viewportMode == VIEWPORT_CG_EDITOR) ? WHITE : GRAY)},
                           });
@@ -1291,23 +1291,23 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
             break;
         case VAR_FILTER_NUMBERS:
             strmac(varsFilterText, 5, "Nums");
-            varFilterColor = (Color){64, 159, 189, 255};
+            varFilterColor = COLOR_VARS_FILTER_NUMS;
             break;
         case VAR_FILTER_STRINGS:
             strmac(varsFilterText, 8, "Strings");
-            varFilterColor = (Color){180, 178, 40, 255};
+            varFilterColor = COLOR_VARS_FILTER_STRINGS;
             break;
         case VAR_FILTER_BOOLS:
             strmac(varsFilterText, 6, "Bools");
-            varFilterColor = (Color){87, 124, 181, 255};
+            varFilterColor = COLOR_VARS_FILTER_BOOLS;
             break;
         case VAR_FILTER_COLORS:
             strmac(varsFilterText, 7, "Colors");
-            varFilterColor = (Color){217, 3, 104, 255};
+            varFilterColor = COLOR_VARS_FILTER_COLORS;
             break;
         case VAR_FILTER_SPRITES:
             strmac(varsFilterText, 8, "Sprites");
-            varFilterColor = (Color){3, 206, 164, 255};
+            varFilterColor = COLOR_VARS_FILTER_SPRITES;
             break;
         default:
             eng->varsFilter = 0;
@@ -1320,7 +1320,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                               .shape = UIRectangle,
                               .type = UI_ACTION_CHANGE_VARS_FILTER,
                               .rect = {.pos = {eng->sideBarWidth - 85 + eng->sideBarHalfSnap * 15, 15}, .recSize = {78 - eng->sideBarHalfSnap * 15, 30}, .roundness = 0.2f, .roundSegments = 8, .hoverColor = Fade(WHITE, 0.2f)},
-                              .color = (Color){50, 50, 50, 255},
+                              .color = GRAY_50,
                               .layer = 1,
                               .text = {.textPos = {eng->sideBarWidth - 85 + (80 - MeasureTextEx(eng->font, varsFilterText, 20 - eng->sideBarHalfSnap * 3, 1).x) / 2 + eng->sideBarHalfSnap * 5, 20 + eng->sideBarHalfSnap * 2}, .textSize = 20 - eng->sideBarHalfSnap * 3, .textSpacing = 1, .textColor = varFilterColor},
                           });
@@ -1351,7 +1351,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
         {
         case VAL_NUMBER:
         case NODE_CREATE_NUMBER:
-            varColor = (Color){24, 119, 149, 255};
+            varColor = COLOR_VAR_NUMBER;
             if (eng->varsFilter != VAR_FILTER_NUMBERS && eng->varsFilter != VAR_FILTER_ALL)
             {
                 continue;
@@ -1359,7 +1359,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
             break;
         case VAL_STRING:
         case NODE_CREATE_STRING:
-            varColor = (Color){180, 178, 40, 255};
+            varColor = COLOR_VAR_STRING;
             if (eng->varsFilter != VAR_FILTER_STRINGS && eng->varsFilter != VAR_FILTER_ALL)
             {
                 continue;
@@ -1367,7 +1367,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
             break;
         case VAL_BOOL:
         case NODE_CREATE_BOOL:
-            varColor = (Color){27, 64, 121, 255};
+            varColor = COLOR_VAR_BOOL;
             if (eng->varsFilter != VAR_FILTER_BOOLS && eng->varsFilter != VAR_FILTER_ALL)
             {
                 continue;
@@ -1375,7 +1375,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
             break;
         case VAL_COLOR:
         case NODE_CREATE_COLOR:
-            varColor = (Color){217, 3, 104, 255};
+            varColor = COLOR_VAR_COLOR;
             if (eng->varsFilter != VAR_FILTER_COLORS && eng->varsFilter != VAR_FILTER_ALL)
             {
                 continue;
@@ -1383,7 +1383,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
             break;
         case VAL_SPRITE:
         case NODE_CREATE_SPRITE:
-            varColor = (Color){3, 206, 164, 255};
+            varColor = COLOR_VAR_SPRITE;
             if (eng->varsFilter != VAR_FILTER_SPRITES && eng->varsFilter != VAR_FILTER_ALL)
             {
                 continue;
@@ -1398,7 +1398,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                               .shape = UIRectangle,
                               .type = eng->isGameRunning ? UI_ACTION_VAR_TOOLTIP_RUNTIME : UI_ACTION_NO_COLLISION_ACTION,
                               .rect = {.pos = {15, varsY - 5}, .recSize = {eng->sideBarWidth - 25, 35}, .roundness = 0.6f, .roundSegments = 8, .hoverColor = Fade(WHITE, 0.2f)},
-                              .color = (Color){59, 59, 59, 255},
+                              .color = GRAY_59,
                               .layer = 1,
                               .valueIndex = i});
 
@@ -1434,7 +1434,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                           .shape = UIRectangle,
                           .type = UI_ACTION_NO_COLLISION_ACTION,
                           .rect = {.pos = {0, eng->screenHeight - eng->bottomBarHeight}, .recSize = {eng->screenWidth, eng->bottomBarHeight}, .roundness = 0.0f, .roundSegments = 0},
-                          .color = (Color){28, 28, 28, 255},
+                          .color = GRAY_28,
                           .layer = 0,
                       });
 
@@ -1452,7 +1452,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                           .shape = UIRectangle,
                           .type = UI_ACTION_BACK_FILEPATH,
                           .rect = {.pos = {30, eng->screenHeight - eng->bottomBarHeight + 10}, .recSize = {65, 30}, .roundness = 0, .roundSegments = 0, .hoverColor = Fade(WHITE, 0.2f)},
-                          .color = (Color){40, 40, 40, 255},
+                          .color = GRAY_40,
                           .layer = 1,
                           .text = {.string = "Back", .textPos = {39, eng->screenHeight - eng->bottomBarHeight + 14}, .textSize = 22, .textSpacing = 0, .textColor = WHITE}});
 
@@ -1461,7 +1461,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                           .shape = UIRectangle,
                           .type = UI_ACTION_REFRESH_FILES,
                           .rect = {.pos = {110, eng->screenHeight - eng->bottomBarHeight + 10}, .recSize = {100, 30}, .roundness = 0, .roundSegments = 0, .hoverColor = Fade(WHITE, 0.2f)},
-                          .color = (Color){40, 40, 40, 255},
+                          .color = GRAY_40,
                           .layer = 1,
                           .text = {.string = "Refresh", .textPos = {123, eng->screenHeight - eng->bottomBarHeight + 14}, .textSize = 22, .textSpacing = 0, .textColor = WHITE}});
 
@@ -1469,7 +1469,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                           .name = "CurrentPath",
                           .shape = UIText,
                           .type = UI_ACTION_NO_COLLISION_ACTION,
-                          .color = (Color){0, 0, 0, 0},
+                          .color = COLOR_TRANSPARENT,
                           .layer = 0,
                           .text = {.string = "", .textPos = {230, eng->screenHeight - eng->bottomBarHeight + 15}, .textSize = 22, .textSpacing = 2, .textColor = WHITE}});
     strmac(eng->uiElements[eng->uiElementCount - 1].text.string, MAX_FILE_PATH, "%s", eng->currentPath);
@@ -1497,29 +1497,29 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
         switch (GetFileType(eng->currentPath, fileName))
         {
         case FILE_FOLDER:
-            fileOutlineColor = (Color){102, 102, 11, 255};
-            fileTextColor = (Color){240, 240, 120, 255};
+            fileOutlineColor = COLOR_FILE_FOLDER_OUTLINE;
+            fileTextColor = COLOR_FILE_FOLDER_TEXT;
             break;
         case FILE_CG:
-            fileOutlineColor = (Color){111, 64, 123, 255};
-            fileTextColor = (Color){245, 200, 255, 255};
-            break;
-        case FILE_IMAGE:
-            fileOutlineColor = (Color){44, 88, 148, 255};
-            fileTextColor = (Color){140, 185, 245, 255};
+            fileOutlineColor = COLOR_FILE_CG_OUTLINE;
+            fileTextColor = COLOR_FILE_CG_TEXT;
             break;
         case FILE_CONFIG:
-            fileOutlineColor = (Color){80, 80, 80, 255};
-            fileTextColor = (Color){80, 80, 80, 255};
+            fileOutlineColor = COLOR_FILE_CONFIG_OUTLINE;
+            fileTextColor = COLOR_FILE_CONFIG_TEXT;
+            break;
+        case FILE_IMAGE:
+            fileOutlineColor = COLOR_FILE_IMAGE_OUTLINE;
+            fileTextColor = COLOR_FILE_IMAGE_TEXT;
             break;
         case FILE_OTHER:
-            fileOutlineColor = (Color){124, 123, 120, 255};
-            fileTextColor = (Color){242, 240, 235, 255};
+            fileOutlineColor = COLOR_FILE_OTHER_OUTLINE;
+            fileTextColor = COLOR_FILE_OTHER_TEXT;
             break;
         default:
             AddToLog(eng, "Out of bounds enum{O201}", LOG_LEVEL_ERROR);
-            fileOutlineColor = (Color){220, 220, 220, 255};
-            fileTextColor = (Color){220, 220, 220, 255};
+            fileOutlineColor = COLOR_FILE_UNKNOWN;
+            fileTextColor = COLOR_FILE_UNKNOWN;
             break;
         }
 
@@ -1592,7 +1592,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                               .shape = UIRectangle,
                               .type = UI_ACTION_OPEN_FILE,
                               .rect = {.pos = {xOffset, yOffset}, .recSize = {150, 60}, .roundness = 0.4f, .roundSegments = 8, .hoverColor = Fade(WHITE, 0.2f)},
-                              .color = (Color){40, 40, 40, 255},
+                              .color = GRAY_40,
                               .layer = 1,
                               .text = {.string = "", .textPos = {xOffset + 10, yOffset + 18}, .textSize = 22, .textSpacing = 0, .textColor = fileTextColor}});
         strmac(eng->uiElements[eng->uiElementCount - 1].name, MAX_FILE_PATH, "%s", eng->files.paths[i]);
@@ -1615,7 +1615,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                           .shape = UIRectangle,
                           .type = UI_ACTION_CLOSE_WINDOW,
                           .rect = {.pos = {eng->screenWidth - 50, 0}, .recSize = {50, 50}, .roundness = 0.0f, .roundSegments = 0, .hoverColor = RED},
-                          .color = (Color){0, 0, 0, 0},
+                          .color = COLOR_TRANSPARENT,
                           .layer = 1,
                       });
     AddUIElement(eng, (UIElement){
@@ -1623,7 +1623,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                           .shape = UIRectangle,
                           .type = UI_ACTION_MINIMIZE_WINDOW,
                           .rect = {.pos = {eng->screenWidth - 100, 0}, .recSize = {50, 50}, .roundness = 0.0f, .roundSegments = 0, .hoverColor = GRAY},
-                          .color = (Color){0, 0, 0, 0},
+                          .color = COLOR_TRANSPARENT,
                           .layer = 1,
                       });
     AddUIElement(eng, (UIElement){
@@ -1631,7 +1631,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                           .shape = UIRectangle,
                           .type = UI_ACTION_OPEN_SETTINGS,
                           .rect = {.pos = {eng->screenWidth - 150, 0}, .recSize = {50, 50}, .roundness = 0.0f, .roundSegments = 0, .hoverColor = GRAY},
-                          .color = (Color){0, 0, 0, 0},
+                          .color = COLOR_TRANSPARENT,
                           .layer = 1,
                       });
     AddUIElement(eng, (UIElement){
@@ -1639,7 +1639,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                           .shape = UIRectangle,
                           .type = UI_ACTION_MOVE_WINDOW,
                           .rect = {.pos = {eng->screenWidth - 200, 0}, .recSize = {50, 50}, .roundness = 0.0f, .roundSegments = 0, .hoverColor = (Color){0, 0, 0, 0}},
-                          .color = (Color){0, 0, 0, 0},
+                          .color = COLOR_TRANSPARENT,
                           .layer = 1,
                       });
 
@@ -1648,7 +1648,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                           .shape = UICircle,
                           .type = UI_ACTION_RESIZE_BOTTOM_BAR,
                           .circle = {.center = (Vector2){eng->screenWidth / 2, eng->screenHeight - eng->bottomBarHeight}, .radius = 10},
-                          .color = (Color){255, 255, 255, 1},
+                          .color = COLOR_RESIZE_BUTTON,
                           .layer = 1,
                       });
     AddUIElement(eng, (UIElement){
@@ -1656,7 +1656,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                           .shape = UICircle,
                           .type = UI_ACTION_RESIZE_SIDE_BAR,
                           .circle = {.center = (Vector2){eng->sideBarWidth, (eng->screenHeight - eng->bottomBarHeight) / 2}, .radius = 10},
-                          .color = (Color){255, 255, 255, 1},
+                          .color = COLOR_RESIZE_BUTTON,
                           .layer = 1,
                       });
     AddUIElement(eng, (UIElement){
@@ -1664,7 +1664,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                           .shape = UICircle,
                           .type = UI_ACTION_RESIZE_SIDE_BAR_MIDDLE,
                           .circle = {.center = (Vector2){eng->sideBarWidth / 2, eng->sideBarMiddleY}, .radius = 10},
-                          .color = (Color){255, 255, 255, 1},
+                          .color = COLOR_RESIZE_BUTTON,
                           .layer = 1,
                       });
 
@@ -1675,7 +1675,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                               .shape = UIRectangle,
                               .type = UI_ACTION_FULLSCREEN_BUTTON_VIEWPORT,
                               .rect = {.pos = {eng->sideBarWidth + 8, 10}, .recSize = {50, 50}, .roundness = 0.2f, .roundSegments = 8, .hoverColor = GRAY},
-                              .color = (Color){60, 60, 60, 255},
+                              .color = GRAY_60,
                               .layer = 1,
                           });
     }
@@ -1683,11 +1683,11 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
     CountingSortByLayer(eng);
 
     // Top bar background
-    DrawCircleSector((Vector2){eng->screenWidth - 150, 1}, 50, 90, 180, 8, (Color){40, 40, 40, 255});
+    DrawCircleSector((Vector2){eng->screenWidth - 150, 1}, 50, 90, 180, 8, GRAY_40);
 
     DrawRing((Vector2){eng->screenWidth - 150, 2.5f}, 47, 50, 0, 360, 64, WHITE);
 
-    DrawRectangle(eng->screenWidth - 150, 0, 150, 50, (Color){40, 40, 40, 255});
+    DrawRectangle(eng->screenWidth - 150, 0, 150, 50, GRAY_40);
 
     DrawLineEx((Vector2){eng->screenWidth - 150, 50}, (Vector2){eng->screenWidth, 50}, 3, WHITE);
 
@@ -2553,8 +2553,8 @@ int main()
 
         if (eng.viewportMode == VIEWPORT_CG_EDITOR && eng.screenHeight - eng.bottomBarHeight > 80 && eng.screenWidth > 550)
         {
-            DrawTextEx(GetFontDefault(), "CoreGraph", (Vector2){eng.sideBarWidth + 20, 30}, 40, 4, (Color){255, 255, 255, 51});
-            DrawTextEx(eng.font, "TM", (Vector2){eng.sideBarWidth + 240, 20}, 15, 1, (Color){255, 255, 255, 51});
+            DrawTextEx(GetFontDefault(), "CoreGraph", (Vector2){eng.sideBarWidth + 20, 30}, 40, 4, COLOR_COREGRAPH_WATERMARK);
+            DrawTextEx(eng.font, "TM", (Vector2){eng.sideBarWidth + 240, 20}, 15, 1, COLOR_COREGRAPH_WATERMARK);
         }
 
         if (eng.showSaveWarning == 1)
