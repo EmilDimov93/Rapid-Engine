@@ -492,6 +492,81 @@ void DrawFPSLimitDropdown(Vector2 pos, int *limit, Vector2 mousePos, Font font)
     }
 }
 
+bool SaveSettings(EngineContext *eng, InterpreterContext *intp, CGEditorContext *cgEd){
+    FILE *fptr = fopen(TextFormat("%s%cengine.config", eng->projectPath, PATH_SEPARATOR), "w");
+    if(!fptr){
+        return false;
+    }
+
+    fprintf(fptr, "Sound=%s\n", eng->isSoundOn ? "true" : "false");
+    fprintf(fptr, "FPSLimit=%d\n", eng->fpsLimit);
+    fprintf(fptr, "ShowFPS=%s\n", eng->shouldShowFPS ? "true" : "false");
+    fprintf(fptr, "AutoSave=%s\n", eng->isAutoSaveON ? "true" : "false");
+    fprintf(fptr, "HideCursorinFullscreen=%s\n", eng->shouldHideCursorInGameFullscreen ? "true" : "false");
+    fprintf(fptr, "LowSpecMode=%s\n", eng->isLowSpecModeOn ? "true" : "false");
+
+    fprintf(fptr, "InfiniteLoopProtection=%s\n", intp->isInfiniteLoopProtectionOn ? "true" : "false");
+    fprintf(fptr, "ShowHitboxes=%s\n", intp->shouldShowHitboxes ? "true" : "false");
+
+    fclose(fptr);
+    return true;
+}
+
+bool LoadSettingsConfig(EngineContext *eng, InterpreterContext *intp, CGEditorContext *cgEd){
+    FILE *fptr = fopen(TextFormat("%s%cengine.config", eng->projectPath, PATH_SEPARATOR), "r");
+    if(!fptr){
+        if(!SaveSettings(eng, intp, cgEd)){
+            return false;
+        }
+        fptr = fopen(TextFormat("%s%cengine.config", eng->projectPath, PATH_SEPARATOR), "r");
+        if(!fptr){
+            return false;
+        }
+    }
+
+    char line[256];
+    while(fgets(line, sizeof(line), fptr)) {
+        char *eq = strchr(line, '=');
+        if(!eq){
+            continue;
+        }
+        *eq = '\0';
+
+        char *key = line;
+        char *value = eq + 1;
+        value[strcspn(value, "\r\n")] = '\0';
+
+        if(strcmp(key, "Sound") == 0){
+            eng->isSoundOn = strcmp(value, "true") == 0 ? true : false;
+        }
+        else if(strcmp(key, "FPSLimit") == 0){
+            eng->fpsLimit = atoi(value);
+        }
+        else if(strcmp(key, "ShowFPS") == 0){
+            eng->shouldShowFPS = strcmp(value, "true") == 0 ? true : false;
+        }
+        else if(strcmp(key, "AutoSave") == 0){
+            eng->isAutoSaveON = strcmp(value, "true") == 0 ? true : false;
+        }
+        else if(strcmp(key, "HideCursorinFullscreen") == 0){
+            eng->shouldHideCursorInGameFullscreen = strcmp(value, "true") == 0 ? true : false;
+        }
+        else if(strcmp(key, "LowSpecMode") == 0){
+            eng->isLowSpecModeOn = strcmp(value, "true") == 0 ? true : false;
+        }
+
+        else if(strcmp(key, "InfiniteLoopProtection") == 0){
+            intp->isInfiniteLoopProtectionOn = strcmp(value, "true") == 0 ? true : false;
+        }
+        else if(strcmp(key, "ShowHitboxes") == 0){
+            intp->shouldShowHitboxes = strcmp(value, "true") == 0 ? true : false;
+        }
+    }
+
+    fclose(fptr);
+    return true;
+}
+
 bool DrawSettingsMenu(EngineContext *eng, InterpreterContext *intp, CGEditorContext *cgEd)
 {
 
@@ -528,6 +603,24 @@ bool DrawSettingsMenu(EngineContext *eng, InterpreterContext *intp, CGEditorCont
     }
 
     DrawTextEx(eng->font, "Settings", (Vector2){eng->screenWidth / 2 - MeasureTextEx(eng->font, "Settings", 50, 1).x / 2, 130}, 50, 1, WHITE);
+
+    DrawRectangleRounded((Rectangle){eng->screenWidth * 3 / 4 - 140, 135, 64, 30}, 0.6f, 4, DARKGREEN);
+    DrawTextEx(eng->font, "Save", (Vector2){eng->screenWidth * 3 / 4 - 133, 139}, 22, 1.0f, WHITE);
+    if(CheckCollisionPointRec(eng->mousePos, (Rectangle){eng->screenWidth * 3 / 4 - 140, 135, 64, 30})){
+        SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+        DrawRectangleRounded((Rectangle){eng->screenWidth * 3 / 4 - 140, 135, 64, 30}, 0.6f, 4, (Color){255, 255, 255, 40});
+        if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON)){
+            if(SaveSettings(eng, intp, cgEd)){
+                if(eng->isSoundOn){
+                    PlaySound(eng->saveSound);
+                }
+                AddToLog(eng, "Settings saved successfully{E300}", LOG_LEVEL_SUCCESS);
+            }
+            else{
+                AddToLog(eng, "Error saving settings{E100}", LOG_LEVEL_ERROR);
+            }
+        }
+    }
 
     DrawTextEx(eng->font, "Engine", (Vector2){eng->screenWidth / 4 + 30, 300}, 30, 1, settingsMode == SETTINGS_MODE_ENGINE ? WHITE : GRAY);
 
@@ -584,7 +677,6 @@ bool DrawSettingsMenu(EngineContext *eng, InterpreterContext *intp, CGEditorCont
         {
             intp->isSoundOn = eng->isSoundOn;
             intp->hasSoundOnChanged = true;
-            ;
         }
 
         DrawTextEx(eng->font, "Auto Save Every 2 Minutes", (Vector2){eng->screenWidth / 4 + 200, 350}, 28, 1, WHITE);
@@ -2162,6 +2254,10 @@ int main()
         eng.CGFilePath[0] = '\0';
     }
     cgEd.graph = &graph;
+
+    if(!LoadSettingsConfig(&eng, &intp, &cgEd)){
+        AddToLog(&eng, "Failed to load settings file{E227}", LOG_LEVEL_ERROR);
+    }
 
     AddToLog(&eng, "All resources loaded. Welcome!{E000}", LOG_LEVEL_NORMAL);
 

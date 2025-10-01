@@ -208,6 +208,18 @@ typedef struct EngineContext
 
 } EngineContext;
 
+typedef struct Settings{
+    bool isSoundOn;
+    int fpsLimit;
+    bool shouldShowFPS;
+    bool isAutoSaveON;
+    bool shouldHideCursorInGameFullscreen;
+    bool isLowSpecModeOn;
+    
+    bool isInfiniteLoopProtectionOn;
+    bool shouldShowHitboxes;
+}Settings;
+
 typedef enum {
     FILE_FOLDER = 0,
     FILE_CG     = 1,
