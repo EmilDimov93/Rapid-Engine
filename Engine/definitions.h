@@ -212,7 +212,7 @@ const char *AddEllipsis(Font font, const char *text, float fontSize, float maxWi
 #define COLOR_PM_MOVING_DOT (Color){180, 100, 200, 255}
 #define COLOR_PM_BACKGROUND (Color){40, 42, 54, 255}
 #define COLOR_PM_MAIN_WINDOW_BTNS_HOVER (Color){128, 128, 128, 20}
-#define COLOR_PM_MAIN_WINDOW_TITLE_BOX (Color){202, 97, 255, 255}
+#define RAPID_PURPLE (Color){202, 97, 255, 255}
 #define COLOR_PM_BACK_BTN (Color){70, 70, 70, 150}
 #define COLOR_PM_BACK_BTN_HOVER (Color){255, 255, 255, 50}
 #define COLOR_PM_SELECTOR_ARROWS (Color){202, 97, 255, 255}

@@ -530,7 +530,7 @@ bool LoadSettingsConfig(EngineContext *eng, InterpreterContext *intp, CGEditorCo
         if(!SaveSettings(eng, intp, cgEd)){
             return false;
         }
-        fptr = fopen(TextFormat("%s%cengine.config", eng->projectPath, PATH_SEPARATOR), "r");
+        fptr = fopen(TextFormat("%s%c%s.config", eng->projectPath, PATH_SEPARATOR, GetFileName(eng->projectPath)), "r");
         if(!fptr){
             return false;
         }
@@ -1287,7 +1287,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
         {
         case VAR_FILTER_ALL:
             strmac(varsFilterText, 4, "All");
-            varFilterColor = RAYWHITE;
+            varFilterColor = WHITE;
             break;
         case VAR_FILTER_NUMBERS:
             strmac(varsFilterText, 5, "Nums");
@@ -1312,7 +1312,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
         default:
             eng->varsFilter = 0;
             strmac(varsFilterText, 4, "All");
-            varFilterColor = RAYWHITE;
+            varFilterColor = WHITE;
             break;
         }
         AddUIElement(eng, (UIElement){
@@ -2230,6 +2230,32 @@ void SetEngineZoom(EngineContext *eng, CGEditorContext *cgEd, InterpreterContext
     }
 }
 
+void DisplayLoadingScreen(int step){
+    BeginDrawing();
+    ClearBackground(GRAY_28);
+
+    int total_steps = 10;
+    int screenWidth = GetScreenWidth();
+    int screenHeight = GetScreenHeight();
+    float progress = (float)step / total_steps;
+
+    DrawText("Loading...", (screenWidth - 215) / 2, screenHeight / 3, 50, WHITE);
+
+    int barW = screenWidth * 3 / 4;
+    int barX = screenWidth * 1 / 8;
+    int barY = screenHeight / 2;
+
+    DrawRectangleRounded((Rectangle){barX, barY, barW, 100}, 0.3f, 8, GRAY_40);
+
+    DrawRectangleRounded((Rectangle){barX, barY, barW * progress, 100}, 0.3f, 8, RAPID_PURPLE);
+
+    DrawRectangleRoundedLines((Rectangle){barX, barY, barW, 100}, 0.3f, 4, WHITE);
+
+    DrawText(TextFormat("%d%%", (int)(progress * 100)), (screenWidth - 60) / 2, barY + 120, 30, WHITE);
+
+    EndDrawing();
+}
+
 int main()
 {
     SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_WINDOW_UNDECORATED);
@@ -2243,19 +2269,27 @@ int main()
     char fileName[MAX_FILE_NAME];
     strmac(fileName, MAX_FILE_NAME, "%s", DEVELOPER_MODE ? "Tetris" : HandleProjectManager());
 
-    SetTargetFPS(60);
-
     MaximizeWindow();
+
+    DisplayLoadingScreen(1);
 
     InitAudioDevice();
 
+    DisplayLoadingScreen(2);
+
     EngineContext eng = InitEngineContext();
+    DisplayLoadingScreen(3);
     CGEditorContext cgEd = InitEditorContext();
+    DisplayLoadingScreen(4);
     GraphContext graph = InitGraphContext();
+    DisplayLoadingScreen(5);
     InterpreterContext intp = InitInterpreterContext(); intp.isGameRunning = &eng.isGameRunning;
+    DisplayLoadingScreen(6);
     RuntimeGraphContext runtimeGraph = {0};
 
     eng.currentPath = SetProjectFolderPath(&eng, fileName);
+
+    DisplayLoadingScreen(7);
 
     eng.files = LoadAndSortFiles(eng.currentPath);
     if (!eng.files.paths || eng.files.count <= 0)
@@ -2269,6 +2303,8 @@ int main()
     intp.projectPath = strmac(NULL, MAX_FILE_PATH, "%s", eng.currentPath);
     eng.projectPath = strmac(NULL, MAX_FILE_PATH, "%s", eng.currentPath);
 
+    DisplayLoadingScreen(8);
+
     if (!LoadGraphFromFile(eng.CGFilePath, &graph))
     {
         AddToLog(&eng, "Failed to load CoreGraph file! Continuing with empty graph{C223}", LOG_LEVEL_ERROR);
@@ -2276,9 +2312,15 @@ int main()
     }
     cgEd.graph = &graph;
 
+    DisplayLoadingScreen(9);
+
     if(!LoadSettingsConfig(&eng, &intp, &cgEd)){
         AddToLog(&eng, "Failed to load settings file{E227}", LOG_LEVEL_ERROR);
     }
+
+    SetTargetFPS(eng.fpsLimit > 60 ? 60 : eng.fpsLimit);
+
+    DisplayLoadingScreen(10);
 
     AddToLog(&eng, "All resources loaded. Welcome!{E000}", LOG_LEVEL_NORMAL);
 

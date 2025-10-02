@@ -131,7 +131,7 @@ int MainWindow(Font font, Font fontRE)
         else
         {
             hoveredButton = MAIN_WINDOW_BUTTON_NONE;
-            SetMouseCursor(MOUSE_CURSOR_DEFAULT);
+            SetMouseCursor(MOUSE_CURSOR_ARROW);
         }
     }
     else
@@ -183,7 +183,7 @@ int MainWindow(Font font, Font fontRE)
     DrawLineEx((Vector2){800, 0}, (Vector2){800, 1000}, 4.0f, WHITE);
 
     DrawRectangleRounded((Rectangle){482, 187, 636, 126}, 0.6f, 16, WHITE);
-    DrawRectangleRounded((Rectangle){485, 190, 630, 120}, 0.6f, 16, COLOR_PM_MAIN_WINDOW_TITLE_BOX);
+    DrawRectangleRounded((Rectangle){485, 190, 630, 120}, 0.6f, 16, RAPID_PURPLE);
 
     DrawTextEx(fontRE, "R", (Vector2){500, 180}, 130, 0, WHITE);
     DrawTextEx(font, "apid Engine", (Vector2){605, 200}, 100, 0, WHITE);
@@ -201,6 +201,7 @@ int MainWindow(Font font, Font fontRE)
 
 int WindowLoadProject(char *projectFileName, Font font)
 {
+    bool cursorChanged = false;
     Rectangle backButton = {1, 0, 65, 1600};
 
     Vector2 mousePos = GetMousePosition();
@@ -226,6 +227,8 @@ int WindowLoadProject(char *projectFileName, Font font)
     {
         DrawRectangleRec(backButton, COLOR_PM_BACK_BTN_HOVER);
         DrawTextEx(font, "<", (Vector2){10, 490}, 70, 0, WHITE);
+        SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+        cursorChanged = true;
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
         {
             return PROJECT_MANAGER_WINDOW_MODE_MAIN;
@@ -261,6 +264,8 @@ int WindowLoadProject(char *projectFileName, Font font)
         DrawTextEx(font, fileName, (Vector2){(GetScreenWidth() - fileNameLength) / 2, yPosition}, 35, 1, WHITE);
         if (CheckCollisionPointRec(mousePos, (Rectangle){(GetScreenWidth() - fileNameLength) / 2 - 5, yPosition - 5, fileNameLength + 10, 45}))
         {
+            SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+            cursorChanged = true;
             if (GetMouseDelta().x != 0 || GetMouseDelta().y != 0)
             {
                 selectedProject = i;
@@ -322,6 +327,10 @@ int WindowLoadProject(char *projectFileName, Font font)
 
     UnloadDirectoryFiles(files);
 
+    if(!cursorChanged){
+        SetMouseCursor(MOUSE_CURSOR_ARROW);
+    }
+
     return PROJECT_MANAGER_WINDOW_MODE_LOAD;
 }
 
@@ -375,20 +384,9 @@ bool CreateProject(ProjectOptions PO)
 
     char mainPath[MAX_FILE_PATH];
 
-    strmac(mainPath, MAX_FILE_PATH, "%s%c%s.c", projectPath, PATH_SEPARATOR, PO.projectName);
-
-    FILE *file = fopen(mainPath, "w");
-
-    if (file == NULL)
-    {
-        return false;
-    }
-
-    fclose(file);
-
     strmac(mainPath, MAX_FILE_PATH, "%s%c%s.cg", projectPath, PATH_SEPARATOR, PO.projectName);
 
-    file = fopen(mainPath, "w");
+    FILE *file = fopen(mainPath, "w");
 
     if (file == NULL)
     {
@@ -429,6 +427,8 @@ int WindowCreateProject(char *projectFileName, Font font)
         return PROJECT_MANAGER_WINDOW_MODE_CREATE;
     }
 
+    bool cursorChanged = false;
+
     Rectangle backButton = {1, 0, 65, 1600};
     static Rectangle textBox = {700, 230, 250, 40};
     static char inputText[MAX_FILE_NAME] = "";
@@ -444,9 +444,16 @@ int WindowCreateProject(char *projectFileName, Font font)
         return PROJECT_MANAGER_WINDOW_MODE_MAIN;
     }
 
-    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+    if (CheckCollisionPointRec(mousePos, textBox))
     {
-        isFocused = CheckCollisionPointRec(mousePos, textBox);
+        if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON)){
+            isFocused = true;
+        }
+        SetMouseCursor(MOUSE_CURSOR_IBEAM);
+        cursorChanged = true;
+    }
+    else if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON)){
+        isFocused = false;
     }
 
     if (isFocused)
@@ -481,6 +488,8 @@ int WindowCreateProject(char *projectFileName, Font font)
     {
         DrawRectangleRec(backButton, COLOR_PM_BACK_BTN_HOVER);
         DrawTextEx(font, "<", (Vector2){10, 490}, 70, 0, WHITE);
+        SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+        cursorChanged = true;
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
         {
             return PROJECT_MANAGER_WINDOW_MODE_MAIN;
@@ -528,6 +537,8 @@ int WindowCreateProject(char *projectFileName, Font font)
     DrawRectangleLinesEx((Rectangle){750, 330, 30, 30}, 3, BLACK);
     if (!PO.is3D && CheckCollisionPointRec(mousePos, (Rectangle){750, 330, 30, 30}))
     {
+        SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+        cursorChanged = true;
         DrawX((Vector2){765, 345}, 20, 5, COLOR_PM_CHECKBOX_X);
     }
     else if (!PO.is3D)
@@ -536,6 +547,8 @@ int WindowCreateProject(char *projectFileName, Font font)
     }
     if (CheckCollisionPointRec(mousePos, (Rectangle){750, 330, 30, 30}))
     {
+        SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+        cursorChanged = true;
         DrawRectangle(750, 330, 30, 30, COLOR_PM_CHECKBOX_HOVER);
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
         {
@@ -548,6 +561,8 @@ int WindowCreateProject(char *projectFileName, Font font)
     DrawRectangleLinesEx((Rectangle){890, 330, 30, 30}, 3, BLACK);
     if (PO.is3D && CheckCollisionPointRec(mousePos, (Rectangle){890, 330, 30, 30}))
     {
+        SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+        cursorChanged = true;
         DrawX((Vector2){905, 345}, 20, 5, COLOR_PM_CHECKBOX_X);
     }
     else if (PO.is3D)
@@ -556,6 +571,8 @@ int WindowCreateProject(char *projectFileName, Font font)
     }
     if (CheckCollisionPointRec(mousePos, (Rectangle){890, 330, 30, 30}))
     {
+        SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+        cursorChanged = true;
         DrawRectangle(890, 330, 30, 30, COLOR_PM_CHECKBOX_HOVER);
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
         {
@@ -575,6 +592,8 @@ int WindowCreateProject(char *projectFileName, Font font)
         DrawTextEx(font, "Create project", (Vector2){730, 507}, 32, 0, WHITE);
         if (CheckCollisionPointRec(mousePos, (Rectangle){700, 500, 250, 50}))
         {
+            SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+            cursorChanged = true;
             DrawRectangleRounded((Rectangle){700, 500, 250, 50}, 2.0f, 8, COLOR_PM_CREATE_BTN_HOVER);
             if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
             {
@@ -598,6 +617,10 @@ int WindowCreateProject(char *projectFileName, Font font)
         {
             DrawRectangleRounded(textBox, 2.0f, 8, RED);
         }
+    }
+
+    if(!cursorChanged){
+        SetMouseCursor(MOUSE_CURSOR_ARROW);
     }
 
     return PROJECT_MANAGER_WINDOW_MODE_CREATE;
