@@ -3,6 +3,9 @@
 #include "raylib.h"
 #include "definitions.h"
 
+#define PM_WINDOW_WIDTH 1600
+#define PM_WINDOW_HEIGHT 1000
+
 typedef struct ProjectOptions
 {
     char projectName[MAX_FILE_NAME];

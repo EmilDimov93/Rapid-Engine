@@ -1095,7 +1095,7 @@ void DrawUIElements(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                     startedDragging = true;
                 }
 
-                if (currentTime - startHoldTime > HOLD_TO_DRAG_THRESHOLD && startedDragging)
+                if (currentTime - startHoldTime > HOLD_TO_DRAG_THRESHOLD && startedDragging && eng->draggingFileIndex == -1)
                 {
                     eng->draggingFileIndex = eng->uiElements[eng->hoveredUIElementIndex].fileIndex;
                 }
@@ -2432,7 +2432,7 @@ int main()
 {
     SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_WINDOW_UNDECORATED);
     SetTraceLogLevel(LOG_WARNING);
-    InitWindow(1600, 1000, "RapidEngine");
+    InitWindow(PM_WINDOW_WIDTH, PM_WINDOW_HEIGHT, "RapidEngine");
     SetTargetFPS(140);
     SetExitKey(KEY_NULL);
     Image icon = LoadImage("icon.png");

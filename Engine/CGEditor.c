@@ -1207,6 +1207,22 @@ void DrawNodes(CGEditorContext *cgEd, GraphContext *graph)
         cgEd->hasChangedInLastFrame = true;
         return;
     }
+
+    if(hoveredNodeIndex == -1 && cgEd->hasDroppedFile){
+        cgEd->hasDroppedFile = false;
+        if (!CreateNode(graph, NODE_LITERAL_STRING, (Vector2){cgEd->mousePos.x - getNodeInfoByType(NODE_LITERAL_STRING, WIDTH) / 2, cgEd->mousePos.y - getNodeInfoByType(NODE_LITERAL_STRING, HEIGHT) / 2}))
+        {
+            cgEd->hasFatalErrorOccurred = true;
+            AddToLogFromEditor(cgEd, "Error creating node{C230}", LOG_LEVEL_ERROR);
+            return;
+        }
+        else
+        {
+            cgEd->hasChangedInLastFrame = true;
+            cgEd->delayFrames = true;
+            strmac(graph->pins[FindPinIndexByID(graph, graph->nodes[graph->nodeCount - 1].inputPins[0])].textFieldValue, MAX_FILE_PATH, "%s", cgEd->droppedFilePath);
+        }
+    }
 }
 
 bool CheckNodeCollisions(CGEditorContext *cgEd, GraphContext *graph)
