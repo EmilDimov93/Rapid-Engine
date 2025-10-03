@@ -5,15 +5,18 @@
 #include "definitions.h"
 
 #define MAX_UI_ELEMENTS 128
-#define MAX_FILE_TOOLTIP_SIZE 256
+#define MAX_FILE_TOOLTIP_SIZE 512
 #define MAX_VARIABLE_TOOLTIP_SIZE 256
 
-const double doubleClickThreshold = 0.3;
+#define DOUBLE_CLICK_THRESHOLD 0.3f
+#define HOLD_TO_DRAG_THRESHOLD 0.08f
 
 #define UI_LAYER_COUNT 4
 
 #define MIN_WINDOW_WIDTH 300
 #define MIN_WINDOW_HEIGHT 300
+
+#define MAX_SETTINGS_LINE 128
 
 typedef enum
 {
@@ -57,7 +60,7 @@ typedef enum
 
 typedef struct LogEntry
 {
-    char message[256];
+    char message[MAX_LOG_MESSAGE_SIZE];
     LogLevel level;
 } LogEntry;
 
@@ -93,7 +96,7 @@ typedef struct UIElement
         struct
         {
             Vector2 startPos;
-            Vector2 engPos;
+            Vector2 endPos;
             int thickness;
         } line;
     };
@@ -109,6 +112,7 @@ typedef struct UIElement
     } text;
 
     int valueIndex;
+    int fileIndex;
 } UIElement;
 
 typedef enum{
@@ -205,6 +209,8 @@ typedef struct EngineContext
     bool isSettingsButtonHovered;
 
     Logs logs;
+
+    int draggingFileIndex;
 
 } EngineContext;
 

@@ -126,6 +126,8 @@ EngineContext InitEngineContext()
 
     eng.isSettingsButtonHovered = false;
 
+    eng.draggingFileIndex = -1;
+
     return eng;
 }
 
@@ -310,7 +312,8 @@ FileType GetFileType(const char *folderPath, const char *fileName)
     {
         return FILE_IMAGE;
     }
-    else if (strcmp(ext + 1, "config") == 0){
+    else if (strcmp(ext + 1, "config") == 0)
+    {
         return FILE_CONFIG;
     }
 
@@ -499,9 +502,11 @@ void DrawFPSLimitDropdown(Vector2 pos, int *limit, Vector2 mousePos, Font font, 
     }
 }
 
-bool SaveSettings(EngineContext *eng, InterpreterContext *intp, CGEditorContext *cgEd){
+bool SaveSettings(EngineContext *eng, InterpreterContext *intp, CGEditorContext *cgEd)
+{
     FILE *fptr = fopen(TextFormat("%s%c%s.config", eng->projectPath, PATH_SEPARATOR, GetFileName(eng->projectPath)), "w");
-    if(!fptr){
+    if (!fptr)
+    {
         return false;
     }
 
@@ -517,29 +522,35 @@ bool SaveSettings(EngineContext *eng, InterpreterContext *intp, CGEditorContext 
     fprintf(fptr, "InfiniteLoopProtection=%s\n", intp->isInfiniteLoopProtectionOn ? "true" : "false");
     fprintf(fptr, "ShowHitboxes=%s\n", intp->shouldShowHitboxes ? "true" : "false");
 
-    //fprintf(fptr, "Keybinds:");
-    //fprintf(fptr, "Export:");
+    // fprintf(fptr, "Keybinds:");
+    // fprintf(fptr, "Export:");
 
     fclose(fptr);
     return true;
 }
 
-bool LoadSettingsConfig(EngineContext *eng, InterpreterContext *intp, CGEditorContext *cgEd){
+bool LoadSettingsConfig(EngineContext *eng, InterpreterContext *intp, CGEditorContext *cgEd)
+{
     FILE *fptr = fopen(TextFormat("%s%c%s.config", eng->projectPath, PATH_SEPARATOR, GetFileName(eng->projectPath)), "r");
-    if(!fptr){
-        if(!SaveSettings(eng, intp, cgEd)){
+    if (!fptr)
+    {
+        if (!SaveSettings(eng, intp, cgEd))
+        {
             return false;
         }
         fptr = fopen(TextFormat("%s%c%s.config", eng->projectPath, PATH_SEPARATOR, GetFileName(eng->projectPath)), "r");
-        if(!fptr){
+        if (!fptr)
+        {
             return false;
         }
     }
 
-    char line[256];
-    while(fgets(line, sizeof(line), fptr)) {
+    char line[MAX_SETTINGS_LINE];
+    while (fgets(line, sizeof(line), fptr))
+    {
         char *eq = strchr(line, '=');
-        if(!eq){
+        if (!eq)
+        {
             continue;
         }
         *eq = '\0';
@@ -548,29 +559,37 @@ bool LoadSettingsConfig(EngineContext *eng, InterpreterContext *intp, CGEditorCo
         char *value = eq + 1;
         value[strcspn(value, "\r\n")] = '\0';
 
-        if(strcmp(key, "Sound") == 0){
+        if (strcmp(key, "Sound") == 0)
+        {
             eng->isSoundOn = strcmp(value, "true") == 0 ? true : false;
         }
-        else if(strcmp(key, "FPSLimit") == 0){
+        else if (strcmp(key, "FPSLimit") == 0)
+        {
             eng->fpsLimit = atoi(value);
         }
-        else if(strcmp(key, "ShowFPS") == 0){
+        else if (strcmp(key, "ShowFPS") == 0)
+        {
             eng->shouldShowFPS = strcmp(value, "true") == 0 ? true : false;
         }
-        else if(strcmp(key, "AutoSave") == 0){
+        else if (strcmp(key, "AutoSave") == 0)
+        {
             eng->isAutoSaveON = strcmp(value, "true") == 0 ? true : false;
         }
-        else if(strcmp(key, "HideCursorinFullscreen") == 0){
+        else if (strcmp(key, "HideCursorinFullscreen") == 0)
+        {
             eng->shouldHideCursorInGameFullscreen = strcmp(value, "true") == 0 ? true : false;
         }
-        else if(strcmp(key, "LowSpecMode") == 0){
+        else if (strcmp(key, "LowSpecMode") == 0)
+        {
             eng->isLowSpecModeOn = strcmp(value, "true") == 0 ? true : false;
         }
 
-        else if(strcmp(key, "InfiniteLoopProtection") == 0){
+        else if (strcmp(key, "InfiniteLoopProtection") == 0)
+        {
             intp->isInfiniteLoopProtectionOn = strcmp(value, "true") == 0 ? true : false;
         }
-        else if(strcmp(key, "ShowHitboxes") == 0){
+        else if (strcmp(key, "ShowHitboxes") == 0)
+        {
             intp->shouldShowHitboxes = strcmp(value, "true") == 0 ? true : false;
         }
     }
@@ -665,20 +684,25 @@ bool DrawSettingsMenu(EngineContext *eng, InterpreterContext *intp, CGEditorCont
     static bool hasChanged = false;
 
     float glowOffset = (sinf(GetTime() * 5.0f) + 1.0f) * 50.0f;
-    DrawRectangleRounded((Rectangle){eng->screenWidth * 3 / 4 - 140, 135, 64, 30}, 0.6f, 4, hasChanged ? (Color){COLOR_WARNING_ORANGE.r + glowOffset, COLOR_WARNING_ORANGE.g  + glowOffset, COLOR_WARNING_ORANGE.b + glowOffset, COLOR_WARNING_ORANGE.a} : DARKGRAY);
+    DrawRectangleRounded((Rectangle){eng->screenWidth * 3 / 4 - 140, 135, 64, 30}, 0.6f, 4, hasChanged ? (Color){COLOR_WARNING_ORANGE.r + glowOffset, COLOR_WARNING_ORANGE.g + glowOffset, COLOR_WARNING_ORANGE.b + glowOffset, COLOR_WARNING_ORANGE.a} : DARKGRAY);
     DrawTextEx(eng->font, hasChanged ? "Save*" : "Save", (Vector2){eng->screenWidth * 3 / 4 - 133 - hasChanged * 3, 139}, 22, 1.0f, WHITE);
-    if(CheckCollisionPointRec(eng->mousePos, (Rectangle){eng->screenWidth * 3 / 4 - 140, 135, 64, 30})){
+    if (CheckCollisionPointRec(eng->mousePos, (Rectangle){eng->screenWidth * 3 / 4 - 140, 135, 64, 30}))
+    {
         SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
         DrawRectangleRounded((Rectangle){eng->screenWidth * 3 / 4 - 140, 135, 64, 30}, 0.6f, 4, COLOR_SETTINGS_MENU_SAVE_BTN_HOVER);
-        if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON)){
-            if(SaveSettings(eng, intp, cgEd)){
-                if(eng->isSoundOn){
+        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+        {
+            if (SaveSettings(eng, intp, cgEd))
+            {
+                if (eng->isSoundOn)
+                {
                     PlaySound(eng->saveSound);
                 }
                 AddToLog(eng, "Settings saved successfully{E300}", LOG_LEVEL_SUCCESS);
                 hasChanged = false;
             }
-            else{
+            else
+            {
                 AddToLog(eng, "Error saving settings{E100}", LOG_LEVEL_ERROR);
             }
         }
@@ -809,7 +833,7 @@ void DrawUIElements(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
     eng->isBuildButtonHovered = false;
     eng->isSettingsButtonHovered = false;
     char temp[256];
-    if (eng->hoveredUIElementIndex != -1 && !eng->isAnyMenuOpen)
+    if (eng->hoveredUIElementIndex != -1 && !eng->isAnyMenuOpen && eng->draggingFileIndex == -1)
     {
         switch (eng->uiElements[eng->hoveredUIElementIndex].type)
         {
@@ -883,20 +907,32 @@ void DrawUIElements(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                 }
                 *runtimeGraph = ConvertToRuntimeGraph(graph, intp);
                 intp->runtimeGraph = runtimeGraph;
-                if (intp->buildErrorOccured)
+                if (intp->buildFailed)
                 {
                     EmergencyExit(eng, cgEd, intp);
                 }
-                eng->delayFrames = true;
-                if (runtimeGraph != NULL)
+                else if (intp->buildErrorOccured || runtimeGraph == NULL)
                 {
-                    AddToLog(eng, "Build successful{I300}", LOG_LEVEL_SUCCESS);
-                    eng->wasBuilt = true;
+                    if (intp->newLogMessage)
+                    {
+                        for (int i = 0; i < intp->logMessageCount; i++)
+                        {
+                            AddToLog(eng, intp->logMessages[i], intp->logMessageLevels[i]);
+                        }
+
+                        intp->newLogMessage = false;
+                        intp->logMessageCount = 0;
+                        eng->delayFrames = true;
+                    }
+                    AddToLog(eng, "Build failed{I100}", LOG_LEVEL_WARNING);
+                    intp->buildErrorOccured = false;
                 }
                 else
                 {
-                    AddToLog(eng, "Build failed{I100}", LOG_LEVEL_WARNING);
+                    AddToLog(eng, "Build successful{I300}", LOG_LEVEL_NORMAL);
+                    eng->wasBuilt = true;
                 }
+                eng->delayFrames = true;
             }
             break;
         case UI_ACTION_BACK_FILEPATH:
@@ -992,7 +1028,7 @@ void DrawUIElements(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
             }
             break;
         case UI_ACTION_OPEN_FILE:
-            char tooltipText[256];
+            char tooltipText[MAX_FILE_TOOLTIP_SIZE];
             strmac(tooltipText, MAX_FILE_TOOLTIP_SIZE, "File: %s\nSize: %d bytes", GetFileName(eng->uiElements[eng->hoveredUIElementIndex].name), GetFileLength(eng->uiElements[eng->hoveredUIElementIndex].name));
             Rectangle tooltipRect = {eng->uiElements[eng->hoveredUIElementIndex].rect.pos.x + 10, eng->uiElements[eng->hoveredUIElementIndex].rect.pos.y - 61, MeasureTextEx(eng->font, tooltipText, 20, 0).x + 20, 60};
             AddUIElement(eng, (UIElement){
@@ -1004,12 +1040,13 @@ void DrawUIElements(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                                   .layer = 1,
                                   .text = {.string = "", .textPos = {tooltipRect.x + 10, tooltipRect.y + 10}, .textSize = 20, .textSpacing = 0, .textColor = WHITE}});
             strmac(eng->uiElements[eng->uiElementCount - 1].text.string, MAX_FILE_TOOLTIP_SIZE, "%s", tooltipText);
+
+            double currentTime = GetTime();
             if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
             {
-                double currentTime = GetTime();
                 static double lastClickTime = 0;
 
-                if (currentTime - lastClickTime <= doubleClickThreshold)
+                if (currentTime - lastClickTime <= DOUBLE_CLICK_THRESHOLD)
                 {
                     FileType fileType = GetFileType(eng->currentPath, GetFileName(eng->uiElements[eng->hoveredUIElementIndex].name));
                     if (fileType == FILE_CG)
@@ -1047,6 +1084,25 @@ void DrawUIElements(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                     }
                 }
                 lastClickTime = currentTime;
+            }
+            static double startHoldTime = 0;
+            static bool startedDragging = false;
+            if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
+            {
+                if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+                {
+                    startHoldTime = GetTime();
+                    startedDragging = true;
+                }
+
+                if (currentTime - startHoldTime > HOLD_TO_DRAG_THRESHOLD && startedDragging)
+                {
+                    eng->draggingFileIndex = eng->uiElements[eng->hoveredUIElementIndex].fileIndex;
+                }
+            }
+            else if (IsMouseButtonUp(MOUSE_LEFT_BUTTON))
+            {
+                startedDragging = false;
             }
 
             break;
@@ -1106,7 +1162,7 @@ void DrawUIElements(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
             DrawCircleV(el->circle.center, el->circle.radius, el->color);
             break;
         case UILine:
-            DrawLineEx(el->line.startPos, el->line.engPos, el->line.thickness, el->color);
+            DrawLineEx(el->line.startPos, el->line.endPos, el->line.thickness, el->color);
             break;
         }
 
@@ -1146,7 +1202,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                           .name = "SideBarMiddleLine",
                           .shape = UILine,
                           .type = UI_ACTION_NO_COLLISION_ACTION,
-                          .line = {.startPos = {eng->sideBarWidth, 0}, .engPos = {eng->sideBarWidth, eng->screenHeight - eng->bottomBarHeight}, .thickness = 2},
+                          .line = {.startPos = {eng->sideBarWidth, 0}, .endPos = {eng->sideBarWidth, eng->screenHeight - eng->bottomBarHeight}, .thickness = 2},
                           .color = WHITE,
                           .layer = 0,
                       });
@@ -1155,7 +1211,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                           .name = "SideBarFromViewportDividerLine",
                           .shape = UILine,
                           .type = UI_ACTION_NO_COLLISION_ACTION,
-                          .line = {.startPos = {0, eng->sideBarMiddleY}, .engPos = {eng->sideBarWidth, eng->sideBarMiddleY}, .thickness = 2},
+                          .line = {.startPos = {0, eng->sideBarMiddleY}, .endPos = {eng->sideBarWidth, eng->sideBarMiddleY}, .thickness = 2},
                           .color = WHITE,
                           .layer = 0,
                       });
@@ -1442,7 +1498,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                           .name = "BottomBarFromViewportDividerLine",
                           .shape = UILine,
                           .type = UI_ACTION_NO_COLLISION_ACTION,
-                          .line = {.startPos = {0, eng->screenHeight - eng->bottomBarHeight}, .engPos = {eng->screenWidth, eng->screenHeight - eng->bottomBarHeight}, .thickness = 2},
+                          .line = {.startPos = {0, eng->screenHeight - eng->bottomBarHeight}, .endPos = {eng->screenWidth, eng->screenHeight - eng->bottomBarHeight}, .thickness = 2},
                           .color = WHITE,
                           .layer = 0,
                       });
@@ -1594,7 +1650,8 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                               .rect = {.pos = {xOffset, yOffset}, .recSize = {150, 60}, .roundness = 0.4f, .roundSegments = 8, .hoverColor = Fade(WHITE, 0.2f)},
                               .color = GRAY_40,
                               .layer = 1,
-                              .text = {.string = "", .textPos = {xOffset + 10, yOffset + 18}, .textSize = 22, .textSpacing = 0, .textColor = fileTextColor}});
+                              .text = {.string = "", .textPos = {xOffset + 10, yOffset + 18}, .textSize = 22, .textSpacing = 0, .textColor = fileTextColor},
+                              .fileIndex = i});
         strmac(eng->uiElements[eng->uiElementCount - 1].name, MAX_FILE_PATH, "%s", eng->files.paths[i]);
         strmac(eng->uiElements[eng->uiElementCount - 1].text.string, MAX_FILE_PATH, "%s", buff);
 
@@ -1608,6 +1665,65 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
             xOffset = 50;
             yOffset += 120;
         }
+    }
+
+    if (eng->draggingFileIndex != -1)
+    {
+        Color fileOutlineColor;
+        Color fileTextColor;
+
+        switch (GetFileType(eng->currentPath, GetFileName(eng->files.paths[eng->draggingFileIndex])))
+        {
+        case FILE_FOLDER:
+            fileOutlineColor = COLOR_FILE_FOLDER_OUTLINE;
+            fileTextColor = COLOR_FILE_FOLDER_TEXT;
+            break;
+        case FILE_CG:
+            fileOutlineColor = COLOR_FILE_CG_OUTLINE;
+            fileTextColor = COLOR_FILE_CG_TEXT;
+            break;
+        case FILE_CONFIG:
+            fileOutlineColor = COLOR_FILE_CONFIG_OUTLINE;
+            fileTextColor = COLOR_FILE_CONFIG_TEXT;
+            break;
+        case FILE_IMAGE:
+            fileOutlineColor = COLOR_FILE_IMAGE_OUTLINE;
+            fileTextColor = COLOR_FILE_IMAGE_TEXT;
+            break;
+        case FILE_OTHER:
+            fileOutlineColor = COLOR_FILE_OTHER_OUTLINE;
+            fileTextColor = COLOR_FILE_OTHER_TEXT;
+            break;
+        default:
+            AddToLog(eng, "Out of bounds enum{O201}", LOG_LEVEL_ERROR);
+            fileOutlineColor = COLOR_FILE_UNKNOWN;
+            fileTextColor = COLOR_FILE_UNKNOWN;
+            break;
+        }
+
+        char fileName[MAX_FILE_NAME];
+        strmac(fileName, MAX_FILE_NAME, "%s", GetFileName(eng->files.paths[eng->draggingFileIndex]));
+        int fileNameSize = MeasureTextEx(eng->font, fileName, 22, 0).x;
+
+        fileOutlineColor.a -= 50;
+
+            AddUIElement(eng, (UIElement){
+                                  .name = "DraggedFileOutline",
+                                  .shape = UIRectangle,
+                                  .type = UI_ACTION_NO_COLLISION_ACTION,
+                                  .rect = {.pos = {eng->mousePos.x - 73, eng->mousePos.y - 28}, .recSize = {154 > fileNameSize ? 154 : fileNameSize + 28, 64}, .roundness = 0.5f, .roundSegments = 8},
+                                  .color = fileOutlineColor,
+                                  .layer = 2});
+
+        AddUIElement(eng, (UIElement){
+                              .name = "DraggedFile",
+                              .shape = UIRectangle,
+                              .type = UI_ACTION_NO_COLLISION_ACTION,
+                              .rect = {.pos = (Vector2){eng->mousePos.x - 71, eng->mousePos.y - 26}, .recSize = {150 > fileNameSize ? 150 : fileNameSize + 24, 60}, .roundness = 0.4f, .roundSegments = 8, .hoverColor = COLOR_TRANSPARENT},
+                              .color = (Color){GRAY_40.r, GRAY_40.g, GRAY_40.b, GRAY_40.a - 50},
+                              .layer = 3,
+                              .text = {.string = "", .textPos = (Vector2){eng->mousePos.x - 61, eng->mousePos.y - 8}, .textSize = 22, .textSpacing = 0, .textColor = fileTextColor}});
+        strmac(eng->uiElements[eng->uiElementCount - 1].text.string, MAX_FILE_NAME, "%s", fileName);
     }
 
     AddUIElement(eng, (UIElement){
@@ -1784,20 +1900,32 @@ bool HandleUICollisions(EngineContext *eng, GraphContext *graph, InterpreterCont
         {
             *runtimeGraph = ConvertToRuntimeGraph(graph, intp);
             intp->runtimeGraph = runtimeGraph;
-            if (intp->buildErrorOccured)
+            if (intp->buildFailed)
             {
                 EmergencyExit(eng, cgEd, intp);
             }
-            eng->delayFrames = true;
-            if (runtimeGraph != NULL)
+            else if (intp->buildErrorOccured || runtimeGraph == NULL)
+            {
+                if (intp->newLogMessage)
+                {
+                    for (int i = 0; i < intp->logMessageCount; i++)
+                    {
+                        AddToLog(eng, intp->logMessages[i], intp->logMessageLevels[i]);
+                    }
+
+                    intp->newLogMessage = false;
+                    intp->logMessageCount = 0;
+                    eng->delayFrames = true;
+                }
+                AddToLog(eng, "Build failed{I100}", LOG_LEVEL_WARNING);
+                intp->buildErrorOccured = false;
+            }
+            else
             {
                 AddToLog(eng, "Build successful{I300}", LOG_LEVEL_NORMAL);
                 eng->wasBuilt = true;
             }
-            else
-            {
-                AddToLog(eng, "Build failed{I100}", LOG_LEVEL_ERROR);
-            }
+            eng->delayFrames = true;
         }
     }
     else if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_S) && IsKeyDown(KEY_LEFT_SHIFT))
@@ -1815,6 +1943,39 @@ bool HandleUICollisions(EngineContext *eng, GraphContext *graph, InterpreterCont
     if (IsKeyPressed(KEY_ESCAPE))
     {
         eng->isViewportFullscreen = false;
+    }
+
+    if (eng->draggingFileIndex != -1)
+    {
+        if (IsMouseButtonUp(MOUSE_LEFT_BUTTON))
+        {
+            size_t len = strlen(eng->projectPath);
+            if (strncmp(eng->projectPath, eng->files.paths[eng->draggingFileIndex], len) == 0)
+            {
+                const char *remainder = eng->files.paths[eng->draggingFileIndex] + len;
+
+                if (*remainder == PATH_SEPARATOR)
+                {
+                    remainder++;
+                }
+
+                if (*remainder != '\0')
+                {
+                    strmac(cgEd->droppedFilePath, MAX_FILE_PATH, "%s", remainder);
+                }
+
+                if(eng->isViewportFocused){
+                    cgEd->hasDroppedFile = true;
+                }
+            }
+            else
+            {
+                cgEd->hasDroppedFile = false;
+            }
+
+            eng->draggingFileIndex = -1;
+        }
+        eng->delayFrames = true;
     }
 
     if (eng->isWindowMoving)
@@ -2088,6 +2249,12 @@ void SetEngineMouseCursor(EngineContext *eng, CGEditorContext *cgEd)
         ShowCursor();
     }
 
+    if (eng->draggingFileIndex != -1)
+    {
+        SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+        return;
+    }
+
     if (eng->isAnyMenuOpen)
     {
         SetMouseCursor(MOUSE_CURSOR_ARROW);
@@ -2182,6 +2349,10 @@ int SetEngineFPS(EngineContext *eng, CGEditorContext *cgEd, InterpreterContext *
     }
     else
     {
+        if (eng->draggingFileIndex != -1)
+        {
+            eng->fps = 140;
+        }
         fps = eng->fps;
     }
 
@@ -2230,7 +2401,8 @@ void SetEngineZoom(EngineContext *eng, CGEditorContext *cgEd, InterpreterContext
     }
 }
 
-void DisplayLoadingScreen(int step){
+void DisplayLoadingScreen(int step)
+{
     BeginDrawing();
     ClearBackground(GRAY_28);
 
@@ -2283,7 +2455,8 @@ int main()
     DisplayLoadingScreen(4);
     GraphContext graph = InitGraphContext();
     DisplayLoadingScreen(5);
-    InterpreterContext intp = InitInterpreterContext(); intp.isGameRunning = &eng.isGameRunning;
+    InterpreterContext intp = InitInterpreterContext();
+    intp.isGameRunning = &eng.isGameRunning;
     DisplayLoadingScreen(6);
     RuntimeGraphContext runtimeGraph = {0};
 
@@ -2314,7 +2487,8 @@ int main()
 
     DisplayLoadingScreen(9);
 
-    if(!LoadSettingsConfig(&eng, &intp, &cgEd)){
+    if (!LoadSettingsConfig(&eng, &intp, &cgEd))
+    {
         AddToLog(&eng, "Failed to load settings file{E227}", LOG_LEVEL_ERROR);
     }
 

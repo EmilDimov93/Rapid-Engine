@@ -189,7 +189,7 @@ typedef struct
     bool isFirstFrame;
 
     bool newLogMessage;
-    char logMessages[MAX_LOG_MESSAGES][128];
+    char logMessages[MAX_LOG_MESSAGES][MAX_LOG_MESSAGE_SIZE];
     LogLevel logMessageLevels[MAX_LOG_MESSAGES];
     int logMessageCount;
 

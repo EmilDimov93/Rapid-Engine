@@ -279,6 +279,7 @@ RuntimeGraphContext ConvertToRuntimeGraph(GraphContext *graph, InterpreterContex
             if (pinIndex < 0)
             {
                 dstNode->inputPins[j] = NULL;
+                intp->buildFailed = true;
                 intp->buildErrorOccured = true;
                 AddToLogFromInterpreter(intp, (Value){.type = VAL_STRING, .string = "Input pin mapping failed{I202}"}, LOG_LEVEL_ERROR);
                 return runtime;
@@ -301,6 +302,7 @@ RuntimeGraphContext ConvertToRuntimeGraph(GraphContext *graph, InterpreterContex
             if (pinIndex < 0)
             {
                 dstNode->outputPins[j] = NULL;
+                intp->buildFailed = true;
                 intp->buildErrorOccured = true;
                 AddToLogFromInterpreter(intp, (Value){.type = VAL_STRING, .string = "Output pin mapping failed{I203}"}, LOG_LEVEL_ERROR);
                 return runtime;
@@ -392,6 +394,7 @@ RuntimeGraphContext ConvertToRuntimeGraph(GraphContext *graph, InterpreterContex
         case NODE_LITERAL_NUMBER:
             if (!node->inputPins[0])
             {
+                intp->buildFailed = true;
                 intp->buildErrorOccured = true;
                 AddToLogFromInterpreter(intp, (Value){.type = VAL_STRING, .string = "Missing input for literal node{I208}"}, LOG_LEVEL_ERROR);
                 return runtime;
@@ -407,6 +410,7 @@ RuntimeGraphContext ConvertToRuntimeGraph(GraphContext *graph, InterpreterContex
         case NODE_LITERAL_STRING:
             if (!node->inputPins[0])
             {
+                intp->buildFailed = true;
                 intp->buildErrorOccured = true;
                 AddToLogFromInterpreter(intp, (Value){.type = VAL_STRING, .string = "Missing input for literal node{I208}"}, LOG_LEVEL_ERROR);
                 return runtime;
@@ -422,6 +426,7 @@ RuntimeGraphContext ConvertToRuntimeGraph(GraphContext *graph, InterpreterContex
         case NODE_LITERAL_BOOL:
             if (!node->inputPins[0])
             {
+                intp->buildFailed = true;
                 intp->buildErrorOccured = true;
                 AddToLogFromInterpreter(intp, (Value){.type = VAL_STRING, .string = "Missing input for literal node{I208}"}, LOG_LEVEL_ERROR);
                 return runtime;
@@ -444,6 +449,7 @@ RuntimeGraphContext ConvertToRuntimeGraph(GraphContext *graph, InterpreterContex
         case NODE_LITERAL_COLOR:
             if (!node->inputPins[0])
             {
+                intp->buildFailed = true;
                 intp->buildErrorOccured = true;
                 AddToLogFromInterpreter(intp, (Value){.type = VAL_STRING, .string = "Missing input for literal node{I208}"}, LOG_LEVEL_ERROR);
                 return runtime;
@@ -539,6 +545,7 @@ RuntimeGraphContext ConvertToRuntimeGraph(GraphContext *graph, InterpreterContex
 
             if (intp->valueCount > expectedValues)
             {
+                intp->buildFailed = true;
                 intp->buildErrorOccured = true;
                 AddToLogFromInterpreter(intp, (Value){.type = VAL_STRING, .string = "Value array overflow{I20A}"}, LOG_LEVEL_ERROR);
                 return runtime;
@@ -651,6 +658,7 @@ RuntimeGraphContext ConvertToRuntimeGraph(GraphContext *graph, InterpreterContex
 
         if (inputIndex == -1 || outputIndex == -1)
         {
+            intp->buildFailed = true;
             intp->buildErrorOccured = true;
             AddToLogFromInterpreter(intp, (Value){.type = VAL_STRING, .string = "Link pin missing{I20B}"}, LOG_LEVEL_ERROR);
             return runtime;

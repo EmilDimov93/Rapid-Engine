@@ -39,7 +39,7 @@ typedef struct
     int nodeFieldPinFocused;
 
     bool newLogMessage;
-    char logMessages[MAX_LOG_MESSAGES][128];
+    char logMessages[MAX_LOG_MESSAGES][MAX_LOG_MESSAGE_SIZE];
     LogLevel logMessageLevels[MAX_LOG_MESSAGES];
     int logMessageCount;
 
@@ -60,7 +60,7 @@ typedef struct
 
     bool createNodeMenuFirstFrame;
 
-    char nodeMenuSearch[64];
+    char nodeMenuSearch[MAX_SEARCH_BAR_FIELD_SIZE];
 
     bool shouldOpenHitboxEditor;
     char hitboxEditorFileName[MAX_FILE_NAME];
@@ -73,6 +73,9 @@ typedef struct
     bool hasFatalErrorOccurred;
 
     bool isLowSpecModeOn;
+
+    bool hasDroppedFile;
+    char droppedFilePath[MAX_FILE_PATH];
 
     GraphContext *graph;
 } CGEditorContext;

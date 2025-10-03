@@ -78,6 +78,8 @@ CGEditorContext InitEditorContext()
 
     cgEd.isLowSpecModeOn = false;
 
+    cgEd.hasDroppedFile = false;
+
     return cgEd;
 }
 
@@ -361,6 +363,19 @@ void HandleLiteralNodeField(CGEditorContext *cgEd, GraphContext *graph, int curr
     if (isFieldHovered && type != PIN_FIELD_BOOL)
     {
         cgEd->cursor = MOUSE_CURSOR_IBEAM;
+    }
+
+    if (isFieldHovered && type == PIN_FIELD_STRING && IsMouseButtonReleased(MOUSE_LEFT_BUTTON))
+    {
+        if (cgEd->hasDroppedFile)
+        {
+            cgEd->hasDroppedFile = false;
+            cgEd->hasChangedInLastFrame = true;
+            if (cgEd->droppedFilePath[0] != '\0')
+            {
+                strmac(graph->pins[currPinIndex].textFieldValue, MAX_FILE_PATH, "%s", cgEd->droppedFilePath);
+            }
+        }
     }
 
     if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
