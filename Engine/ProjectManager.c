@@ -249,7 +249,8 @@ int WindowLoadProject(char *projectFileName, Font font)
 
     FilePathList files = LoadDirectoryFiles("Projects");
 
-    if(files.count == 0){
+    if (files.count == 0)
+    {
         DrawTextEx(font, "No existing projects", (Vector2){(GetScreenWidth() - MeasureTextEx(font, "No existing projects", 35, 1).x) / 2, yPosition}, 35, 1, WHITE);
         return PROJECT_MANAGER_WINDOW_MODE_LOAD;
     }
@@ -327,7 +328,8 @@ int WindowLoadProject(char *projectFileName, Font font)
 
     UnloadDirectoryFiles(files);
 
-    if(!cursorChanged){
+    if (!cursorChanged)
+    {
         SetMouseCursor(MOUSE_CURSOR_ARROW);
     }
 
@@ -356,28 +358,33 @@ bool CreateProject(ProjectOptions PO)
 
     for (int i = 1; i < 100; i++)
     {
-        if (i == 1){
+        if (i == 1)
+        {
             strmac(tempPath, MAX_FILE_PATH, "%s", projectPath);
         }
-        else{
+        else
+        {
             strmac(tempPath, MAX_FILE_PATH, "%s %d", projectPath, i);
         }
 
         if (!DirectoryExists(tempPath))
         {
-            if (MAKE_DIR(tempPath) != 0){
+            if (MAKE_DIR(tempPath) != 0)
+            {
                 return false;
             }
 
             strmac(projectPath, MAX_FILE_PATH, "%s", tempPath);
-            if (i > 1){
+            if (i > 1)
+            {
                 strmac(PO.projectName, MAX_FILE_NAME, "%s %d", originalName, i);
             }
 
             break;
         }
 
-        if (i == 99){
+        if (i == 99)
+        {
             return false;
         }
     }
@@ -446,13 +453,15 @@ int WindowCreateProject(char *projectFileName, Font font)
 
     if (CheckCollisionPointRec(mousePos, textBox))
     {
-        if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON)){
+        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+        {
             isFocused = true;
         }
         SetMouseCursor(MOUSE_CURSOR_IBEAM);
         cursorChanged = true;
     }
-    else if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON)){
+    else if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+    {
         isFocused = false;
     }
 
@@ -532,21 +541,16 @@ int WindowCreateProject(char *projectFileName, Font font)
 
     DrawTextEx(font, "Enter project name:", (Vector2){textBox.x + 10, textBox.y - 30}, 25, 0, WHITE);
 
+    bool isHovered = false;
+
     DrawTextEx(font, "2D", (Vector2){700, 330}, 30, 0, WHITE);
     DrawRectangle(750, 330, 30, 30, WHITE);
     DrawRectangleLinesEx((Rectangle){750, 330, 30, 30}, 3, BLACK);
-    if (!PO.is3D && CheckCollisionPointRec(mousePos, (Rectangle){750, 330, 30, 30}))
-    {
-        SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
-        cursorChanged = true;
-        DrawX((Vector2){765, 345}, 20, 5, COLOR_PM_CHECKBOX_X);
-    }
-    else if (!PO.is3D)
-    {
-        DrawX((Vector2){765, 345}, 15, 3, COLOR_PM_CHECKBOX_X);
-    }
     if (CheckCollisionPointRec(mousePos, (Rectangle){750, 330, 30, 30}))
     {
+        if(!PO.is3D){
+            isHovered = true;
+        }
         SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
         cursorChanged = true;
         DrawRectangle(750, 330, 30, 30, COLOR_PM_CHECKBOX_HOVER);
@@ -559,18 +563,11 @@ int WindowCreateProject(char *projectFileName, Font font)
     DrawTextEx(font, "3D", (Vector2){840, 330}, 30, 0, WHITE);
     DrawRectangle(890, 330, 30, 30, WHITE);
     DrawRectangleLinesEx((Rectangle){890, 330, 30, 30}, 3, BLACK);
-    if (PO.is3D && CheckCollisionPointRec(mousePos, (Rectangle){890, 330, 30, 30}))
-    {
-        SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
-        cursorChanged = true;
-        DrawX((Vector2){905, 345}, 20, 5, COLOR_PM_CHECKBOX_X);
-    }
-    else if (PO.is3D)
-    {
-        DrawX((Vector2){905, 345}, 15, 3, COLOR_PM_CHECKBOX_X);
-    }
     if (CheckCollisionPointRec(mousePos, (Rectangle){890, 330, 30, 30}))
     {
+        if(PO.is3D){
+            isHovered = true;
+        }
         SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
         cursorChanged = true;
         DrawRectangle(890, 330, 30, 30, COLOR_PM_CHECKBOX_HOVER);
@@ -579,6 +576,8 @@ int WindowCreateProject(char *projectFileName, Font font)
             PO.is3D = true;
         }
     }
+
+    DrawX((Vector2){765 + PO.is3D * 140, 345}, 15 + isHovered * 5, 3 + isHovered * 2, COLOR_PM_CHECKBOX_X);
 
     if (PO.is3D)
     {
@@ -619,7 +618,8 @@ int WindowCreateProject(char *projectFileName, Font font)
         }
     }
 
-    if(!cursorChanged){
+    if (!cursorChanged)
+    {
         SetMouseCursor(MOUSE_CURSOR_ARROW);
     }
 

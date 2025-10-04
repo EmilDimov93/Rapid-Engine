@@ -901,13 +901,13 @@ void DrawNodes(CGEditorContext *cgEd, GraphContext *graph)
     {
         float x = graph->nodes[i].position.x;
         float y = graph->nodes[i].position.y;
-        float width = getNodeInfoByType(graph->nodes[i].type, WIDTH);
-        float height = getNodeInfoByType(graph->nodes[i].type, HEIGHT);
+        float width = getNodeInfoByType(graph->nodes[i].type, NODE_INFO_WIDTH);
+        float height = getNodeInfoByType(graph->nodes[i].type, NODE_INFO_HEIGHT);
         float roundness = 0.2f;
         float segments = 8;
         int glareOffset = 0;
 
-        if (CheckCollisionPointRec(cgEd->mousePos, (Rectangle){graph->nodes[i].position.x, graph->nodes[i].position.y, getNodeInfoByType(graph->nodes[i].type, WIDTH), getNodeInfoByType(graph->nodes[i].type, HEIGHT)}))
+        if (CheckCollisionPointRec(cgEd->mousePos, (Rectangle){graph->nodes[i].position.x, graph->nodes[i].position.y, getNodeInfoByType(graph->nodes[i].type, NODE_INFO_WIDTH), getNodeInfoByType(graph->nodes[i].type, NODE_INFO_HEIGHT)}))
         {
             hoveredNodeIndex = i;
             cgEd->nodeGlareTime += GetFrameTime();
@@ -981,7 +981,7 @@ void DrawNodes(CGEditorContext *cgEd, GraphContext *graph)
 
         if (getIsEditableByType(graph->nodes[i].type))
         {
-            Rectangle gearRect = {graph->nodes[i].position.x + getNodeInfoByType(graph->nodes[i].type, WIDTH) - 18 - fullRadius / 5, graph->nodes[i].position.y + 5 + fullRadius / 5, 16, 16};
+            Rectangle gearRect = {graph->nodes[i].position.x + getNodeInfoByType(graph->nodes[i].type, NODE_INFO_WIDTH) - 18 - fullRadius / 5, graph->nodes[i].position.y + 5 + fullRadius / 5, 16, 16};
 
             Rectangle src = {0, 0, cgEd->gearTxt.width, cgEd->gearTxt.height};
             Rectangle dst = {gearRect.x, gearRect.y, 15, 15};
@@ -991,7 +991,7 @@ void DrawNodes(CGEditorContext *cgEd, GraphContext *graph)
             if (CheckCollisionPointRec(cgEd->mousePos, gearRect) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
             {
                 cgEd->editingNodeNameIndex = i;
-                textBoxRect = (Rectangle){graph->nodes[i].position.x + getNodeInfoByType(graph->nodes[i].type, WIDTH) + 10, graph->nodes[i].position.y, MeasureTextEx(cgEd->font, graph->nodes[i].name, 16, 2).x + 25, 30};
+                textBoxRect = (Rectangle){graph->nodes[i].position.x + getNodeInfoByType(graph->nodes[i].type, NODE_INFO_WIDTH) + 10, graph->nodes[i].position.y, MeasureTextEx(cgEd->font, graph->nodes[i].name, 16, 2).x + 25, 30};
             }
             else if (cgEd->editingNodeNameIndex == i)
             {
@@ -1032,7 +1032,7 @@ void DrawNodes(CGEditorContext *cgEd, GraphContext *graph)
         }
 
         Vector2 nodePos = graph->nodes[currNodeIndex].position;
-        int xOffset = graph->pins[i].isInput ? 5 : (getNodeInfoByType(graph->nodes[currNodeIndex].type, WIDTH) - 20);
+        int xOffset = graph->pins[i].isInput ? 5 : (getNodeInfoByType(graph->nodes[currNodeIndex].type, NODE_INFO_WIDTH) - 20);
         int yOffset = 52 + graph->pins[i].posInNode * 30;
 
         graph->pins[i].position = (Vector2){nodePos.x + xOffset + 5, nodePos.y + yOffset};
@@ -1048,13 +1048,13 @@ void DrawNodes(CGEditorContext *cgEd, GraphContext *graph)
             {
                 if (graph->pins[i].isInput)
                 {
-                    DrawTextEx(cgEd->font, getNodeInputNamesByType(graph->nodes[currNodeIndex].type)[graph->pins[i].posInNode], (Vector2){(2 * nodePos.x + getNodeInfoByType(graph->nodes[currNodeIndex].type, WIDTH)) / 2 - MeasureTextEx(cgEd->font, getNodeInputNamesByType(graph->nodes[currNodeIndex].type)[graph->pins[i].posInNode], 18, 0).x / 2, nodePos.y + yOffset - 8}, 18, 0, WHITE);
-                    DrawLine(graph->pins[i].position.x, graph->pins[i].position.y, (2 * nodePos.x + getNodeInfoByType(graph->nodes[currNodeIndex].type, WIDTH)) / 2 - MeasureTextEx(cgEd->font, getNodeInputNamesByType(graph->nodes[currNodeIndex].type)[graph->pins[i].posInNode], 18, 0).x / 2 - 5, graph->pins[i].position.y, WHITE);
+                    DrawTextEx(cgEd->font, getNodeInputNamesByType(graph->nodes[currNodeIndex].type)[graph->pins[i].posInNode], (Vector2){(2 * nodePos.x + getNodeInfoByType(graph->nodes[currNodeIndex].type, NODE_INFO_WIDTH)) / 2 - MeasureTextEx(cgEd->font, getNodeInputNamesByType(graph->nodes[currNodeIndex].type)[graph->pins[i].posInNode], 18, 0).x / 2, nodePos.y + yOffset - 8}, 18, 0, WHITE);
+                    DrawLine(graph->pins[i].position.x, graph->pins[i].position.y, (2 * nodePos.x + getNodeInfoByType(graph->nodes[currNodeIndex].type, NODE_INFO_WIDTH)) / 2 - MeasureTextEx(cgEd->font, getNodeInputNamesByType(graph->nodes[currNodeIndex].type)[graph->pins[i].posInNode], 18, 0).x / 2 - 5, graph->pins[i].position.y, WHITE);
                 }
                 else
                 {
-                    DrawTextEx(cgEd->font, getNodeOutputNamesByType(graph->nodes[currNodeIndex].type)[graph->pins[i].posInNode], (Vector2){(2 * nodePos.x + getNodeInfoByType(graph->nodes[currNodeIndex].type, WIDTH)) / 2 - MeasureTextEx(cgEd->font, getNodeOutputNamesByType(graph->nodes[currNodeIndex].type)[graph->pins[i].posInNode], 18, 0).x / 2 - 5, nodePos.y + yOffset - 8}, 18, 0, WHITE);
-                    DrawLine(graph->pins[i].position.x, graph->pins[i].position.y, (2 * nodePos.x + getNodeInfoByType(graph->nodes[currNodeIndex].type, WIDTH)) / 2 + MeasureTextEx(cgEd->font, getNodeOutputNamesByType(graph->nodes[currNodeIndex].type)[graph->pins[i].posInNode], 18, 0).x / 2, graph->pins[i].position.y, WHITE);
+                    DrawTextEx(cgEd->font, getNodeOutputNamesByType(graph->nodes[currNodeIndex].type)[graph->pins[i].posInNode], (Vector2){(2 * nodePos.x + getNodeInfoByType(graph->nodes[currNodeIndex].type, NODE_INFO_WIDTH)) / 2 - MeasureTextEx(cgEd->font, getNodeOutputNamesByType(graph->nodes[currNodeIndex].type)[graph->pins[i].posInNode], 18, 0).x / 2 - 5, nodePos.y + yOffset - 8}, 18, 0, WHITE);
+                    DrawLine(graph->pins[i].position.x, graph->pins[i].position.y, (2 * nodePos.x + getNodeInfoByType(graph->nodes[currNodeIndex].type, NODE_INFO_WIDTH)) / 2 + MeasureTextEx(cgEd->font, getNodeOutputNamesByType(graph->nodes[currNodeIndex].type)[graph->pins[i].posInNode], 18, 0).x / 2, graph->pins[i].position.y, WHITE);
                 }
                 DrawTriangle((Vector2){nodePos.x + xOffset - 2, nodePos.y + yOffset - 10}, (Vector2){nodePos.x + xOffset - 2, nodePos.y + yOffset + 10}, (Vector2){nodePos.x + xOffset + 17, nodePos.y + yOffset}, WHITE);
                 hoveredPinIndex = i;
@@ -1130,8 +1130,8 @@ void DrawNodes(CGEditorContext *cgEd, GraphContext *graph)
             {
                 if (graph->pins[i].isInput)
                 {
-                    DrawTextEx(cgEd->font, getNodeInputNamesByType(graph->nodes[currNodeIndex].type)[graph->pins[i].posInNode], (Vector2){(2 * nodePos.x + getNodeInfoByType(graph->nodes[currNodeIndex].type, WIDTH)) / 2 - MeasureTextEx(cgEd->font, getNodeInputNamesByType(graph->nodes[currNodeIndex].type)[graph->pins[i].posInNode], 18, 0).x / 2, nodePos.y + yOffset - 8}, 18, 0, WHITE);
-                    DrawLine(graph->pins[i].position.x, graph->pins[i].position.y, (2 * nodePos.x + getNodeInfoByType(graph->nodes[currNodeIndex].type, WIDTH)) / 2 - MeasureTextEx(cgEd->font, getNodeInputNamesByType(graph->nodes[currNodeIndex].type)[graph->pins[i].posInNode], 18, 0).x / 2 - 5, graph->pins[i].position.y, WHITE);
+                    DrawTextEx(cgEd->font, getNodeInputNamesByType(graph->nodes[currNodeIndex].type)[graph->pins[i].posInNode], (Vector2){(2 * nodePos.x + getNodeInfoByType(graph->nodes[currNodeIndex].type, NODE_INFO_WIDTH)) / 2 - MeasureTextEx(cgEd->font, getNodeInputNamesByType(graph->nodes[currNodeIndex].type)[graph->pins[i].posInNode], 18, 0).x / 2, nodePos.y + yOffset - 8}, 18, 0, WHITE);
+                    DrawLine(graph->pins[i].position.x, graph->pins[i].position.y, (2 * nodePos.x + getNodeInfoByType(graph->nodes[currNodeIndex].type, NODE_INFO_WIDTH)) / 2 - MeasureTextEx(cgEd->font, getNodeInputNamesByType(graph->nodes[currNodeIndex].type)[graph->pins[i].posInNode], 18, 0).x / 2 - 5, graph->pins[i].position.y, WHITE);
                 }
                 else if (graph->nodes[currNodeIndex].type == NODE_COMPARISON || graph->nodes[currNodeIndex].type == NODE_GATE || graph->nodes[currNodeIndex].type == NODE_LITERAL_NUMBER || graph->nodes[currNodeIndex].type == NODE_LITERAL_STRING || graph->nodes[currNodeIndex].type == NODE_LITERAL_BOOL || graph->nodes[currNodeIndex].type == NODE_LITERAL_COLOR)
                 {
@@ -1146,8 +1146,8 @@ void DrawNodes(CGEditorContext *cgEd, GraphContext *graph)
                 }
                 else
                 {
-                    DrawTextEx(cgEd->font, getNodeOutputNamesByType(graph->nodes[currNodeIndex].type)[graph->pins[i].posInNode], (Vector2){(2 * nodePos.x + getNodeInfoByType(graph->nodes[currNodeIndex].type, WIDTH)) / 2 - MeasureTextEx(cgEd->font, getNodeOutputNamesByType(graph->nodes[currNodeIndex].type)[graph->pins[i].posInNode], 18, 0).x / 2 - 5, nodePos.y + yOffset - 8}, 18, 0, WHITE);
-                    DrawLine(graph->pins[i].position.x, graph->pins[i].position.y, (2 * nodePos.x + getNodeInfoByType(graph->nodes[currNodeIndex].type, WIDTH)) / 2 + MeasureTextEx(cgEd->font, getNodeOutputNamesByType(graph->nodes[currNodeIndex].type)[graph->pins[i].posInNode], 18, 0).x / 2, graph->pins[i].position.y, WHITE);
+                    DrawTextEx(cgEd->font, getNodeOutputNamesByType(graph->nodes[currNodeIndex].type)[graph->pins[i].posInNode], (Vector2){(2 * nodePos.x + getNodeInfoByType(graph->nodes[currNodeIndex].type, NODE_INFO_WIDTH)) / 2 - MeasureTextEx(cgEd->font, getNodeOutputNamesByType(graph->nodes[currNodeIndex].type)[graph->pins[i].posInNode], 18, 0).x / 2 - 5, nodePos.y + yOffset - 8}, 18, 0, WHITE);
+                    DrawLine(graph->pins[i].position.x, graph->pins[i].position.y, (2 * nodePos.x + getNodeInfoByType(graph->nodes[currNodeIndex].type, NODE_INFO_WIDTH)) / 2 + MeasureTextEx(cgEd->font, getNodeOutputNamesByType(graph->nodes[currNodeIndex].type)[graph->pins[i].posInNode], 18, 0).x / 2, graph->pins[i].position.y, WHITE);
                 }
                 DrawCircle(nodePos.x + xOffset + 5, nodePos.y + yOffset, 7, WHITE);
                 hoveredPinIndex = i;
@@ -1182,7 +1182,7 @@ void DrawNodes(CGEditorContext *cgEd, GraphContext *graph)
 
     if (hoveredPinIndex == -1 && hoveredNodeIndex != -1)
     {
-        DrawRectangleRounded((Rectangle){graph->nodes[hoveredNodeIndex].position.x - 1, graph->nodes[hoveredNodeIndex].position.y - 1, getNodeInfoByType(graph->nodes[hoveredNodeIndex].type, WIDTH) + 2, getNodeInfoByType(graph->nodes[hoveredNodeIndex].type, HEIGHT) + 2}, 0.2f, 8, COLOR_CGED_NODE_HOVER);
+        DrawRectangleRounded((Rectangle){graph->nodes[hoveredNodeIndex].position.x - 1, graph->nodes[hoveredNodeIndex].position.y - 1, getNodeInfoByType(graph->nodes[hoveredNodeIndex].type, NODE_INFO_WIDTH) + 2, getNodeInfoByType(graph->nodes[hoveredNodeIndex].type, NODE_INFO_HEIGHT) + 2}, 0.2f, 8, COLOR_CGED_NODE_HOVER);
         if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_C))
         {
             cgEd->copiedNode = graph->nodes[hoveredNodeIndex];
@@ -1210,7 +1210,7 @@ void DrawNodes(CGEditorContext *cgEd, GraphContext *graph)
 
     if(hoveredNodeIndex == -1 && cgEd->hasDroppedFile){
         cgEd->hasDroppedFile = false;
-        if (!CreateNode(graph, NODE_LITERAL_STRING, (Vector2){cgEd->mousePos.x - getNodeInfoByType(NODE_LITERAL_STRING, WIDTH) / 2, cgEd->mousePos.y - getNodeInfoByType(NODE_LITERAL_STRING, HEIGHT) / 2}))
+        if (!CreateNode(graph, NODE_LITERAL_STRING, (Vector2){cgEd->mousePos.x - getNodeInfoByType(NODE_LITERAL_STRING, NODE_INFO_WIDTH) / 2, cgEd->mousePos.y - getNodeInfoByType(NODE_LITERAL_STRING, NODE_INFO_HEIGHT) / 2}))
         {
             cgEd->hasFatalErrorOccurred = true;
             AddToLogFromEditor(cgEd, "Error creating node{C230}", LOG_LEVEL_ERROR);
@@ -1229,7 +1229,7 @@ bool CheckNodeCollisions(CGEditorContext *cgEd, GraphContext *graph)
 {
     for (int i = 0; i < graph->nodeCount; i++)
     {
-        if (CheckCollisionPointRec(cgEd->mousePos, (Rectangle){graph->nodes[i].position.x, graph->nodes[i].position.y, getNodeInfoByType(graph->nodes[i].type, WIDTH), getNodeInfoByType(graph->nodes[i].type, HEIGHT)}))
+        if (CheckCollisionPointRec(cgEd->mousePos, (Rectangle){graph->nodes[i].position.x, graph->nodes[i].position.y, getNodeInfoByType(graph->nodes[i].type, NODE_INFO_WIDTH), getNodeInfoByType(graph->nodes[i].type, NODE_INFO_HEIGHT)}))
         {
             return true;
         }
@@ -1478,7 +1478,7 @@ void HandleDragging(CGEditorContext *cgEd, GraphContext *graph)
         cgEd->fps = 140;
         for (int i = 0; i < graph->nodeCount; i++)
         {
-            if (CheckCollisionPointRec(cgEd->mousePos, (Rectangle){graph->nodes[i].position.x, graph->nodes[i].position.y, getNodeInfoByType(graph->nodes[i].type, WIDTH), getNodeInfoByType(graph->nodes[i].type, HEIGHT)}))
+            if (CheckCollisionPointRec(cgEd->mousePos, (Rectangle){graph->nodes[i].position.x, graph->nodes[i].position.y, getNodeInfoByType(graph->nodes[i].type, NODE_INFO_WIDTH), getNodeInfoByType(graph->nodes[i].type, NODE_INFO_HEIGHT)}))
             {
                 cgEd->draggingNodeIndex = i;
                 dragOffset = (Vector2){cgEd->mousePos.x - graph->nodes[i].position.x, cgEd->mousePos.y - graph->nodes[i].position.y};
@@ -1500,7 +1500,7 @@ void HandleDragging(CGEditorContext *cgEd, GraphContext *graph)
         }
         graph->nodes[cgEd->draggingNodeIndex].position.x = newX;
         graph->nodes[cgEd->draggingNodeIndex].position.y = newY;
-        DrawRectangleRounded((Rectangle){graph->nodes[cgEd->draggingNodeIndex].position.x, graph->nodes[cgEd->draggingNodeIndex].position.y, getNodeInfoByType(graph->nodes[cgEd->draggingNodeIndex].type, WIDTH), getNodeInfoByType(graph->nodes[cgEd->draggingNodeIndex].type, HEIGHT)}, 0.2f, 8, COLOR_CGED_NODE_HOVER);
+        DrawRectangleRounded((Rectangle){graph->nodes[cgEd->draggingNodeIndex].position.x, graph->nodes[cgEd->draggingNodeIndex].position.y, getNodeInfoByType(graph->nodes[cgEd->draggingNodeIndex].type, NODE_INFO_WIDTH), getNodeInfoByType(graph->nodes[cgEd->draggingNodeIndex].type, NODE_INFO_HEIGHT)}, 0.2f, 8, COLOR_CGED_NODE_HOVER);
     }
     else if (IsMouseButtonDown(MOUSE_LEFT_BUTTON) && cgEd->isDraggingScreen)
     {

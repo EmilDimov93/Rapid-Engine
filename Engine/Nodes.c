@@ -230,8 +230,8 @@ bool CreateNode(GraphContext *graph, NodeType type, Vector2 pos)
         return false;
     }
 
-    int inputCount = getNodeInfoByType(type, INPUT_COUNT);
-    int outputCount = getNodeInfoByType(type, OUTPUT_COUNT);
+    int inputCount = getNodeInfoByType(type, NODE_INFO_INPUT_COUNT);
+    int outputCount = getNodeInfoByType(type, NODE_INFO_OUTPUT_COUNT);
 
     if (inputCount > MAX_NODE_PINS || outputCount > MAX_NODE_PINS)
     {
