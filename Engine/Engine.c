@@ -829,6 +829,14 @@ void CountingSortByLayer(EngineContext *eng)
 
 void DrawUIElements(EngineContext *eng, GraphContext *graph, CGEditorContext *cgEd, InterpreterContext *intp, RuntimeGraphContext *runtimeGraph)
 {
+    DrawCircleSector((Vector2){eng->screenWidth - 150, 1}, 50, 90, 180, 8, GRAY_40);
+
+    DrawRing((Vector2){eng->screenWidth - 150, 2.5f}, 47, 50, 0, 360, 64, WHITE);
+
+    DrawRectangle(eng->screenWidth - 150, 0, 150, 50, GRAY_40);
+
+    DrawLineEx((Vector2){eng->screenWidth - 150, 50}, (Vector2){eng->screenWidth, 50}, 3, WHITE);
+
     eng->isSaveButtonHovered = false;
     eng->isBuildButtonHovered = false;
     eng->isSettingsButtonHovered = false;
@@ -1137,21 +1145,41 @@ void DrawUIElements(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                 eng->isViewportFullscreen = true;
             }
         }
-
-        if (eng->uiElements[eng->hoveredUIElementIndex].shape == 0)
-        {
-            AddUIElement(eng, (UIElement){
-                                  .name = "HoverBlink",
-                                  .shape = UIRectangle,
-                                  .type = UI_ACTION_NO_COLLISION_ACTION,
-                                  .rect = {.pos = {eng->uiElements[eng->hoveredUIElementIndex].rect.pos.x, eng->uiElements[eng->hoveredUIElementIndex].rect.pos.y}, .recSize = {eng->uiElements[eng->hoveredUIElementIndex].rect.recSize.x, eng->uiElements[eng->hoveredUIElementIndex].rect.recSize.y}, .roundness = eng->uiElements[eng->hoveredUIElementIndex].rect.roundness, .roundSegments = eng->uiElements[eng->hoveredUIElementIndex].rect.roundSegments},
-                                  .color = eng->uiElements[eng->hoveredUIElementIndex].rect.hoverColor,
-                                  .layer = 3});
-        }
     }
+
+    bool hasDrawnSpecialElements = false;
 
     for (int i = 0; i < eng->uiElementCount; i++)
     {
+        if ((eng->uiElements[i].layer == UI_LAYER_COUNT - 1 || i == eng->uiElementCount - 1) && !hasDrawnSpecialElements)
+        {
+            hasDrawnSpecialElements = true;
+
+            // special symbols and textures
+            DrawRectangleLinesEx((Rectangle){0, 0, eng->screenWidth, eng->screenHeight}, 4.0f, WHITE);
+
+            DrawLineEx((Vector2){eng->screenWidth - 35, 15}, (Vector2){eng->screenWidth - 15, 35}, 2, WHITE);
+            DrawLineEx((Vector2){eng->screenWidth - 35, 35}, (Vector2){eng->screenWidth - 15, 15}, 2, WHITE);
+
+            DrawLineEx((Vector2){eng->screenWidth - 85, 25}, (Vector2){eng->screenWidth - 65, 25}, 2, WHITE);
+
+            Rectangle dst = {eng->screenWidth - 125, 27, 30, 30};
+            Vector2 origin = {dst.width / 2.0f, dst.height / 2.0f};
+            float rotation = eng->isSettingsButtonHovered ? sinf(GetTime() * 3.0f) * 100.0f : 0.0f;
+            DrawTexturePro(eng->settingsGear, (Rectangle){0, 0, eng->settingsGear.width, eng->settingsGear.height}, dst, origin, rotation, WHITE);
+
+            DrawTexture(eng->resizeButton, eng->screenWidth / 2 - 10, eng->screenHeight - eng->bottomBarHeight - 10, WHITE);
+            DrawTexturePro(eng->resizeButton, (Rectangle){0, 0, 20, 20}, (Rectangle){eng->sideBarWidth, (eng->screenHeight - eng->bottomBarHeight) / 2, 20, 20}, (Vector2){10, 10}, 90.0f, WHITE);
+            if (eng->sideBarWidth > 150)
+            {
+                DrawTexture(eng->resizeButton, eng->sideBarWidth / 2 - 10, eng->sideBarMiddleY - 10, WHITE);
+            }
+
+            if (eng->isGameRunning)
+            {
+                DrawTexturePro(eng->viewportFullscreenButton, (Rectangle){0, 0, eng->viewportFullscreenButton.width, eng->viewportFullscreenButton.height}, (Rectangle){eng->sideBarWidth + 8, 10, 50, 50}, (Vector2){0, 0}, 0, WHITE);
+            }
+        }
         UIElement *el = &eng->uiElements[i];
         switch (el->shape)
         {
@@ -1179,6 +1207,17 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
 
     BeginTextureMode(eng->uiTex);
     ClearBackground(COLOR_TRANSPARENT);
+
+    if (eng->uiElements[eng->hoveredUIElementIndex].shape == 0)
+    {
+        AddUIElement(eng, (UIElement){
+                              .name = "HoverBlink",
+                              .shape = UIRectangle,
+                              .type = UI_ACTION_NO_COLLISION_ACTION,
+                              .rect = {.pos = {eng->uiElements[eng->hoveredUIElementIndex].rect.pos.x, eng->uiElements[eng->hoveredUIElementIndex].rect.pos.y}, .recSize = {eng->uiElements[eng->hoveredUIElementIndex].rect.recSize.x, eng->uiElements[eng->hoveredUIElementIndex].rect.recSize.y}, .roundness = eng->uiElements[eng->hoveredUIElementIndex].rect.roundness, .roundSegments = eng->uiElements[eng->hoveredUIElementIndex].rect.roundSegments},
+                              .color = eng->uiElements[eng->hoveredUIElementIndex].rect.hoverColor,
+                              .layer = 2});
+    }
 
     AddUIElement(eng, (UIElement){
                           .name = "SideBarVars",
@@ -1707,13 +1746,13 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
 
         fileOutlineColor.a -= 50;
 
-            AddUIElement(eng, (UIElement){
-                                  .name = "DraggedFileOutline",
-                                  .shape = UIRectangle,
-                                  .type = UI_ACTION_NO_COLLISION_ACTION,
-                                  .rect = {.pos = {eng->mousePos.x - 73, eng->mousePos.y - 28}, .recSize = {154 > fileNameSize ? 154 : fileNameSize + 28, 64}, .roundness = 0.5f, .roundSegments = 8},
-                                  .color = fileOutlineColor,
-                                  .layer = 2});
+        AddUIElement(eng, (UIElement){
+                              .name = "DraggedFileOutline",
+                              .shape = UIRectangle,
+                              .type = UI_ACTION_NO_COLLISION_ACTION,
+                              .rect = {.pos = {eng->mousePos.x - 73, eng->mousePos.y - 28}, .recSize = {154 > fileNameSize ? 154 : fileNameSize + 28, 64}, .roundness = 0.5f, .roundSegments = 8},
+                              .color = fileOutlineColor,
+                              .layer = 4});
 
         AddUIElement(eng, (UIElement){
                               .name = "DraggedFile",
@@ -1721,7 +1760,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                               .type = UI_ACTION_NO_COLLISION_ACTION,
                               .rect = {.pos = (Vector2){eng->mousePos.x - 71, eng->mousePos.y - 26}, .recSize = {150 > fileNameSize ? 150 : fileNameSize + 24, 60}, .roundness = 0.4f, .roundSegments = 8, .hoverColor = COLOR_TRANSPARENT},
                               .color = (Color){GRAY_40.r, GRAY_40.g, GRAY_40.b, GRAY_40.a - 50},
-                              .layer = 3,
+                              .layer = 4,
                               .text = {.string = "", .textPos = (Vector2){eng->mousePos.x - 61, eng->mousePos.y - 8}, .textSize = 22, .textSpacing = 0, .textColor = fileTextColor}});
         strmac(eng->uiElements[eng->uiElementCount - 1].text.string, MAX_FILE_NAME, "%s", fileName);
     }
@@ -1797,8 +1836,9 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
     }
 
     CountingSortByLayer(eng);
+    DrawUIElements(eng, graph, cgEd, intp, runtimeGraph);
 
-    // Top bar background
+    /*// Top bar background
     DrawCircleSector((Vector2){eng->screenWidth - 150, 1}, 50, 90, 180, 8, GRAY_40);
 
     DrawRing((Vector2){eng->screenWidth - 150, 2.5f}, 47, 50, 0, 360, 64, WHITE);
@@ -1807,7 +1847,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
 
     DrawLineEx((Vector2){eng->screenWidth - 150, 50}, (Vector2){eng->screenWidth, 50}, 3, WHITE);
 
-    DrawUIElements(eng, graph, cgEd, intp, runtimeGraph);
+
 
     // special symbols and textures
     DrawRectangleLinesEx((Rectangle){0, 0, eng->screenWidth, eng->screenHeight}, 4.0f, WHITE);
@@ -1833,9 +1873,9 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
     if (eng->isGameRunning)
     {
         DrawTexturePro(eng->viewportFullscreenButton, (Rectangle){0, 0, eng->viewportFullscreenButton.width, eng->viewportFullscreenButton.height}, (Rectangle){eng->sideBarWidth + 8, 10, 50, 50}, (Vector2){0, 0}, 0, WHITE);
-    }
+    }*/
 
-    EndTextureMode();
+    EndTextureMode(); // test
 }
 
 bool HandleUICollisions(EngineContext *eng, GraphContext *graph, InterpreterContext *intp, CGEditorContext *cgEd, RuntimeGraphContext *runtimeGraph)
@@ -1964,7 +2004,8 @@ bool HandleUICollisions(EngineContext *eng, GraphContext *graph, InterpreterCont
                     strmac(cgEd->droppedFilePath, MAX_FILE_PATH, "%s", remainder);
                 }
 
-                if(eng->isViewportFocused){
+                if (eng->isViewportFocused)
+                {
                     cgEd->hasDroppedFile = true;
                 }
             }
