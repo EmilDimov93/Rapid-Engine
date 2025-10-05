@@ -829,6 +829,9 @@ void CountingSortByLayer(EngineContext *eng)
 
 void DrawUIElements(EngineContext *eng, GraphContext *graph, CGEditorContext *cgEd, InterpreterContext *intp, RuntimeGraphContext *runtimeGraph)
 {
+    BeginTextureMode(eng->uiTex);
+    ClearBackground(COLOR_TRANSPARENT);
+
     DrawCircleSector((Vector2){eng->screenWidth - 150, 1}, 50, 90, 180, 8, GRAY_40);
 
     DrawRing((Vector2){eng->screenWidth - 150, 2.5f}, 47, 50, 0, 360, 64, WHITE);
@@ -1199,14 +1202,13 @@ void DrawUIElements(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
             DrawTextEx(eng->font, el->text.string, el->text.textPos, el->text.textSize, el->text.textSpacing, el->text.textColor);
         }
     }
+
+    EndTextureMode();
 }
 
 void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cgEd, InterpreterContext *intp, RuntimeGraphContext *runtimeGraph)
 {
     eng->uiElementCount = 0;
-
-    BeginTextureMode(eng->uiTex);
-    ClearBackground(COLOR_TRANSPARENT);
 
     if (eng->uiElements[eng->hoveredUIElementIndex].shape == 0)
     {
@@ -1837,45 +1839,6 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
 
     CountingSortByLayer(eng);
     DrawUIElements(eng, graph, cgEd, intp, runtimeGraph);
-
-    /*// Top bar background
-    DrawCircleSector((Vector2){eng->screenWidth - 150, 1}, 50, 90, 180, 8, GRAY_40);
-
-    DrawRing((Vector2){eng->screenWidth - 150, 2.5f}, 47, 50, 0, 360, 64, WHITE);
-
-    DrawRectangle(eng->screenWidth - 150, 0, 150, 50, GRAY_40);
-
-    DrawLineEx((Vector2){eng->screenWidth - 150, 50}, (Vector2){eng->screenWidth, 50}, 3, WHITE);
-
-
-
-    // special symbols and textures
-    DrawRectangleLinesEx((Rectangle){0, 0, eng->screenWidth, eng->screenHeight}, 4.0f, WHITE);
-
-    DrawLineEx((Vector2){eng->screenWidth - 35, 15}, (Vector2){eng->screenWidth - 15, 35}, 2, WHITE);
-    DrawLineEx((Vector2){eng->screenWidth - 35, 35}, (Vector2){eng->screenWidth - 15, 15}, 2, WHITE);
-
-    DrawLineEx((Vector2){eng->screenWidth - 85, 25}, (Vector2){eng->screenWidth - 65, 25}, 2, WHITE);
-
-    Rectangle src = {0, 0, eng->settingsGear.width, eng->settingsGear.height};
-    Rectangle dst = {eng->screenWidth - 125, 27, 30, 30};
-    Vector2 origin = {dst.width / 2.0f, dst.height / 2.0f};
-    float rotation = eng->isSettingsButtonHovered ? sinf(GetTime() * 3.0f) * 100.0f : 0.0f;
-    DrawTexturePro(eng->settingsGear, src, dst, origin, rotation, WHITE);
-
-    DrawTexture(eng->resizeButton, eng->screenWidth / 2 - 10, eng->screenHeight - eng->bottomBarHeight - 10, WHITE);
-    DrawTexturePro(eng->resizeButton, (Rectangle){0, 0, 20, 20}, (Rectangle){eng->sideBarWidth, (eng->screenHeight - eng->bottomBarHeight) / 2, 20, 20}, (Vector2){10, 10}, 90.0f, WHITE);
-    if (eng->sideBarWidth > 150)
-    {
-        DrawTexture(eng->resizeButton, eng->sideBarWidth / 2 - 10, eng->sideBarMiddleY - 10, WHITE);
-    }
-
-    if (eng->isGameRunning)
-    {
-        DrawTexturePro(eng->viewportFullscreenButton, (Rectangle){0, 0, eng->viewportFullscreenButton.width, eng->viewportFullscreenButton.height}, (Rectangle){eng->sideBarWidth + 8, 10, 50, 50}, (Vector2){0, 0}, 0, WHITE);
-    }*/
-
-    EndTextureMode(); // test
 }
 
 bool HandleUICollisions(EngineContext *eng, GraphContext *graph, InterpreterContext *intp, CGEditorContext *cgEd, RuntimeGraphContext *runtimeGraph)
