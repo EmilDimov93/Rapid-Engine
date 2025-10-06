@@ -177,7 +177,7 @@ char *ValueToString(Value value)
         strmac(temp, MAX_LOG_MESSAGE_SIZE, "%s", value.boolean ? "true" : "false");
         break;
     case VAL_COLOR:
-        strmac(temp, MAX_LOG_MESSAGE_SIZE, "%d %d %d %d", value.color.r, value.color.g, value.color.b, value.color.a);
+        strmac(temp, MAX_LOG_MESSAGE_SIZE, "R:%d G:%d B:%d A:%d", value.color.r, value.color.g, value.color.b, value.color.a);
         break;
     case VAL_SPRITE:
         strmac(temp, MAX_LOG_MESSAGE_SIZE, "%s, PosX: %.0f, PosY: %.0f, Rotation: %.2f", value.sprite.isVisible ? "Visible" : "Not visible", value.sprite.position.x, value.sprite.position.y, value.sprite.rotation);

@@ -112,7 +112,7 @@ EngineContext InitEngineContext()
     eng.isAutoSaveON = false;
     eng.autoSaveTimer = 0.0f;
 
-    eng.fpsLimit = 240;
+    eng.fpsLimit = FPS_DEFAULT;
     eng.shouldShowFPS = false;
 
     eng.isAnyMenuOpen = false;
@@ -2343,10 +2343,10 @@ int SetEngineFPS(EngineContext *eng, CGEditorContext *cgEd, InterpreterContext *
             fps = intp->fps;
             break;
         case VIEWPORT_HITBOX_EDITOR:
-            fps = 60;
+            fps = FPS_DEFAULT;
             break;
         default:
-            fps = 60;
+            fps = FPS_DEFAULT;
             eng->viewportMode = VIEWPORT_CG_EDITOR;
             break;
         }
@@ -2355,7 +2355,7 @@ int SetEngineFPS(EngineContext *eng, CGEditorContext *cgEd, InterpreterContext *
     {
         if (eng->draggingFileIndex != -1)
         {
-            eng->fps = 140;
+            eng->fps = FPS_HIGH;
         }
         fps = eng->fps;
     }
@@ -2435,9 +2435,9 @@ void DisplayLoadingScreen(int step)
 int main()
 {
     SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_WINDOW_UNDECORATED);
-    SetTraceLogLevel(LOG_WARNING);
+    SetTraceLogLevel(DEVELOPER_MODE ? LOG_WARNING : LOG_NONE);
     InitWindow(PM_WINDOW_WIDTH, PM_WINDOW_HEIGHT, "RapidEngine");
-    SetTargetFPS(140);
+    SetTargetFPS(FPS_HIGH);
     SetExitKey(KEY_NULL);
     Image icon = LoadImage("icon.png");
     SetWindowIcon(icon);
@@ -2496,7 +2496,7 @@ int main()
         AddToLog(&eng, "Failed to load settings file{E227}", LOG_LEVEL_ERROR);
     }
 
-    SetTargetFPS(eng.fpsLimit > 60 ? 60 : eng.fpsLimit);
+    SetTargetFPS(eng.fpsLimit > FPS_DEFAULT ? FPS_DEFAULT : eng.fpsLimit);
 
     DisplayLoadingScreen(10);
 
@@ -2525,14 +2525,14 @@ int main()
             if (((prevHoveredUIIndex != eng.hoveredUIElementIndex || IsMouseButtonDown(MOUSE_LEFT_BUTTON)) && eng.showSaveWarning != 1 && eng.showSettingsMenu == false) || eng.delayFrames)
             {
                 BuildUITexture(&eng, &graph, &cgEd, &intp, &runtimeGraph);
-                eng.fps = 140;
+                eng.fps = FPS_HIGH;
             }
             eng.delayFrames = true;
         }
         else if (eng.delayFrames && !eng.isViewportFullscreen)
         {
             BuildUITexture(&eng, &graph, &cgEd, &intp, &runtimeGraph);
-            eng.fps = 60;
+            eng.fps = FPS_DEFAULT;
             eng.delayFrames = false;
         }
 
@@ -2810,7 +2810,6 @@ int main()
     FreeInterpreterContext(&intp);
 
     free(intp.projectPath);
-    intp.projectPath = NULL;
 
     CloseAudioDevice();
 
