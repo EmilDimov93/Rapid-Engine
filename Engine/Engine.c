@@ -722,11 +722,11 @@ bool DrawSettingsMenu(EngineContext *eng, InterpreterContext *intp, CGEditorCont
         DrawTextEx(eng->font, "Auto Save Every 2 Minutes", (Vector2){eng->screenWidth / 4 + 200, 350}, 28, 1, WHITE);
         DrawSlider((Vector2){eng->screenWidth * 3 / 4 - 70, 355}, &eng->isAutoSaveON, eng->mousePos, &hasChanged);
 
-        DrawTextEx(eng->font, "FPS Limit", (Vector2){eng->screenWidth / 4 + 200, 400}, 28, 1, WHITE);
-        DrawFPSLimitDropdown((Vector2){eng->screenWidth * 3 / 4 - 100, 405}, &eng->fpsLimit, eng->mousePos, eng->font, &hasChanged);
+        DrawTextEx(eng->font, "Show FPS", (Vector2){eng->screenWidth / 4 + 200, 400}, 28, 1, WHITE);
+        DrawSlider((Vector2){eng->screenWidth * 3 / 4 - 70, 405}, &eng->shouldShowFPS, eng->mousePos, &hasChanged);
 
-        DrawTextEx(eng->font, "Show FPS", (Vector2){eng->screenWidth / 4 + 200, 450}, 28, 1, WHITE);
-        DrawSlider((Vector2){eng->screenWidth * 3 / 4 - 70, 455}, &eng->shouldShowFPS, eng->mousePos, &hasChanged);
+        DrawTextEx(eng->font, "FPS Limit", (Vector2){eng->screenWidth / 4 + 200, 450}, 28, 1, WHITE);
+        DrawFPSLimitDropdown((Vector2){eng->screenWidth * 3 / 4 - 100, 455}, &eng->fpsLimit, eng->mousePos, eng->font, &hasChanged);
 
         DrawTextEx(eng->font, "Low-spec mode", (Vector2){eng->screenWidth / 4 + 200, 500}, 28, 1, WHITE);
         DrawSlider((Vector2){eng->screenWidth * 3 / 4 - 70, 505}, &eng->isLowSpecModeOn, eng->mousePos, &hasChanged);

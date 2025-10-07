@@ -117,8 +117,6 @@ void DrawBackgroundGrid(CGEditorContext *cgEd, int gridSpacing, RenderTexture2D 
     }
     gridSpacing = (gridSpacing / cgEd->zoom > 1) ? gridSpacing / cgEd->zoom : 1;
 
-    offset = Vector2Clamp(offset, (Vector2){-VIEWPORT_BORDER, -VIEWPORT_BORDER}, (Vector2){VIEWPORT_BORDER, VIEWPORT_BORDER});
-
     float worldLeft = offset.x;
     float worldTop = offset.y;
     float worldRight = offset.x + cgEd->screenWidth / cgEd->zoom;
@@ -1475,7 +1473,7 @@ void HandleDragging(CGEditorContext *cgEd, GraphContext *graph)
 
     if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && cgEd->draggingNodeIndex == -1 && cgEd->nodeFieldPinFocused == -1)
     {
-        cgEd->fps = 140;
+        cgEd->fps = FPS_HIGH;
         for (int i = 0; i < graph->nodeCount; i++)
         {
             if (CheckCollisionPointRec(cgEd->mousePos, (Rectangle){graph->nodes[i].position.x, graph->nodes[i].position.y, getNodeInfoByType(graph->nodes[i].type, NODE_INFO_WIDTH), getNodeInfoByType(graph->nodes[i].type, NODE_INFO_HEIGHT)}))
@@ -1516,7 +1514,7 @@ void HandleDragging(CGEditorContext *cgEd, GraphContext *graph)
     }
     else if (IsMouseButtonUp(MOUSE_LEFT_BUTTON))
     {
-        cgEd->fps = 60;
+        cgEd->fps = FPS_DEFAULT;
         cgEd->draggingNodeIndex = -1;
         cgEd->isDraggingScreen = false;
     }

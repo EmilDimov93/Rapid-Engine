@@ -1014,7 +1014,7 @@ void InterpretStringOfNodes(int lastNodeIndex, InterpreterContext *intp, Runtime
 
     case NODE_LOOP:
     {
-        int steps = 1000;
+        int steps = MAX_ITERATIONS_BEFORE_ILP;
         if (node->inputPins[1]->valueIndex != -1)
         {
             bool *condition = &intp->values[node->inputPins[1]->valueIndex].boolean;

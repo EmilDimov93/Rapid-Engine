@@ -18,9 +18,6 @@
 
 #define MAX_SETTINGS_LINE 128
 
-#define FPS_DEFAULT 60
-#define FPS_HIGH 140
-
 typedef enum
 {
     UI_ACTION_NO_COLLISION_ACTION,

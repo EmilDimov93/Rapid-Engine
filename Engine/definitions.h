@@ -8,10 +8,11 @@
 #include "local_config.h"
 #include "resources/resources.h"
 
+#define FPS_DEFAULT 60
+#define FPS_HIGH 140
+
 #define MAX_FILE_NAME 256
 #define MAX_FILE_PATH 2048
-
-#define VIEWPORT_BORDER 100000.0f
 
 #ifdef _WIN32
 #define PATH_SEPARATOR '\\'

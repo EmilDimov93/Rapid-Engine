@@ -98,8 +98,7 @@ https://github.com/user-attachments/assets/b6dc9735-5eb8-498a-9802-c1eac80a9a4a
 
 - Sprite collision events
 - Sprite sheet editor
-- Helper function nodes
-- Exporting game as .exe
+- Exporting game
 - Cross platform support
 - New CoreGraph nodes
 
@@ -107,11 +106,11 @@ https://github.com/user-attachments/assets/b6dc9735-5eb8-498a-9802-c1eac80a9a4a
 ## ⚠️ Note: Rapid Engine is not packaged for public release yet, but you can build and run it manually:
 
 ```bash
-gcc Engine/unity.c Engine/raylib/lib/libraylib.a -o ./RapidEngine.exe -Iraylib/include -lopengl32 -lgdi32 -lwinmm -mwindows
+gcc Engine/unity.c Engine/raylib/lib/libraylib.a -o ./RapidEngine -Iraylib/include -lopengl32 -lgdi32 -lwinmm -mwindows
 ```
 
 ```bash
-./RapidEngine.exe
+./RapidEngine
 ```
 
 ## 📧 Support
