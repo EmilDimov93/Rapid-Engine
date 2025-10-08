@@ -1472,8 +1472,6 @@ const char *DrawNodeMenu(CGEditorContext *cgEd, RenderTexture2D view)
 
 void HandleDragging(CGEditorContext *cgEd, GraphContext *graph)
 {
-    static Vector2 dragOffset;
-
     if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && cgEd->draggingNodeIndex == -1 && cgEd->nodeFieldPinFocused == -1)
     {
         cgEd->fps = FPS_HIGH;
@@ -1482,7 +1480,6 @@ void HandleDragging(CGEditorContext *cgEd, GraphContext *graph)
             if (CheckCollisionPointRec(cgEd->mousePos, (Rectangle){graph->nodes[i].position.x, graph->nodes[i].position.y, getNodeInfoByType(graph->nodes[i].type, NODE_INFO_WIDTH), getNodeInfoByType(graph->nodes[i].type, NODE_INFO_HEIGHT)}))
             {
                 cgEd->draggingNodeIndex = i;
-                dragOffset = (Vector2){cgEd->mousePos.x - graph->nodes[i].position.x, cgEd->mousePos.y - graph->nodes[i].position.y};
                 return;
             }
         }
@@ -1495,13 +1492,11 @@ void HandleDragging(CGEditorContext *cgEd, GraphContext *graph)
     else if (IsMouseButtonDown(MOUSE_LEFT_BUTTON) && cgEd->draggingNodeIndex != -1 && cgEd->nodeFieldPinFocused == -1)
     {
         cgEd->cursor = MOUSE_CURSOR_RESIZE_ALL;
-        float newX = cgEd->mousePos.x - dragOffset.x;
-        float newY = cgEd->mousePos.y - dragOffset.y;
-        if (newX != graph->nodes[cgEd->draggingNodeIndex].position.x || newY != graph->nodes[cgEd->draggingNodeIndex].position.y)
+        Vector2 delta = GetMouseDelta();
+        if (delta.x != 0 || delta.y != 0)
         {
             cgEd->hasChangedInLastFrame = true;
         }
-        Vector2 delta = GetMouseDelta();
         if(cgEd->selectedNodesSize != 0){
             for(int i = 0; i < cgEd->selectedNodesSize; i++){
                 graph->nodes[cgEd->selectedNodes[i]].position.x += delta.x / cgEd->zoom;
@@ -1577,8 +1572,8 @@ void DrawFullTexture(CGEditorContext *cgEd, GraphContext *graph, RenderTexture2D
     {
 
         Rectangle selectorRect = (Rectangle){fminf(cgEd->rightClickPos.x, cgEd->mousePos.x), fminf(cgEd->rightClickPos.y, cgEd->mousePos.y), fabsf(cgEd->mousePos.x - cgEd->rightClickPos.x), fabsf(cgEd->mousePos.y - cgEd->rightClickPos.y)};
-        DrawRectangleRec(selectorRect, (Color){139, 224, 252, 10});
-        DrawRectangleLinesEx(selectorRect, 1.0f, (Color){53, 179, 252, 255});
+        DrawRectangleRec(selectorRect, COLOR_CGED_SELECTOR);
+        DrawRectangleLinesEx(selectorRect, 1.0f, COLOR_CGED_SELECTOR_OUTLINE);
 
         cgEd->selectedNodesSize = 0;
         for (int i = 0; i < graph->nodeCount; i++)
