@@ -8,6 +8,8 @@
 #define MAX_KEY_NAME_SIZE 12
 #define MAX_SEARCH_BAR_FIELD_SIZE 26
 
+#define MAX_SELECTED_NODES 1000
+
 typedef struct
 {
     int screenWidth;
@@ -76,6 +78,10 @@ typedef struct
 
     bool hasDroppedFile;
     char droppedFilePath[MAX_FILE_PATH];
+
+    bool isSelecting;
+    int selectedNodes[MAX_SELECTED_NODES];
+    int selectedNodesSize;
 
     GraphContext *graph;
 } CGEditorContext;

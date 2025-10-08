@@ -80,6 +80,9 @@ CGEditorContext InitEditorContext()
 
     cgEd.hasDroppedFile = false;
 
+    cgEd.isSelecting = false;
+    cgEd.selectedNodesSize = 0;
+
     return cgEd;
 }
 
@@ -911,7 +914,7 @@ void DrawNodes(CGEditorContext *cgEd, GraphContext *graph)
             cgEd->nodeGlareTime += GetFrameTime();
             glareOffset = (int)(sinf(cgEd->nodeGlareTime * 6.0f) * 30);
 
-            if (IsMouseButtonPressed(MOUSE_RIGHT_BUTTON))
+            if (IsMouseButtonPressed(MOUSE_RIGHT_BUTTON) && !IsMouseButtonDown(MOUSE_LEFT_BUTTON) && cgEd->selectedNodesSize == 0)
             {
                 nodeToDelete = graph->nodes[i].id;
             }
@@ -939,9 +942,7 @@ void DrawNodes(CGEditorContext *cgEd, GraphContext *graph)
             (unsigned char)Clamp((int)glareOffset + 5, 0, 255),
             120};
 
-        DrawRectangleRounded(
-            (Rectangle){x, y, width, height},
-            roundness, segments, nodeBackgroundColor);
+        DrawRectangleRounded((Rectangle){x, y, width, height}, roundness, segments, nodeBackgroundColor);
 
         if (cgEd->isLowSpecModeOn)
         {
@@ -1181,6 +1182,7 @@ void DrawNodes(CGEditorContext *cgEd, GraphContext *graph)
     if (hoveredPinIndex == -1 && hoveredNodeIndex != -1)
     {
         DrawRectangleRounded((Rectangle){graph->nodes[hoveredNodeIndex].position.x - 1, graph->nodes[hoveredNodeIndex].position.y - 1, getNodeInfoByType(graph->nodes[hoveredNodeIndex].type, NODE_INFO_WIDTH) + 2, getNodeInfoByType(graph->nodes[hoveredNodeIndex].type, NODE_INFO_HEIGHT) + 2}, 0.2f, 8, COLOR_CGED_NODE_HOVER);
+        DrawRectangleRoundedLinesEx((Rectangle){graph->nodes[hoveredNodeIndex].position.x - 1, graph->nodes[hoveredNodeIndex].position.y - 1, getNodeInfoByType(graph->nodes[hoveredNodeIndex].type, NODE_INFO_WIDTH) + 2, getNodeInfoByType(graph->nodes[hoveredNodeIndex].type, NODE_INFO_HEIGHT) + 2}, 0.2f, 8, 5.0f, WHITE);
         if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_C))
         {
             cgEd->copiedNode = graph->nodes[hoveredNodeIndex];
@@ -1206,7 +1208,8 @@ void DrawNodes(CGEditorContext *cgEd, GraphContext *graph)
         return;
     }
 
-    if(hoveredNodeIndex == -1 && cgEd->hasDroppedFile){
+    if (hoveredNodeIndex == -1 && cgEd->hasDroppedFile)
+    {
         cgEd->hasDroppedFile = false;
         if (!CreateNode(graph, NODE_LITERAL_STRING, (Vector2){cgEd->mousePos.x - getNodeInfoByType(NODE_LITERAL_STRING, NODE_INFO_WIDTH) / 2, cgEd->mousePos.y - getNodeInfoByType(NODE_LITERAL_STRING, NODE_INFO_HEIGHT) / 2}))
         {
@@ -1263,7 +1266,7 @@ const char *DrawNodeMenu(CGEditorContext *cgEd, RenderTexture2D view)
     Color MenuColor = {50, 50, 50, 255};
     Color HighlightColor = {80, 80, 80, 255};
 
-    if (IsMouseButtonPressed(MOUSE_RIGHT_BUTTON))
+    if (IsMouseButtonReleased(MOUSE_RIGHT_BUTTON))
     {
         cgEd->createNodeMenuFirstFrame = true;
     }
@@ -1484,6 +1487,8 @@ void HandleDragging(CGEditorContext *cgEd, GraphContext *graph)
             }
         }
 
+        cgEd->selectedNodesSize = 0;
+
         cgEd->isDraggingScreen = true;
         return;
     }
@@ -1496,9 +1501,19 @@ void HandleDragging(CGEditorContext *cgEd, GraphContext *graph)
         {
             cgEd->hasChangedInLastFrame = true;
         }
-        graph->nodes[cgEd->draggingNodeIndex].position.x = newX;
-        graph->nodes[cgEd->draggingNodeIndex].position.y = newY;
+        Vector2 delta = GetMouseDelta();
+        if(cgEd->selectedNodesSize != 0){
+            for(int i = 0; i < cgEd->selectedNodesSize; i++){
+                graph->nodes[cgEd->selectedNodes[i]].position.x += delta.x / cgEd->zoom;
+                graph->nodes[cgEd->selectedNodes[i]].position.y += delta.y / cgEd->zoom;
+            }
+        }
+        else{
+            graph->nodes[cgEd->draggingNodeIndex].position.x += delta.x / cgEd->zoom;
+            graph->nodes[cgEd->draggingNodeIndex].position.y += delta.y / cgEd->zoom;
+        }
         DrawRectangleRounded((Rectangle){graph->nodes[cgEd->draggingNodeIndex].position.x, graph->nodes[cgEd->draggingNodeIndex].position.y, getNodeInfoByType(graph->nodes[cgEd->draggingNodeIndex].type, NODE_INFO_WIDTH), getNodeInfoByType(graph->nodes[cgEd->draggingNodeIndex].type, NODE_INFO_HEIGHT)}, 0.2f, 8, COLOR_CGED_NODE_HOVER);
+        DrawRectangleRoundedLinesEx((Rectangle){graph->nodes[cgEd->draggingNodeIndex].position.x, graph->nodes[cgEd->draggingNodeIndex].position.y, getNodeInfoByType(graph->nodes[cgEd->draggingNodeIndex].type, NODE_INFO_WIDTH), getNodeInfoByType(graph->nodes[cgEd->draggingNodeIndex].type, NODE_INFO_HEIGHT)}, 0.2f, 8, 5.0f, WHITE);
     }
     else if (IsMouseButtonDown(MOUSE_LEFT_BUTTON) && cgEd->isDraggingScreen)
     {
@@ -1558,6 +1573,30 @@ void DrawFullTexture(CGEditorContext *cgEd, GraphContext *graph, RenderTexture2D
         }
     }
 
+    if (cgEd->isSelecting)
+    {
+
+        Rectangle selectorRect = (Rectangle){fminf(cgEd->rightClickPos.x, cgEd->mousePos.x), fminf(cgEd->rightClickPos.y, cgEd->mousePos.y), fabsf(cgEd->mousePos.x - cgEd->rightClickPos.x), fabsf(cgEd->mousePos.y - cgEd->rightClickPos.y)};
+        DrawRectangleRec(selectorRect, (Color){139, 224, 252, 10});
+        DrawRectangleLinesEx(selectorRect, 1.0f, (Color){53, 179, 252, 255});
+
+        cgEd->selectedNodesSize = 0;
+        for (int i = 0; i < graph->nodeCount; i++)
+        {
+            Rectangle nodeRect = (Rectangle){graph->nodes[i].position.x, graph->nodes[i].position.y, getNodeInfoByType(graph->nodes[i].type, NODE_INFO_WIDTH), getNodeInfoByType(graph->nodes[i].type, NODE_INFO_HEIGHT)};
+            if (CheckCollisionRecs(nodeRect, selectorRect))
+            {
+                cgEd->selectedNodes[cgEd->selectedNodesSize] = i;
+                cgEd->selectedNodesSize++;
+            }
+        }
+    }
+    for(int i = 0; i < cgEd->selectedNodesSize; i++){
+        Rectangle nodeRect = (Rectangle){graph->nodes[cgEd->selectedNodes[i]].position.x, graph->nodes[cgEd->selectedNodes[i]].position.y, getNodeInfoByType(graph->nodes[cgEd->selectedNodes[i]].type, NODE_INFO_WIDTH), getNodeInfoByType(graph->nodes[cgEd->selectedNodes[i]].type, NODE_INFO_HEIGHT)};
+        DrawRectangleRounded(nodeRect, 0.2f, 8, COLOR_CGED_NODE_HOVER);
+        DrawRectangleRoundedLinesEx(nodeRect, 0.2f, 8, 5.0f, WHITE);
+    }
+
     EndTextureMode();
 }
 
@@ -1594,11 +1633,30 @@ void HandleEditor(CGEditorContext *cgEd, GraphContext *graph, RenderTexture2D *v
         return;
     }
 
-    if (IsMouseButtonPressed(MOUSE_RIGHT_BUTTON))
+    static float selectingTime = 0;
+
+    if (IsMouseButtonDown(MOUSE_RIGHT_BUTTON))
+    {
+        cgEd->delayFrames = true;
+        selectingTime += GetFrameTime();
+        cgEd->isSelecting = true;
+        if (IsMouseButtonPressed(MOUSE_RIGHT_BUTTON))
+        {
+            cgEd->rightClickPos = cgEd->mousePos;
+        }
+    }
+    else if (IsMouseButtonReleased(MOUSE_RIGHT_BUTTON) && selectingTime <= 0.1f)
     {
         cgEd->menuOpen = true;
         cgEd->rightClickPos = cgEd->mousePos;
         cgEd->scrollIndexNodeMenu = 0;
+        cgEd->delayFrames = true;
+        cgEd->isSelecting = false;
+    }
+    if (IsMouseButtonUp(MOUSE_RIGHT_BUTTON))
+    {
+        selectingTime = 0;
+        cgEd->isSelecting = false;
         cgEd->delayFrames = true;
     }
 
