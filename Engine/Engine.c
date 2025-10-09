@@ -2374,7 +2374,7 @@ void SetEngineZoom(EngineContext *eng, CGEditorContext *cgEd, InterpreterContext
     {
         eng->zoom = cgEd->zoom;
         float wheel = GetMouseWheelMove();
-        if (wheel != 0 && eng->isViewportFocused && !cgEd->menuOpen)
+        if (wheel != 0 && eng->isViewportFocused && !cgEd->isNodeCreateMenuOpen)
         {
             cgEd->delayFrames = true;
 

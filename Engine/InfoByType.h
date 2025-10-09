@@ -291,10 +291,10 @@ static inline DropdownOptionsByPinType getPinDropdownOptionsByType(PinType type)
 
 typedef enum
 {
-    NODE_INFO_INPUT_COUNT,
-    NODE_INFO_OUTPUT_COUNT,
-    NODE_INFO_WIDTH,
-    NODE_INFO_HEIGHT
+    INFO_NODE_INPUT_COUNT,
+    INFO_NODE_OUTPUT_COUNT,
+    INFO_NODE_WIDTH,
+    INFO_NODE_HEIGHT
 } RequestedInfo;
 
 static inline int getNodeInfoByType(NodeType type, RequestedInfo info)
@@ -307,13 +307,13 @@ static inline int getNodeInfoByType(NodeType type, RequestedInfo info)
 
     switch (info)
     {
-    case NODE_INFO_INPUT_COUNT:
+    case INFO_NODE_INPUT_COUNT:
         return NodeInfoByType[index].inputCount;
-    case NODE_INFO_OUTPUT_COUNT:
+    case INFO_NODE_OUTPUT_COUNT:
         return NodeInfoByType[index].outputCount;
-    case NODE_INFO_WIDTH:
+    case INFO_NODE_WIDTH:
         return NodeInfoByType[index].width;
-    case NODE_INFO_HEIGHT:
+    case INFO_NODE_HEIGHT:
         return NodeInfoByType[index].height;
     default:
         return -1;

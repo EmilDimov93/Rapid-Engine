@@ -27,11 +27,15 @@ typedef struct
     bool isDraggingScreen;
     int draggingNodeIndex;
 
-    bool menuOpen;
+    bool isNodeCreateMenuOpen;
     Vector2 menuPosition;
     Vector2 submenuPosition;
     int scrollIndexNodeMenu;
     int hoveredItem;
+
+    bool isNodeOptionsMenuOpen;
+
+    int openedOptionsMenuNode;
 
     Pin lastClickedPin;
 
@@ -81,7 +85,7 @@ typedef struct
 
     bool isSelecting;
     int selectedNodes[MAX_SELECTED_NODES];
-    int selectedNodesSize;
+    int selectedNodesCount;
 
     GraphContext *graph;
 } CGEditorContext;
