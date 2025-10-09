@@ -87,6 +87,9 @@ typedef struct
     int selectedNodes[MAX_SELECTED_NODES];
     int selectedNodesCount;
 
+    int hoveredNodeIndex;
+    int hoveredPinIndex;
+
     GraphContext *graph;
 } CGEditorContext;
 
