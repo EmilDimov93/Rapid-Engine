@@ -235,7 +235,7 @@ const char *AddEllipsis(Font font, const char *text, float fontSize, float maxWi
 #define COLOR_CGED_WIRE_UNKNOWN WHITE
 #define COLOR_CGED_WIRE_NEON_BLUE (Color){0, 255, 255, 255}
 #define COLOR_CGED_EDIT_HITBOX_BTN_HOVER (Color){255, 255, 255, 100}
-#define COLOR_CGED_NODE_HOVER (Color){255, 255, 255, 20}
+#define COLOR_CGED_NODE_HOVER (Color){255, 255, 255, 60}
 #define COLOR_CGED_BACKGROUND (Color){40, 42, 54, 255}
 #define COLOR_CGED_BACKGROUND_DOT (Color){255, 255, 255, 15}
 #define COLOR_CGED_SELECTOR (Color){139, 224, 252, 10}

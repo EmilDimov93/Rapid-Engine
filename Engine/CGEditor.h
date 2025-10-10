@@ -41,8 +41,8 @@ typedef struct
 
     Font font;
 
-    int nodeDropdownFocused;
-    int nodeFieldPinFocused;
+    int focusedDropdownPin;
+    int focusedFieldPin;
 
     bool newLogMessage;
     char logMessages[MAX_LOG_MESSAGES][MAX_LOG_MESSAGE_SIZE];
@@ -86,6 +86,8 @@ typedef struct
     bool isSelecting;
     int selectedNodes[MAX_SELECTED_NODES];
     int selectedNodesCount;
+
+    bool isDraggingSelectedNodes;
 
     int hoveredNodeIndex;
     int hoveredPinIndex;

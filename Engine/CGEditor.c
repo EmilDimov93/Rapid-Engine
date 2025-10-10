@@ -52,8 +52,8 @@ CGEditorContext InitEditorContext()
         return cgEd;
     }
 
-    cgEd.nodeDropdownFocused = -1;
-    cgEd.nodeFieldPinFocused = -1;
+    cgEd.focusedDropdownPin = -1;
+    cgEd.focusedFieldPin = -1;
 
     cgEd.font = LoadFontFromMemory(".ttf", arialbd_ttf, arialbd_ttf_len, 256, NULL, 0);
     if (cgEd.font.texture.id == 0)
@@ -355,7 +355,7 @@ void HandleLiteralNodeField(CGEditorContext *cgEd, GraphContext *graph, int curr
         24};
 
     float textWidth = MeasureTextEx(cgEd->font, graph->pins[currPinIndex].textFieldValue, 20, 0).x;
-    if (cgEd->nodeFieldPinFocused == currPinIndex)
+    if (cgEd->focusedFieldPin == currPinIndex)
     {
         textWidth += MeasureTextEx(cgEd->font, "_", 20, 0).x;
     }
@@ -404,10 +404,10 @@ void HandleLiteralNodeField(CGEditorContext *cgEd, GraphContext *graph, int curr
             }
             else
             {
-                cgEd->nodeFieldPinFocused = currPinIndex;
+                cgEd->focusedFieldPin = currPinIndex;
             }
         }
-        else if (cgEd->nodeFieldPinFocused == currPinIndex)
+        else if (cgEd->focusedFieldPin == currPinIndex)
         {
             switch (type)
             {
@@ -435,11 +435,11 @@ void HandleLiteralNodeField(CGEditorContext *cgEd, GraphContext *graph, int curr
             default:
                 break;
             }
-            cgEd->nodeFieldPinFocused = -1;
+            cgEd->focusedFieldPin = -1;
         }
     }
 
-    Color textboxColor = (cgEd->nodeFieldPinFocused == currPinIndex) ? LIGHTGRAY : (isFieldHovered ? WHITE : GRAY);
+    Color textboxColor = (cgEd->focusedFieldPin == currPinIndex) ? LIGHTGRAY : (isFieldHovered ? WHITE : GRAY);
 
     DrawRectangleRec(textbox, textboxColor);
     DrawRectangleLinesEx(textbox, 1, WHITE);
@@ -449,23 +449,23 @@ void HandleLiteralNodeField(CGEditorContext *cgEd, GraphContext *graph, int curr
 
     if (boxWidth == limit)
     {
-        text = AddEllipsis(cgEd->font, originalText, 20, limit - 10, cgEd->nodeFieldPinFocused == currPinIndex);
+        text = AddEllipsis(cgEd->font, originalText, 20, limit - 10, cgEd->focusedFieldPin == currPinIndex);
     }
 
-    if (cgEd->nodeFieldPinFocused == currPinIndex)
+    if (cgEd->focusedFieldPin == currPinIndex)
     {
         static float blinkTime = 0;
         blinkTime += GetFrameTime();
         char blinking[MAX_LITERAL_NODE_FIELD_SIZE];
         strmac(blinking, MAX_LITERAL_NODE_FIELD_SIZE, "%s%c", text, (fmodf(blinkTime, 1.0f) < 0.5f) ? '_' : '\0');
-        DrawTextEx(cgEd->font, cgEd->nodeFieldPinFocused == currPinIndex ? blinking : text, (Vector2){textbox.x + 5, textbox.y + 4}, 20, 0, BLACK);
+        DrawTextEx(cgEd->font, cgEd->focusedFieldPin == currPinIndex ? blinking : text, (Vector2){textbox.x + 5, textbox.y + 4}, 20, 0, BLACK);
     }
     else
     {
         DrawTextEx(cgEd->font, text, (Vector2){textbox.x + 5, textbox.y + 4}, 20, 0, BLACK);
     }
 
-    if (cgEd->nodeFieldPinFocused == currPinIndex)
+    if (cgEd->focusedFieldPin == currPinIndex)
     {
         if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_V))
         {
@@ -609,7 +609,7 @@ void HandleLiteralNodeField(CGEditorContext *cgEd, GraphContext *graph, int curr
             default:
                 break;
             }
-            cgEd->nodeFieldPinFocused = -1;
+            cgEd->focusedFieldPin = -1;
         }
     }
 }
@@ -619,25 +619,25 @@ void HandleKeyNodeField(CGEditorContext *cgEd, GraphContext *graph, int currPinI
     Rectangle textbox = {
         graph->pins[currPinIndex].position.x - 6,
         graph->pins[currPinIndex].position.y - 10,
-        cgEd->nodeFieldPinFocused == currPinIndex ? 110 : MeasureTextEx(cgEd->font, GetKeyboardKeyName(graph->pins[currPinIndex].pickedOption), 20, 0).x + 10,
+        cgEd->focusedFieldPin == currPinIndex ? 110 : MeasureTextEx(cgEd->font, GetKeyboardKeyName(graph->pins[currPinIndex].pickedOption), 20, 0).x + 10,
         24};
 
     if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
     {
         if (CheckCollisionPointRec(cgEd->mousePos, textbox))
         {
-            cgEd->nodeFieldPinFocused = currPinIndex;
+            cgEd->focusedFieldPin = currPinIndex;
         }
-        else if (cgEd->nodeFieldPinFocused == currPinIndex)
+        else if (cgEd->focusedFieldPin == currPinIndex)
         {
-            cgEd->nodeFieldPinFocused = -1;
+            cgEd->focusedFieldPin = -1;
         }
     }
 
-    DrawRectangleRec(textbox, (cgEd->nodeFieldPinFocused == currPinIndex) ? LIGHTGRAY : GRAY);
+    DrawRectangleRec(textbox, (cgEd->focusedFieldPin == currPinIndex) ? LIGHTGRAY : GRAY);
     DrawRectangleLinesEx(textbox, 1, WHITE);
 
-    if (cgEd->nodeFieldPinFocused == currPinIndex)
+    if (cgEd->focusedFieldPin == currPinIndex)
     {
         static float blinkTime = 0;
         blinkTime += GetFrameTime();
@@ -653,7 +653,7 @@ void HandleKeyNodeField(CGEditorContext *cgEd, GraphContext *graph, int currPinI
         DrawTextEx(cgEd->font, GetKeyboardKeyName(graph->pins[currPinIndex].pickedOption), (Vector2){textbox.x + 5, textbox.y + 4}, 20, 0, BLACK);
     }
 
-    if (cgEd->nodeFieldPinFocused == currPinIndex)
+    if (cgEd->focusedFieldPin == currPinIndex)
     {
         for (int key = 0; key <= KEY_KB_MENU; key++)
         {
@@ -661,7 +661,7 @@ void HandleKeyNodeField(CGEditorContext *cgEd, GraphContext *graph, int currPinI
             {
                 cgEd->hasChangedInLastFrame = true;
                 graph->pins[currPinIndex].pickedOption = key;
-                cgEd->nodeFieldPinFocused = -1;
+                cgEd->focusedFieldPin = -1;
                 break;
             }
         }
@@ -742,7 +742,7 @@ void HandleDropdownMenu(GraphContext *graph, int currPinIndex, int hoveredNodeIn
 
     bool mouseOnDropdown = CheckCollisionPointRec(cgEd->mousePos, dropdown);
     bool mouseOnOptions = false;
-    if (cgEd->nodeDropdownFocused == currPinIndex)
+    if (cgEd->focusedDropdownPin == currPinIndex)
     {
         for (int j = 0; j < options.optionsCount; j++)
         {
@@ -757,20 +757,20 @@ void HandleDropdownMenu(GraphContext *graph, int currPinIndex, int hoveredNodeIn
 
     if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
     {
-        if (cgEd->nodeDropdownFocused == currPinIndex)
+        if (cgEd->focusedDropdownPin == currPinIndex)
         {
             if (mouseOnDropdown)
-                cgEd->nodeDropdownFocused = -1;
+                cgEd->focusedDropdownPin = -1;
             else if (!mouseOnOptions)
-                cgEd->nodeDropdownFocused = -1;
+                cgEd->focusedDropdownPin = -1;
         }
         else if (mouseOnDropdown)
         {
-            cgEd->nodeDropdownFocused = currPinIndex;
+            cgEd->focusedDropdownPin = currPinIndex;
         }
     }
 
-    if (cgEd->nodeDropdownFocused == currPinIndex)
+    if (cgEd->focusedDropdownPin == currPinIndex)
     {
         cgEd->delayFrames = true;
         cgEd->hoveredNodeIndex = -1;
@@ -818,7 +818,7 @@ void HandleDropdownMenu(GraphContext *graph, int currPinIndex, int hoveredNodeIn
             if (CheckCollisionPointRec(cgEd->mousePos, option) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
             {
                 graph->pins[currPinIndex].pickedOption = j;
-                cgEd->nodeDropdownFocused = -1;
+                cgEd->focusedDropdownPin = -1;
                 cgEd->hasChangedInLastFrame = true;
             }
         }
@@ -1157,7 +1157,7 @@ void DrawNodes(CGEditorContext *cgEd, GraphContext *graph)
 
     if (cgEd->hoveredPinIndex != -1 && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
     {
-        cgEd->draggingNodeIndex = -1;
+        cgEd->isDraggingSelectedNodes = false;
         if (cgEd->lastClickedPin.id == -1)
         {
             cgEd->lastClickedPin = graph->pins[cgEd->hoveredPinIndex];
@@ -1465,14 +1465,39 @@ const char *DrawNodeMenu(CGEditorContext *cgEd, RenderTexture2D view)
 
 void HandleDragging(CGEditorContext *cgEd, GraphContext *graph)
 {
-    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && cgEd->draggingNodeIndex == -1 && cgEd->nodeFieldPinFocused == -1)
+    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !cgEd->isDraggingSelectedNodes && cgEd->focusedFieldPin == -1)
     {
         cgEd->fps = FPS_HIGH;
         for (int i = 0; i < graph->nodeCount; i++)
         {
             if (CheckCollisionPointRec(cgEd->mousePos, (Rectangle){graph->nodes[i].position.x, graph->nodes[i].position.y, getNodeInfoByType(graph->nodes[i].type, INFO_NODE_WIDTH), getNodeInfoByType(graph->nodes[i].type, INFO_NODE_HEIGHT)}))
             {
-                cgEd->draggingNodeIndex = i;
+                cgEd->isDraggingSelectedNodes = true;
+                bool nodeAlreadySelected = false;
+                for (int j = 0; j < cgEd->selectedNodesCount; j++)
+                {
+                    if (cgEd->selectedNodes[j] == i)
+                    {
+                        if (IsKeyDown(KEY_LEFT_CONTROL))
+                        {
+                            for(int k = j; k < cgEd->selectedNodesCount - 1; k++){
+                                cgEd->selectedNodes[k] = cgEd->selectedNodes[k + 1];
+                            }
+                            cgEd->selectedNodesCount--;
+                        }
+                        nodeAlreadySelected = true;
+                        break;
+                    }
+                }
+                if (!nodeAlreadySelected)
+                {
+                    if (!IsKeyDown(KEY_LEFT_CONTROL))
+                    {
+                        cgEd->selectedNodesCount = 0;
+                    }
+                    cgEd->selectedNodes[cgEd->selectedNodesCount] = i;
+                    cgEd->selectedNodesCount++;
+                }
                 return;
             }
         }
@@ -1482,7 +1507,7 @@ void HandleDragging(CGEditorContext *cgEd, GraphContext *graph)
         cgEd->isDraggingScreen = true;
         return;
     }
-    else if (IsMouseButtonDown(MOUSE_LEFT_BUTTON) && cgEd->draggingNodeIndex != -1 && cgEd->nodeFieldPinFocused == -1)
+    else if (IsMouseButtonDown(MOUSE_LEFT_BUTTON) && cgEd->isDraggingSelectedNodes && cgEd->focusedFieldPin == -1)
     {
         cgEd->cursor = MOUSE_CURSOR_RESIZE_ALL;
         Vector2 delta = GetMouseDelta();
@@ -1498,13 +1523,6 @@ void HandleDragging(CGEditorContext *cgEd, GraphContext *graph)
                 graph->nodes[cgEd->selectedNodes[i]].position.y += delta.y / cgEd->zoom;
             }
         }
-        else
-        {
-            graph->nodes[cgEd->draggingNodeIndex].position.x += delta.x / cgEd->zoom;
-            graph->nodes[cgEd->draggingNodeIndex].position.y += delta.y / cgEd->zoom;
-        }
-        DrawRectangleRounded((Rectangle){graph->nodes[cgEd->draggingNodeIndex].position.x, graph->nodes[cgEd->draggingNodeIndex].position.y, getNodeInfoByType(graph->nodes[cgEd->draggingNodeIndex].type, INFO_NODE_WIDTH), getNodeInfoByType(graph->nodes[cgEd->draggingNodeIndex].type, INFO_NODE_HEIGHT)}, 0.2f, 8, COLOR_CGED_NODE_HOVER);
-        DrawRectangleRoundedLinesEx((Rectangle){graph->nodes[cgEd->draggingNodeIndex].position.x, graph->nodes[cgEd->draggingNodeIndex].position.y, getNodeInfoByType(graph->nodes[cgEd->draggingNodeIndex].type, INFO_NODE_WIDTH), getNodeInfoByType(graph->nodes[cgEd->draggingNodeIndex].type, INFO_NODE_HEIGHT)}, 0.2f, 8, 5.0f, WHITE);
     }
     else if (IsMouseButtonDown(MOUSE_LEFT_BUTTON) && cgEd->isDraggingScreen)
     {
@@ -1521,7 +1539,7 @@ void HandleDragging(CGEditorContext *cgEd, GraphContext *graph)
     else if (IsMouseButtonUp(MOUSE_LEFT_BUTTON))
     {
         cgEd->fps = FPS_DEFAULT;
-        cgEd->draggingNodeIndex = -1;
+        cgEd->isDraggingSelectedNodes = false;
         cgEd->isDraggingScreen = false;
     }
 }
@@ -1604,7 +1622,7 @@ void DrawFullTexture(CGEditorContext *cgEd, GraphContext *graph, RenderTexture2D
             {
                 cgEd->copiedNode = graph->nodes[cgEd->openedOptionsMenuNode];
                 SetClipboardText(TextFormat("CoreGraph node of type %s", NodeTypeToString(graph->nodes[cgEd->openedOptionsMenuNode].type)));
-                cgEd->draggingNodeIndex = -1;
+                cgEd->isDraggingSelectedNodes = false;
                 cgEd->selectedNodesCount = 0;
             }
         }
@@ -1616,7 +1634,7 @@ void DrawFullTexture(CGEditorContext *cgEd, GraphContext *graph, RenderTexture2D
             {
                 DeleteNode(graph, graph->nodes[cgEd->openedOptionsMenuNode].id);
                 cgEd->hasChangedInLastFrame = true;
-                cgEd->draggingNodeIndex = -1;
+                cgEd->isDraggingSelectedNodes = false;
                 cgEd->selectedNodesCount = 0;
             }
         }
@@ -1633,7 +1651,7 @@ void DrawFullTexture(CGEditorContext *cgEd, GraphContext *graph, RenderTexture2D
 
 bool CheckOpenMenus(CGEditorContext *cgEd)
 {
-    return cgEd->draggingNodeIndex != -1 || cgEd->lastClickedPin.id != -1 || cgEd->isNodeCreateMenuOpen || cgEd->nodeDropdownFocused != -1 || cgEd->nodeFieldPinFocused != -1 || cgEd->editingNodeNameIndex != -1;
+    return cgEd->isDraggingSelectedNodes || cgEd->lastClickedPin.id != -1 || cgEd->isNodeCreateMenuOpen || cgEd->focusedDropdownPin != -1 || cgEd->focusedFieldPin != -1 || cgEd->editingNodeNameIndex != -1;
 }
 
 void HandleEditor(CGEditorContext *cgEd, GraphContext *graph, RenderTexture2D *viewport, Vector2 mousePos, bool draggingDisabled, bool isSecondFrame)
@@ -1685,7 +1703,7 @@ void HandleEditor(CGEditorContext *cgEd, GraphContext *graph, RenderTexture2D *v
             cgEd->openedOptionsMenuNode = cgEd->hoveredNodeIndex;
             cgEd->isNodeCreateMenuOpen = false;
         }
-        else if(cgEd->hoveredNodeIndex == -1)
+        else if (cgEd->hoveredNodeIndex == -1)
         {
             cgEd->isNodeCreateMenuOpen = true;
             cgEd->scrollIndexNodeMenu = 0;
@@ -1702,7 +1720,7 @@ void HandleEditor(CGEditorContext *cgEd, GraphContext *graph, RenderTexture2D *v
         cgEd->delayFrames = true;
     }
 
-    if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_V) && cgEd->copiedNode.id != -1 && cgEd->nodeFieldPinFocused == -1 && cgEd->editingNodeNameIndex == -1)
+    if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_V) && cgEd->copiedNode.id != -1 && cgEd->focusedFieldPin == -1 && cgEd->editingNodeNameIndex == -1)
     {
         if (!DuplicateNode(graph, &cgEd->copiedNode, cgEd->mousePos))
         {
