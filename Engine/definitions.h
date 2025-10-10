@@ -14,6 +14,8 @@
 #define MAX_FILE_NAME 256
 #define MAX_FILE_PATH 2048
 
+#define FONT_GLYPHS 128
+
 #ifdef _WIN32
 #define PATH_SEPARATOR '\\'
 #include <direct.h>

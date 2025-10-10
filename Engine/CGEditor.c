@@ -55,7 +55,7 @@ CGEditorContext InitEditorContext()
     cgEd.focusedDropdownPin = -1;
     cgEd.focusedFieldPin = -1;
 
-    cgEd.font = LoadFontFromMemory(".ttf", arialbd_ttf, arialbd_ttf_len, 256, NULL, 0);
+    cgEd.font = LoadFontFromMemory(".ttf", arialbd_ttf, arialbd_ttf_len, FONT_GLYPHS, NULL, 0);
     if (cgEd.font.texture.id == 0)
     {
         cgEd.hasFatalErrorOccurred = true;

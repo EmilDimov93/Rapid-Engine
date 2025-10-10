@@ -67,7 +67,7 @@ EngineContext InitEngineContext()
     eng.delayFrames = true;
     eng.menuResizeButton = RESIZING_MENU_NONE;
 
-    eng.font = LoadFontFromMemory(".ttf", arialbd_ttf, arialbd_ttf_len, 128, NULL, 0);
+    eng.font = LoadFontFromMemory(".ttf", arialbd_ttf, arialbd_ttf_len, FONT_GLYPHS, NULL, 0);
     if (eng.font.texture.id == 0)
     {
         AddToLog(&eng, "Failed to load font{E224}", LOG_LEVEL_ERROR);

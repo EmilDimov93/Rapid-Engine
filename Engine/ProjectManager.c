@@ -628,8 +628,8 @@ int WindowCreateProject(char *projectFileName, Font font)
 
 char *HandleProjectManager()
 {
-    Font font = LoadFontFromMemory(".ttf", arialbd_ttf, arialbd_ttf_len, 256, NULL, 0);
-    Font fontRE = LoadFontFromMemory(".ttf", sonsie_ttf, sonsie_ttf_len, 256, NULL, 0);
+    Font font = LoadFontFromMemory(".ttf", arialbd_ttf, arialbd_ttf_len, FONT_GLYPHS, NULL, 0);
+    Font fontRE = LoadFontFromMemory(".ttf", sonsie_ttf, sonsie_ttf_len, FONT_GLYPHS, NULL, 0);
     if (font.texture.id == 0 || fontRE.texture.id == 0)
     {
         exit(1);
