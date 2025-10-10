@@ -427,8 +427,9 @@ void DeleteNode(GraphContext *graph, int nodeID)
             break;
         }
     }
-    if (nodeIndex == -1)
+    if (nodeIndex == -1){
         return;
+    }
 
     if (graph->nodes[nodeIndex].type == NODE_CREATE_NUMBER || graph->nodes[nodeIndex].type == NODE_CREATE_STRING || graph->nodes[nodeIndex].type == NODE_CREATE_BOOL || graph->nodes[nodeIndex].type == NODE_CREATE_COLOR || graph->nodes[nodeIndex].type == NODE_CREATE_SPRITE)
     {
@@ -485,8 +486,9 @@ void DeleteNode(GraphContext *graph, int nodeID)
         else
         {
             char **resized = realloc(graph->variables, graph->variablesCount * sizeof(char *));
-            if (resized)
+            if (resized){
                 graph->variables = resized;
+            }
         }
         graph->variableTypes = realloc(graph->variableTypes, graph->variablesCount * sizeof(NodeType));
     }

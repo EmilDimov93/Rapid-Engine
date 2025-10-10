@@ -25,7 +25,7 @@ typedef struct
     Texture2D gearTxt;
 
     bool isDraggingScreen;
-    int draggingNodeIndex;
+    bool isDraggingSelectedNodes;
 
     bool isNodeCreateMenuOpen;
     Vector2 menuPosition;
@@ -86,8 +86,6 @@ typedef struct
     bool isSelecting;
     int selectedNodes[MAX_SELECTED_NODES];
     int selectedNodesCount;
-
-    bool isDraggingSelectedNodes;
 
     int hoveredNodeIndex;
     int hoveredPinIndex;

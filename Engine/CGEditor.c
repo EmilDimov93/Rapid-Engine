@@ -26,8 +26,8 @@ CGEditorContext InitEditorContext()
 
     cgEd.mousePos = (Vector2){0, 0};
 
-    cgEd.draggingNodeIndex = -1;
     cgEd.isDraggingScreen = false;
+    cgEd.isDraggingSelectedNodes = false;
 
     cgEd.delayFrames = true;
     cgEd.isFirstFrame = true;
@@ -1465,7 +1465,7 @@ const char *DrawNodeMenu(CGEditorContext *cgEd, RenderTexture2D view)
 
 void HandleDragging(CGEditorContext *cgEd, GraphContext *graph)
 {
-    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !cgEd->isDraggingSelectedNodes && cgEd->focusedFieldPin == -1)
+    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !cgEd->isDraggingSelectedNodes && cgEd->focusedFieldPin == -1 && cgEd->focusedDropdownPin == -1)
     {
         cgEd->fps = FPS_HIGH;
         for (int i = 0; i < graph->nodeCount; i++)
@@ -1502,9 +1502,11 @@ void HandleDragging(CGEditorContext *cgEd, GraphContext *graph)
             }
         }
 
-        cgEd->selectedNodesCount = 0;
+        if(!cgEd->isNodeOptionsMenuOpen){
+            cgEd->selectedNodesCount = 0;
+            cgEd->isDraggingScreen = true;
+        }
 
-        cgEd->isDraggingScreen = true;
         return;
     }
     else if (IsMouseButtonDown(MOUSE_LEFT_BUTTON) && cgEd->isDraggingSelectedNodes && cgEd->focusedFieldPin == -1)
@@ -1623,7 +1625,6 @@ void DrawFullTexture(CGEditorContext *cgEd, GraphContext *graph, RenderTexture2D
                 cgEd->copiedNode = graph->nodes[cgEd->openedOptionsMenuNode];
                 SetClipboardText(TextFormat("CoreGraph node of type %s", NodeTypeToString(graph->nodes[cgEd->openedOptionsMenuNode].type)));
                 cgEd->isDraggingSelectedNodes = false;
-                cgEd->selectedNodesCount = 0;
             }
         }
         else if (CheckCollisionPointRec(cgEd->mousePos, (Rectangle){cgEd->rightClickPos.x, cgEd->rightClickPos.y - 30, 100, 30}))
@@ -1632,7 +1633,13 @@ void DrawFullTexture(CGEditorContext *cgEd, GraphContext *graph, RenderTexture2D
             DrawRectangle(cgEd->rightClickPos.x, cgEd->rightClickPos.y - 30, 100, 30, (Color){255, 255, 255, 40});
             if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
             {
-                DeleteNode(graph, graph->nodes[cgEd->openedOptionsMenuNode].id);
+                int selectedNodeIds[MAX_SELECTED_NODES];
+                for(int i = 0; i < cgEd->selectedNodesCount; i++){
+                    selectedNodeIds[i] = graph->nodes[cgEd->selectedNodes[i]].id;
+                }
+                for(int i = 0; i < cgEd->selectedNodesCount; i++){
+                    DeleteNode(graph, selectedNodeIds[i]);
+                }
                 cgEd->hasChangedInLastFrame = true;
                 cgEd->isDraggingSelectedNodes = false;
                 cgEd->selectedNodesCount = 0;
@@ -1684,7 +1691,7 @@ void HandleEditor(CGEditorContext *cgEd, GraphContext *graph, RenderTexture2D *v
 
     static float deltaSinceRightClick = 0;
 
-    if (IsMouseButtonDown(MOUSE_RIGHT_BUTTON))
+    if (IsMouseButtonDown(MOUSE_RIGHT_BUTTON) && cgEd->hoveredNodeIndex == -1)
     {
         cgEd->delayFrames = true;
         cgEd->isNodeCreateMenuOpen = false;
