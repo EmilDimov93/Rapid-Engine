@@ -86,7 +86,7 @@ Pin CreatePin(GraphContext *graph, int nodeID, bool isInput, PinType type, int i
 
 bool CreateNode(GraphContext *graph, NodeType type, Vector2 pos);
 
-bool DuplicateNode(GraphContext *graph, const Node *src, Vector2 pos);
+bool DuplicateNode(GraphContext *graph, const Node *src, Vector2 pos, int nodeY);
 
 void CreateLink(GraphContext *graph, Pin Pin1, Pin Pin2);
 

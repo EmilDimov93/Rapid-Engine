@@ -74,7 +74,8 @@ typedef struct
 
     float nodeGlareTime;
 
-    Node copiedNode;
+    Node copiedNodes[MAX_SELECTED_NODES];
+    int copiedNodesCount;
 
     bool hasFatalErrorOccurred;
 

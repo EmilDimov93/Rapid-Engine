@@ -283,12 +283,13 @@ int GetPinIndexByID(int id, GraphContext *graph)
     return -1;
 }
 
-bool DuplicateNode(GraphContext *graph, const Node *src, Vector2 pos)
+bool DuplicateNode(GraphContext *graph, const Node *src, Vector2 pos, int nodeY)
 {
     Node node = {0};
     node.id = graph->nextNodeID++;
     node.type = src->type;
-    node.position = pos;
+    node.position.x = pos.x;
+    node.position.y = pos.y + nodeY;
     strmac(node.name, MAX_VARIABLE_NAME_SIZE, "%s", src->name);
 
     int inputCount  = src->inputCount;
@@ -317,7 +318,7 @@ bool DuplicateNode(GraphContext *graph, const Node *src, Vector2 pos)
         if(srcPin->type == PIN_FIELD_NUM || srcPin->type == PIN_FIELD_STRING || srcPin->type == PIN_FIELD_BOOL || srcPin->type == PIN_FIELD_COLOR){
             strmac(pin.textFieldValue, MAX_LITERAL_NODE_FIELD_SIZE, "%s", srcPin->textFieldValue);
         }
-        else if(srcPin->type == PIN_DROPDOWN_COMPARISON_OPERATOR || srcPin->type == PIN_DROPDOWN_GATE || srcPin->type == PIN_DROPDOWN_ARITHMETIC || srcPin->type == PIN_FIELD_KEY || srcPin->type == PIN_DROPDOWN_KEY_ACTION || srcPin->type == PIN_VARIABLE || srcPin->type == PIN_SPRITE_VARIABLE){
+        else if(srcPin->type == PIN_DROPDOWN_COMPARISON_OPERATOR || srcPin->type == PIN_DROPDOWN_GATE || srcPin->type == PIN_DROPDOWN_ARITHMETIC || srcPin->type == PIN_SPRITE_VARIABLE || srcPin->type == PIN_DROPDOWN_LAYER || srcPin->type == PIN_FIELD_KEY || srcPin->type == PIN_DROPDOWN_KEY_ACTION || srcPin->type == PIN_VARIABLE){
             pin.pickedOption = srcPin->pickedOption;
         }
         else if(srcPin->type == PIN_EDIT_HITBOX){

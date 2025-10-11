@@ -78,7 +78,7 @@ CGEditorContext InitEditorContext()
 
     cgEd.nodeGlareTime = 0;
 
-    cgEd.copiedNode.id = -1;
+    cgEd.copiedNodesCount = 0;
 
     cgEd.isLowSpecModeOn = false;
 
@@ -1184,13 +1184,18 @@ void DrawNodes(CGEditorContext *cgEd, GraphContext *graph)
     {
         DrawRectangleRounded((Rectangle){graph->nodes[cgEd->hoveredNodeIndex].position.x - 1, graph->nodes[cgEd->hoveredNodeIndex].position.y - 1, getNodeInfoByType(graph->nodes[cgEd->hoveredNodeIndex].type, INFO_NODE_WIDTH) + 2, getNodeInfoByType(graph->nodes[cgEd->hoveredNodeIndex].type, INFO_NODE_HEIGHT) + 2}, 0.2f, 8, COLOR_CGED_NODE_HOVER);
         DrawRectangleRoundedLinesEx((Rectangle){graph->nodes[cgEd->hoveredNodeIndex].position.x - 1, graph->nodes[cgEd->hoveredNodeIndex].position.y - 1, getNodeInfoByType(graph->nodes[cgEd->hoveredNodeIndex].type, INFO_NODE_WIDTH) + 2, getNodeInfoByType(graph->nodes[cgEd->hoveredNodeIndex].type, INFO_NODE_HEIGHT) + 2}, 0.2f, 8, 5.0f, WHITE);
-        if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_C))
-        {
-            cgEd->copiedNode = graph->nodes[cgEd->hoveredNodeIndex];
-            SetClipboardText(TextFormat("CoreGraph node of type %s", NodeTypeToString(graph->nodes[cgEd->hoveredNodeIndex].type)));
-        }
         cgEd->delayFrames = true;
     }
+
+    if (cgEd->selectedNodesCount != 0 && IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_C))
+        {
+            for (int i = 0; i < cgEd->selectedNodesCount; i++)
+            {
+                cgEd->copiedNodes[i] = graph->nodes[cgEd->selectedNodes[i]];
+            }
+            cgEd->copiedNodesCount = cgEd->selectedNodesCount;
+            SetClipboardText(cgEd->copiedNodesCount == 1 ? TextFormat("CoreGraph node of type %s", NodeTypeToString(cgEd->copiedNodes[0].type)) : "CoreGraph nodes");
+        }
 
     if (cgEd->lastClickedPin.id != -1)
     {
@@ -1480,7 +1485,8 @@ void HandleDragging(CGEditorContext *cgEd, GraphContext *graph)
                     {
                         if (IsKeyDown(KEY_LEFT_CONTROL))
                         {
-                            for(int k = j; k < cgEd->selectedNodesCount - 1; k++){
+                            for (int k = j; k < cgEd->selectedNodesCount - 1; k++)
+                            {
                                 cgEd->selectedNodes[k] = cgEd->selectedNodes[k + 1];
                             }
                             cgEd->selectedNodesCount--;
@@ -1502,7 +1508,8 @@ void HandleDragging(CGEditorContext *cgEd, GraphContext *graph)
             }
         }
 
-        if(!cgEd->isNodeOptionsMenuOpen){
+        if (!cgEd->isNodeOptionsMenuOpen)
+        {
             cgEd->selectedNodesCount = 0;
             cgEd->isDraggingScreen = true;
         }
@@ -1610,34 +1617,41 @@ void DrawFullTexture(CGEditorContext *cgEd, GraphContext *graph, RenderTexture2D
     }
     else if (cgEd->isNodeOptionsMenuOpen)
     {
-        DrawRectangleRounded((Rectangle){cgEd->rightClickPos.x - 5, cgEd->rightClickPos.y - 65, 110, 70}, 0.2f, 4, DARKGRAY);
-        DrawRectangle(cgEd->rightClickPos.x, cgEd->rightClickPos.y - 60, 100, 30, DARKGRAY);
-        DrawRectangle(cgEd->rightClickPos.x, cgEd->rightClickPos.y - 30, 100, 30, DARKGRAY);
+        int boxWidth = 80 + (cgEd->selectedNodesCount != 1) * 60;
+        DrawRectangleRounded((Rectangle){cgEd->rightClickPos.x - 5, cgEd->rightClickPos.y - 65, boxWidth + 10, 70}, 0.2f, 4, DARKGRAY);
+        DrawRectangle(cgEd->rightClickPos.x, cgEd->rightClickPos.y - 60,  boxWidth, 30, DARKGRAY);
+        DrawRectangle(cgEd->rightClickPos.x, cgEd->rightClickPos.y - 30, boxWidth, 30, DARKGRAY);
 
-        DrawTextEx(cgEd->font, "Copy", (Vector2){cgEd->rightClickPos.x + 5, cgEd->rightClickPos.y - 55}, 20, 1, WHITE);
-        DrawTextEx(cgEd->font, "Delete", (Vector2){cgEd->rightClickPos.x + 5, cgEd->rightClickPos.y - 25}, 20, 1, WHITE);
-        if (CheckCollisionPointRec(cgEd->mousePos, (Rectangle){cgEd->rightClickPos.x, cgEd->rightClickPos.y - 60, 100, 30}))
+        DrawTextEx(cgEd->font, cgEd->selectedNodesCount == 1 ? "Copy" : TextFormat("Copy All(%d)", cgEd->selectedNodesCount), (Vector2){cgEd->rightClickPos.x + 5, cgEd->rightClickPos.y - 55}, 20, 1, WHITE);
+        DrawTextEx(cgEd->font, cgEd->selectedNodesCount == 1 ? "Delete" : TextFormat("Delete All(%d)", cgEd->selectedNodesCount), (Vector2){cgEd->rightClickPos.x + 5, cgEd->rightClickPos.y - 25}, 20, 1, WHITE);
+        if (CheckCollisionPointRec(cgEd->mousePos, (Rectangle){cgEd->rightClickPos.x, cgEd->rightClickPos.y - 60, boxWidth, 30}))
         {
             cgEd->cursor = MOUSE_CURSOR_POINTING_HAND;
-            DrawRectangle(cgEd->rightClickPos.x, cgEd->rightClickPos.y - 60, 100, 30, (Color){255, 255, 255, 40});
+            DrawRectangle(cgEd->rightClickPos.x, cgEd->rightClickPos.y - 60, boxWidth, 30, (Color){255, 255, 255, 40});
             if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
             {
-                cgEd->copiedNode = graph->nodes[cgEd->openedOptionsMenuNode];
-                SetClipboardText(TextFormat("CoreGraph node of type %s", NodeTypeToString(graph->nodes[cgEd->openedOptionsMenuNode].type)));
+                for (int i = 0; i < cgEd->selectedNodesCount; i++)
+                {
+                    cgEd->copiedNodes[i] = graph->nodes[cgEd->selectedNodes[i]];
+                }
+                cgEd->copiedNodesCount = cgEd->selectedNodesCount;
+                SetClipboardText(cgEd->copiedNodesCount == 1 ? TextFormat("CoreGraph node of type %s", NodeTypeToString(cgEd->copiedNodes[0].type)) : "CoreGraph nodes");
                 cgEd->isDraggingSelectedNodes = false;
             }
         }
-        else if (CheckCollisionPointRec(cgEd->mousePos, (Rectangle){cgEd->rightClickPos.x, cgEd->rightClickPos.y - 30, 100, 30}))
+        else if (CheckCollisionPointRec(cgEd->mousePos, (Rectangle){cgEd->rightClickPos.x, cgEd->rightClickPos.y - 30, boxWidth, 30}))
         {
             cgEd->cursor = MOUSE_CURSOR_POINTING_HAND;
-            DrawRectangle(cgEd->rightClickPos.x, cgEd->rightClickPos.y - 30, 100, 30, (Color){255, 255, 255, 40});
+            DrawRectangle(cgEd->rightClickPos.x, cgEd->rightClickPos.y - 30, boxWidth, 30, (Color){255, 255, 255, 40});
             if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
             {
                 int selectedNodeIds[MAX_SELECTED_NODES];
-                for(int i = 0; i < cgEd->selectedNodesCount; i++){
+                for (int i = 0; i < cgEd->selectedNodesCount; i++)
+                {
                     selectedNodeIds[i] = graph->nodes[cgEd->selectedNodes[i]].id;
                 }
-                for(int i = 0; i < cgEd->selectedNodesCount; i++){
+                for (int i = 0; i < cgEd->selectedNodesCount; i++)
+                {
                     DeleteNode(graph, selectedNodeIds[i]);
                 }
                 cgEd->hasChangedInLastFrame = true;
@@ -1709,6 +1723,24 @@ void HandleEditor(CGEditorContext *cgEd, GraphContext *graph, RenderTexture2D *v
             cgEd->isNodeOptionsMenuOpen = true;
             cgEd->openedOptionsMenuNode = cgEd->hoveredNodeIndex;
             cgEd->isNodeCreateMenuOpen = false;
+            if(cgEd->selectedNodesCount == 0){
+                cgEd->selectedNodes[cgEd->selectedNodesCount] = cgEd->openedOptionsMenuNode;
+                cgEd->selectedNodesCount++;
+            }
+            else{
+                bool isAlreadySelected = false;
+                for(int i = 0; i < cgEd->selectedNodesCount; i++){
+                    if(cgEd->selectedNodes[i] == cgEd->openedOptionsMenuNode){
+                        isAlreadySelected = true;
+                        break;
+                    }
+                }
+                if(!isAlreadySelected){
+                    cgEd->selectedNodesCount = 0;
+                    cgEd->selectedNodes[cgEd->selectedNodesCount] = cgEd->openedOptionsMenuNode;
+                    cgEd->selectedNodesCount++;
+                }
+            }
         }
         else if (cgEd->hoveredNodeIndex == -1)
         {
@@ -1727,36 +1759,40 @@ void HandleEditor(CGEditorContext *cgEd, GraphContext *graph, RenderTexture2D *v
         cgEd->delayFrames = true;
     }
 
-    if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_V) && cgEd->copiedNode.id != -1 && cgEd->focusedFieldPin == -1 && cgEd->editingNodeNameIndex == -1)
+    if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_V) && cgEd->copiedNodesCount > 0 && cgEd->focusedFieldPin == -1 && cgEd->editingNodeNameIndex == -1)
     {
-        if (!DuplicateNode(graph, &cgEd->copiedNode, cgEd->mousePos))
+        int nodeY = 0;
+        cgEd->selectedNodesCount = 0;
+        for (int i = 0; i < cgEd->copiedNodesCount; i++)
         {
-            cgEd->hasFatalErrorOccurred = true;
-            AddToLogFromEditor(cgEd, "Error duplicating node{C231}", LOG_LEVEL_ERROR);
-            return;
+            if (!DuplicateNode(graph, &cgEd->copiedNodes[i], cgEd->mousePos, nodeY))
+            {
+                cgEd->hasFatalErrorOccurred = true;
+                AddToLogFromEditor(cgEd, "Error duplicating node{C231}", LOG_LEVEL_ERROR);
+                return;
+            }
+            else if (cgEd->copiedNodes[i].type == NODE_CREATE_NUMBER || cgEd->copiedNodes[i].type == NODE_CREATE_STRING || cgEd->copiedNodes[i].type == NODE_CREATE_BOOL || cgEd->copiedNodes[i].type == NODE_CREATE_COLOR || cgEd->copiedNodes[i].type == NODE_CREATE_SPRITE)
+            {
+                strmac(graph->nodes[graph->nodeCount - 1].name, MAX_VARIABLE_NAME_SIZE, "%s", AssignAvailableVarName(graph, graph->nodes[graph->nodeCount - 1].name));
+
+                graph->variables = realloc(graph->variables, sizeof(char *) * (graph->variablesCount + 1));
+                graph->variables[graph->variablesCount] = strmac(NULL, MAX_VARIABLE_NAME_SIZE, "%s", graph->nodes[graph->nodeCount - 1].name);
+
+                graph->variableTypes = realloc(graph->variableTypes, sizeof(int) * (graph->variablesCount + 1));
+                graph->variableTypes[graph->variablesCount] = graph->nodes[graph->nodeCount - 1].type;
+
+                graph->variablesCount++;
+            }
+            nodeY += getNodeInfoByType(cgEd->copiedNodes[i].type, INFO_NODE_HEIGHT) + 15;
+            cgEd->selectedNodes[cgEd->selectedNodesCount] = graph->nodeCount - 1;
+            cgEd->selectedNodesCount++;
         }
-        else if (cgEd->copiedNode.type == NODE_CREATE_NUMBER || cgEd->copiedNode.type == NODE_CREATE_STRING || cgEd->copiedNode.type == NODE_CREATE_BOOL || cgEd->copiedNode.type == NODE_CREATE_COLOR || cgEd->copiedNode.type == NODE_CREATE_SPRITE)
-        {
-            strmac(graph->nodes[graph->nodeCount - 1].name, MAX_VARIABLE_NAME_SIZE, "%s", AssignAvailableVarName(graph, graph->nodes[graph->nodeCount - 1].name));
-
-            graph->variables = realloc(graph->variables, sizeof(char *) * (graph->variablesCount + 1));
-            graph->variables[graph->variablesCount] = strmac(NULL, MAX_VARIABLE_NAME_SIZE, "%s", graph->nodes[graph->nodeCount - 1].name);
-
-            graph->variableTypes = realloc(graph->variableTypes, sizeof(int) * (graph->variablesCount + 1));
-            graph->variableTypes[graph->variablesCount] = graph->nodes[graph->nodeCount - 1].type;
-
-            graph->variablesCount++;
-        }
+        cgEd->hasChangedInLastFrame = true;
         cgEd->delayFrames = true;
         cgEd->engineDelayFrames = true;
     }
 
-    if (CheckNodeCollisions(cgEd, graph) || IsMouseButtonDown(MOUSE_LEFT_BUTTON))
-    {
-        DrawFullTexture(cgEd, graph, *viewport, dot);
-        cgEd->delayFrames = true;
-    }
-    else if (CheckOpenMenus(cgEd))
+    if (CheckNodeCollisions(cgEd, graph) || IsMouseButtonDown(MOUSE_LEFT_BUTTON) || IsKeyDown(KEY_LEFT_CONTROL) || CheckOpenMenus(cgEd))
     {
         DrawFullTexture(cgEd, graph, *viewport, dot);
         cgEd->delayFrames = true;
