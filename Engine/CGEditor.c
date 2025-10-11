@@ -917,6 +917,10 @@ void DrawNodes(CGEditorContext *cgEd, GraphContext *graph)
         float segments = 8;
         int glareOffset = 0;
 
+        if(!CheckCollisionRecs(cgEd->viewportBoundary, (Rectangle){x, y, width, height})){
+            continue;
+        }
+
         if (!isAnyMenuOpen && CheckCollisionPointRec(cgEd->mousePos, (Rectangle){graph->nodes[i].position.x, graph->nodes[i].position.y, getNodeInfoByType(graph->nodes[i].type, INFO_NODE_WIDTH), getNodeInfoByType(graph->nodes[i].type, INFO_NODE_HEIGHT)}))
         {
             if(!cgEd->isDraggingSelectedNodes){
@@ -953,13 +957,9 @@ void DrawNodes(CGEditorContext *cgEd, GraphContext *graph)
 
         if (cgEd->isLowSpecModeOn)
         {
-            DrawCircleSector(
-                (Vector2){x + fullRadius - 2, y + fullRadius - 2},
-                fullRadius, 180, 270, segments, nodeColor);
+            DrawCircleSector((Vector2){x + fullRadius - 2, y + fullRadius - 2}, fullRadius, 180, 270, segments, nodeColor);
 
-            DrawCircleSector(
-                (Vector2){x + width - fullRadius + 2, y + fullRadius - 2},
-                fullRadius, 270, 360, segments, nodeColor);
+            DrawCircleSector((Vector2){x + width - fullRadius + 2, y + fullRadius - 2}, fullRadius, 270, 360, segments, nodeColor);
 
             DrawRectangle(x + fullRadius - 2, y - 2, width - 2 * fullRadius + 4, fullRadius, nodeColor);
 
@@ -967,23 +967,18 @@ void DrawNodes(CGEditorContext *cgEd, GraphContext *graph)
         }
         else
         {
-            DrawCircleSector(
-                (Vector2){x + fullRadius - 2, y + fullRadius - 2},
-                fullRadius, 180, 270, segments, nodeLeftGradientColor);
+            DrawCircleSector((Vector2){x + fullRadius - 2, y + fullRadius - 2}, fullRadius, 180, 270, segments, nodeLeftGradientColor);
 
-            DrawCircleSector(
-                (Vector2){x + width - fullRadius + 2, y + fullRadius - 2},
-                fullRadius, 270, 360, segments, nodeRightGradientColor);
+            DrawCircleSector((Vector2){x + width - fullRadius + 2, y + fullRadius - 2}, fullRadius, 270, 360, segments, nodeRightGradientColor);
 
             DrawRectangleGradientH(x + fullRadius - 2, y - 2, width - 2 * fullRadius + 4, fullRadius, nodeLeftGradientColor, nodeRightGradientColor);
 
             DrawRectangleGradientH(x - 2, y + fullRadius - 2, width + 4, 38 - fullRadius, nodeLeftGradientColor, nodeRightGradientColor);
         }
 
-        DrawRectangleRoundedLinesEx((Rectangle){x - 1, y - 1, width + 2, height + 2}, roundness, segments, 2.0f + 1.0f / cgEd->zoom, WHITE);
+        DrawRectangleRoundedLinesEx((Rectangle){x - 1, y - 1, width + 2, height + 2}, roundness, segments, 2.0f + 1.0f / fabs(cgEd->zoom), COLOR_CGED_NODE_BORDER);
 
-        DrawTextEx(cgEd->font, NodeTypeToString(graph->nodes[i].type),
-                   (Vector2){x + 8, y + 6}, 28, 1, WHITE);
+        DrawTextEx(cgEd->font, NodeTypeToString(graph->nodes[i].type), (Vector2){x + 8, y + 6}, 28, 1, WHITE);
 
         if (getIsEditableByType(graph->nodes[i].type))
         {
@@ -1240,9 +1235,11 @@ bool CheckNodeCollisions(CGEditorContext *cgEd, GraphContext *graph)
 
 const char *Search(const char *haystack, const char *needle)
 {
-    if (!*needle)
+    if (!*needle){
         return haystack;
-    for (; *haystack; haystack++)
+    }
+    
+    while(*haystack)
     {
         if (tolower((unsigned char)*haystack) == tolower((unsigned char)*needle))
         {
@@ -1253,9 +1250,11 @@ const char *Search(const char *haystack, const char *needle)
                 h++;
                 n++;
             }
-            if (!*n)
+            if (!*n){
                 return haystack;
+            }
         }
+        haystack++;
     }
     return NULL;
 }
