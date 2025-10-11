@@ -1569,7 +1569,7 @@ void DrawFullTexture(CGEditorContext *cgEd, GraphContext *graph, RenderTexture2D
 
         Rectangle selectorRect = (Rectangle){fminf(cgEd->rightClickPos.x, cgEd->mousePos.x), fminf(cgEd->rightClickPos.y, cgEd->mousePos.y), fabsf(cgEd->mousePos.x - cgEd->rightClickPos.x), fabsf(cgEd->mousePos.y - cgEd->rightClickPos.y)};
         DrawRectangleRec(selectorRect, COLOR_CGED_SELECTOR);
-        DrawRectangleLinesEx(selectorRect, 1.0f, COLOR_CGED_SELECTOR_OUTLINE);
+        DrawRectangleLinesEx(selectorRect, 2.0f, COLOR_CGED_SELECTOR_OUTLINE);
 
         cgEd->selectedNodesCount = 0;
         for (int i = 0; i < graph->nodeCount; i++)
