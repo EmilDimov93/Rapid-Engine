@@ -919,7 +919,9 @@ void DrawNodes(CGEditorContext *cgEd, GraphContext *graph)
 
         if (!isAnyMenuOpen && CheckCollisionPointRec(cgEd->mousePos, (Rectangle){graph->nodes[i].position.x, graph->nodes[i].position.y, getNodeInfoByType(graph->nodes[i].type, INFO_NODE_WIDTH), getNodeInfoByType(graph->nodes[i].type, INFO_NODE_HEIGHT)}))
         {
-            cgEd->cursor = MOUSE_CURSOR_POINTING_HAND;
+            if(!cgEd->isDraggingSelectedNodes){
+                cgEd->cursor = MOUSE_CURSOR_POINTING_HAND;
+            }
             cgEd->hoveredNodeIndex = i;
             cgEd->nodeGlareTime += GetFrameTime();
             glareOffset = (int)(sinf(cgEd->nodeGlareTime * 6.0f) * 30);
@@ -1533,6 +1535,7 @@ void HandleDragging(CGEditorContext *cgEd, GraphContext *graph)
     }
     else if (IsMouseButtonDown(MOUSE_LEFT_BUTTON) && cgEd->isDraggingScreen)
     {
+        cgEd->cursor = MOUSE_CURSOR_RESIZE_ALL;
         Vector2 delta = Vector2Scale(GetMouseDelta(), 1.0f / cgEd->zoom);
         cgEd->cameraOffset.x += Vector2Scale(GetMouseDelta(), 1.0f / cgEd->zoom).x;
         cgEd->cameraOffset.y += Vector2Scale(GetMouseDelta(), 1.0f / cgEd->zoom).y;
