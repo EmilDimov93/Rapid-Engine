@@ -1182,7 +1182,6 @@ void DrawNodes(CGEditorContext *cgEd, GraphContext *graph)
 
     if (cgEd->hoveredPinIndex == -1 && cgEd->hoveredNodeIndex != -1)
     {
-        DrawRectangleRounded((Rectangle){graph->nodes[cgEd->hoveredNodeIndex].position.x - 1, graph->nodes[cgEd->hoveredNodeIndex].position.y - 1, getNodeInfoByType(graph->nodes[cgEd->hoveredNodeIndex].type, INFO_NODE_WIDTH) + 2, getNodeInfoByType(graph->nodes[cgEd->hoveredNodeIndex].type, INFO_NODE_HEIGHT) + 2}, 0.2f, 8, COLOR_CGED_NODE_HOVER);
         DrawRectangleRoundedLinesEx((Rectangle){graph->nodes[cgEd->hoveredNodeIndex].position.x - 1, graph->nodes[cgEd->hoveredNodeIndex].position.y - 1, getNodeInfoByType(graph->nodes[cgEd->hoveredNodeIndex].type, INFO_NODE_WIDTH) + 2, getNodeInfoByType(graph->nodes[cgEd->hoveredNodeIndex].type, INFO_NODE_HEIGHT) + 2}, 0.2f, 8, 5.0f, WHITE);
         cgEd->delayFrames = true;
     }
@@ -1472,7 +1471,6 @@ void HandleDragging(CGEditorContext *cgEd, GraphContext *graph)
 {
     if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !cgEd->isDraggingSelectedNodes && cgEd->focusedFieldPin == -1 && cgEd->focusedDropdownPin == -1)
     {
-        cgEd->fps = FPS_HIGH;
         for (int i = 0; i < graph->nodeCount; i++)
         {
             if (CheckCollisionPointRec(cgEd->mousePos, (Rectangle){graph->nodes[i].position.x, graph->nodes[i].position.y, getNodeInfoByType(graph->nodes[i].type, INFO_NODE_WIDTH), getNodeInfoByType(graph->nodes[i].type, INFO_NODE_HEIGHT)}))
@@ -1547,9 +1545,17 @@ void HandleDragging(CGEditorContext *cgEd, GraphContext *graph)
     }
     else if (IsMouseButtonUp(MOUSE_LEFT_BUTTON))
     {
-        cgEd->fps = FPS_DEFAULT;
         cgEd->isDraggingSelectedNodes = false;
         cgEd->isDraggingScreen = false;
+    }
+}
+
+void SetCGEditorFPS(CGEditorContext *cgEd){
+    if(IsMouseButtonDown(MOUSE_LEFT_BUTTON) || IsMouseButtonDown(MOUSE_RIGHT_BUTTON)){
+        cgEd->fps = FPS_HIGH;
+    }
+    else{
+        cgEd->fps = FPS_DEFAULT;
     }
 }
 
@@ -1585,7 +1591,7 @@ void DrawFullTexture(CGEditorContext *cgEd, GraphContext *graph, RenderTexture2D
     for (int i = 0; i < cgEd->selectedNodesCount; i++)
     {
         Rectangle nodeRect = (Rectangle){graph->nodes[cgEd->selectedNodes[i]].position.x, graph->nodes[cgEd->selectedNodes[i]].position.y, getNodeInfoByType(graph->nodes[cgEd->selectedNodes[i]].type, INFO_NODE_WIDTH), getNodeInfoByType(graph->nodes[cgEd->selectedNodes[i]].type, INFO_NODE_HEIGHT)};
-        DrawRectangleRounded(nodeRect, 0.2f, 8, COLOR_CGED_NODE_HOVER);
+        DrawRectangleRounded(nodeRect, 0.2f, 8, COLOR_CGED_NODE_SELECTED);
         DrawRectangleRoundedLinesEx(nodeRect, 0.2f, 8, 5.0f, WHITE);
     }
 
@@ -1685,6 +1691,8 @@ void HandleEditor(CGEditorContext *cgEd, GraphContext *graph, RenderTexture2D *v
     cgEd->mousePos = mousePos;
 
     static RenderTexture2D dot;
+
+    SetCGEditorFPS(cgEd);
 
     if (isSecondFrame)
     {
