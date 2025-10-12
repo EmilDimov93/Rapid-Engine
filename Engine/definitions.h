@@ -243,4 +243,5 @@ const char *AddEllipsis(Font font, const char *text, float fontSize, float maxWi
 #define COLOR_CGED_SELECTOR (Color){139, 224, 252, 10}
 #define COLOR_CGED_SELECTOR_OUTLINE (Color){53, 179, 252, 255}
 #define COLOR_CGED_NODE_BORDER (Color){220, 220, 220, 255}
+#define COLOR_CGED_NODE_OPTIONS_MENU_HOVER (Color){255, 255, 255, 40}
 

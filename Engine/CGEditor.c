@@ -1261,9 +1261,6 @@ const char *Search(const char *haystack, const char *needle)
 
 const char *DrawNodeMenu(CGEditorContext *cgEd, RenderTexture2D view)
 {
-    Color MenuColor = {50, 50, 50, 255};
-    Color HighlightColor = {80, 80, 80, 255};
-
     if (IsMouseButtonReleased(MOUSE_RIGHT_BUTTON))
     {
         cgEd->createNodeMenuFirstFrame = true;
@@ -1351,7 +1348,7 @@ const char *DrawNodeMenu(CGEditorContext *cgEd, RenderTexture2D view)
         cgEd->createNodeMenuFirstFrame = false;
     }
 
-    DrawRectangleRounded((Rectangle){cgEd->menuPosition.x, cgEd->menuPosition.y, MENU_WIDTH, menuHeight}, 0.1f, 8, MenuColor);
+    DrawRectangleRounded((Rectangle){cgEd->menuPosition.x, cgEd->menuPosition.y, MENU_WIDTH, menuHeight}, 0.1f, 8, GRAY_50);
     DrawRectangleRoundedLinesEx((Rectangle){cgEd->menuPosition.x, cgEd->menuPosition.y, MENU_WIDTH, menuHeight}, 0.1f, 8, MENU_BORDER_THICKNESS, WHITE);
 
     if (cgEd->nodeMenuSearch[0] != '\0')
@@ -1368,7 +1365,7 @@ const char *DrawNodeMenu(CGEditorContext *cgEd, RenderTexture2D view)
             if (CheckCollisionPointRec(cgEd->mousePos, itemRect))
             {
                 cgEd->cursor = MOUSE_CURSOR_POINTING_HAND;
-                DrawRectangleRec(itemRect, HighlightColor);
+                DrawRectangleRec(itemRect, GRAY_80);
                 if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
                 {
                     cgEd->delayFrames = true;
@@ -1404,7 +1401,7 @@ const char *DrawNodeMenu(CGEditorContext *cgEd, RenderTexture2D view)
             }
 
             if (listIndex == cgEd->hoveredItem)
-                DrawRectangleRec(itemRect, HighlightColor);
+                DrawRectangleRec(itemRect, GRAY_80);
 
             DrawTextEx(cgEd->font, menuItems[listIndex], (Vector2){itemRect.x + 20, itemRect.y + 12}, 25, 1, WHITE);
             DrawLine(itemRect.x, itemRect.y + MENU_ITEM_HEIGHT - 1, itemRect.x + MENU_WIDTH, itemRect.y + MENU_ITEM_HEIGHT - 1, DARKGRAY);
@@ -1433,16 +1430,16 @@ const char *DrawNodeMenu(CGEditorContext *cgEd, RenderTexture2D view)
 
     if (cgEd->nodeMenuSearch[0] == '\0' && cgEd->hoveredItem >= 0 && cgEd->hoveredItem < menuItemCount)
     {
-        DrawRectangleRounded((Rectangle){cgEd->submenuPosition.x, cgEd->submenuPosition.y, SUBMENU_WIDTH, subMenuCounts[cgEd->hoveredItem] * MENU_ITEM_HEIGHT}, 0.1f, 2, MenuColor);
+        DrawRectangleRounded((Rectangle){cgEd->submenuPosition.x, cgEd->submenuPosition.y, SUBMENU_WIDTH, subMenuCounts[cgEd->hoveredItem] * MENU_ITEM_HEIGHT}, 0.1f, 2, GRAY_50);
         DrawRectangleRoundedLinesEx((Rectangle){cgEd->submenuPosition.x, cgEd->submenuPosition.y, SUBMENU_WIDTH, subMenuCounts[cgEd->hoveredItem] * MENU_ITEM_HEIGHT}, 0.1f, 2, MENU_BORDER_THICKNESS, WHITE);
-        DrawRectangleGradientH(cgEd->submenuPosition.x - 5, cgEd->submenuPosition.y + 3, 20, MENU_ITEM_HEIGHT, HighlightColor, MenuColor);
+        DrawRectangleGradientH(cgEd->submenuPosition.x - 5, cgEd->submenuPosition.y + 3, 20, MENU_ITEM_HEIGHT, GRAY_80, GRAY_50);
         for (int j = 0; j < subMenuCounts[cgEd->hoveredItem]; j++)
         {
             Rectangle subItemRect = {cgEd->submenuPosition.x, cgEd->submenuPosition.y + j * MENU_ITEM_HEIGHT, SUBMENU_WIDTH, MENU_ITEM_HEIGHT};
             if (CheckCollisionPointRec(cgEd->mousePos, subItemRect))
             {
                 cgEd->cursor = MOUSE_CURSOR_POINTING_HAND;
-                DrawRectangleRounded(subItemRect, 0.2f, 2, HighlightColor);
+                DrawRectangleRounded(subItemRect, 0.2f, 2, GRAY_80);
                 if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
                 {
                     cgEd->delayFrames = true;
@@ -1593,7 +1590,9 @@ void DrawFullTexture(CGEditorContext *cgEd, GraphContext *graph, RenderTexture2D
     for (int i = 0; i < cgEd->selectedNodesCount; i++)
     {
         Rectangle nodeRect = (Rectangle){graph->nodes[cgEd->selectedNodes[i]].position.x, graph->nodes[cgEd->selectedNodes[i]].position.y, getNodeInfoByType(graph->nodes[cgEd->selectedNodes[i]].type, INFO_NODE_WIDTH), getNodeInfoByType(graph->nodes[cgEd->selectedNodes[i]].type, INFO_NODE_HEIGHT)};
-        DrawRectangleRounded(nodeRect, 0.2f, 8, COLOR_CGED_NODE_SELECTED);
+        if(cgEd->focusedDropdownPin == -1 && cgEd->focusedFieldPin == -1){
+            DrawRectangleRounded(nodeRect, 0.2f, 8, COLOR_CGED_NODE_SELECTED);
+        }
         DrawRectangleRoundedLinesEx(nodeRect, 0.2f, 8, 5.0f, WHITE);
     }
 
@@ -1635,7 +1634,7 @@ void DrawFullTexture(CGEditorContext *cgEd, GraphContext *graph, RenderTexture2D
         if (CheckCollisionPointRec(cgEd->mousePos, (Rectangle){cgEd->rightClickPos.x, cgEd->rightClickPos.y - 60, boxWidth, 30}))
         {
             cgEd->cursor = MOUSE_CURSOR_POINTING_HAND;
-            DrawRectangle(cgEd->rightClickPos.x, cgEd->rightClickPos.y - 60, boxWidth, 30, (Color){255, 255, 255, 40});
+            DrawRectangle(cgEd->rightClickPos.x, cgEd->rightClickPos.y - 60, boxWidth, 30, COLOR_CGED_NODE_OPTIONS_MENU_HOVER);
             if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
             {
                 for (int i = 0; i < cgEd->selectedNodesCount; i++)
@@ -1650,7 +1649,7 @@ void DrawFullTexture(CGEditorContext *cgEd, GraphContext *graph, RenderTexture2D
         else if (CheckCollisionPointRec(cgEd->mousePos, (Rectangle){cgEd->rightClickPos.x, cgEd->rightClickPos.y - 30, boxWidth, 30}))
         {
             cgEd->cursor = MOUSE_CURSOR_POINTING_HAND;
-            DrawRectangle(cgEd->rightClickPos.x, cgEd->rightClickPos.y - 30, boxWidth, 30, (Color){255, 255, 255, 40});
+            DrawRectangle(cgEd->rightClickPos.x, cgEd->rightClickPos.y - 30, boxWidth, 30, COLOR_CGED_NODE_OPTIONS_MENU_HOVER);
             if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
             {
                 int selectedNodeIds[MAX_SELECTED_NODES];
