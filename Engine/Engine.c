@@ -7,6 +7,7 @@
 #include "Engine.h"
 #include "Interpreter.h"
 #include "HitboxEditor.h"
+#include "TextEditor.h"
 
 bool STRING_ALLOCATION_FAILURE = false;
 
@@ -2305,6 +2306,9 @@ void SetEngineMouseCursor(EngineContext *eng, CGEditorContext *cgEd)
         case VIEWPORT_HITBOX_EDITOR:
             SetMouseCursor(MOUSE_CURSOR_CROSSHAIR);
             return;
+        case VIEWPORT_TEXT_EDITOR:
+            SetMouseCursor(MOUSE_CURSOR_IBEAM);
+            return;
         default:
             eng->viewportMode = VIEWPORT_CG_EDITOR;
             SetMouseCursor(cgEd->cursor);
@@ -2344,6 +2348,9 @@ int SetEngineFPS(EngineContext *eng, CGEditorContext *cgEd, InterpreterContext *
             break;
         case VIEWPORT_HITBOX_EDITOR:
             fps = FPS_DEFAULT;
+            break;
+        case VIEWPORT_TEXT_EDITOR:
+            fps = FPS_HIGH;
             break;
         default:
             fps = FPS_DEFAULT;
@@ -2463,6 +2470,7 @@ int main()
     intp.isGameRunning = &eng.isGameRunning;
     DisplayLoadingScreen(6);
     RuntimeGraphContext runtimeGraph = {0};
+    TextEditorContext txEd = InitTextEditorContext();
 
     eng.currentPath = SetProjectFolderPath(&eng, fileName);
 
@@ -2513,6 +2521,20 @@ int main()
         {
             AddToLog(&eng, "String allocation failed{O200}", LOG_LEVEL_ERROR);
             EmergencyExit(&eng, &cgEd, &intp);
+        }
+
+        if(IsKeyPressed(KEY_J) && DEVELOPER_MODE){
+            if(eng.viewportMode == VIEWPORT_CG_EDITOR){
+                eng.viewportMode = VIEWPORT_TEXT_EDITOR;
+                eng.delayFrames = true;
+                if(!LoadFileInTextEditor("C:\\Users\\user\\Desktop\\RapidEngine\\Projects\\Tetris\\ex.txt", &txEd)){
+                    AddToLog(&eng, "Failed to load file{T200}", 2);
+                }
+            }
+            else if(eng.viewportMode == VIEWPORT_TEXT_EDITOR){
+                eng.viewportMode = VIEWPORT_CG_EDITOR;
+                eng.delayFrames = true;
+            }
         }
 
         ContextChangePerFrame(&eng);
@@ -2748,6 +2770,12 @@ int main()
 
             break;
         }
+        case VIEWPORT_TEXT_EDITOR:
+        {
+            HandleTextEditor(&txEd, mouseInViewportTex, viewportRecInViewportTex, &eng.viewportTex, eng.font);
+
+            break;
+        }
         default:
         {
             AddToLog(&eng, "Out of bounds enum{O201}", LOG_ERROR);
@@ -2808,6 +2836,7 @@ int main()
     FreeEngineContext(&eng);
     FreeEditorContext(&cgEd);
     FreeInterpreterContext(&intp);
+    FreeTextEditorContext(&txEd);
 
     free(intp.projectPath);
 

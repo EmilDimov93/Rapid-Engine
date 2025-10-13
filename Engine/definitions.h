@@ -226,6 +226,8 @@ const char *AddEllipsis(Font font, const char *text, float fontSize, float maxWi
 
 #define COLOR_HE_BACKGROUND (Color){80, 0, 90, 100}
 
+#define COLOR_TE_FONT (Color){151, 188, 207, 255}
+
 #define COLOR_INTP_PAUSE_BLUR (Color){80, 80, 80, 50}
 
 #define COLOR_CGED_WIRE_FLOW (Color){180, 100, 200, 255}

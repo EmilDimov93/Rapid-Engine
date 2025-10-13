@@ -118,7 +118,8 @@ typedef struct UIElement
 typedef enum{
     VIEWPORT_CG_EDITOR,
     VIEWPORT_GAME_SCREEN,
-    VIEWPORT_HITBOX_EDITOR
+    VIEWPORT_HITBOX_EDITOR,
+    VIEWPORT_TEXT_EDITOR
 }ViewportMode;
 
 typedef enum

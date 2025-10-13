@@ -4,6 +4,7 @@
 #include "Interpreter.c"
 #include "Nodes.c"
 #include "ProjectManager.c"
+#include "TextEditor.c"
 #include "resources/fonts.c"
 #include "resources/sound.c"
 #include "resources/textures.c"
