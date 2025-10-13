@@ -97,6 +97,7 @@ https://github.com/user-attachments/assets/b6dc9735-5eb8-498a-9802-c1eac80a9a4a
 ## 🧪 In Development
 
 - Sprite collision events
+- Text Editor
 - Sprite sheet editor
 - Exporting game
 - Cross platform support
