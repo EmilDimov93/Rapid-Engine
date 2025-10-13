@@ -10,9 +10,7 @@ TextEditorContext InitTextEditorContext()
         txEd.text[i] = malloc(MAX_CHARS_PER_LINE);
     }
 
-    txEd.isFileOpened = false;
-
-    txEd.lineCount = 0;
+    txEd.rowCount = 0;
 
     txEd.cursorBlinkTime = 0;
 
@@ -26,8 +24,6 @@ void FreeTextEditorContext(TextEditorContext *txEd)
         free(txEd->text[i]);
     }
     free(txEd->text);
-
-    txEd->isFileOpened = false;
 }
 
 bool LoadFileInTextEditor(const char *fileName, TextEditorContext *txEd)
@@ -41,27 +37,19 @@ bool LoadFileInTextEditor(const char *fileName, TextEditorContext *txEd)
     int line = 0;
     while (line < MAX_LINES && fgets(txEd->text[line], MAX_CHARS_PER_LINE, file))
     {
+        size_t len = strlen(txEd->text[line]);
+        if (len > 0 && txEd->text[line][len - 1] == '\n'){
+            txEd->text[line][len - 1] = '\0';
+        }
         line++;
     }
 
-    txEd->isFileOpened = true;
     strmac(txEd->openedFileName, MAX_FILE_NAME - 1, "%s", fileName);
     txEd->openedFileName[MAX_FILE_NAME - 1] = '\0';
 
     fclose(file);
 
-    txEd->lineCount = line;
-
-    for (int i = 0; i < txEd->lineCount; i++)
-    {
-        for (int j = 0; j < strlen(txEd->text[i]); j++)
-        {
-            if (txEd->text[i][j] == '\n')
-            {
-                txEd->text[i][j] = '\0';
-            }
-        }
-    }
+    txEd->rowCount = line;
 
     return true;
 }
@@ -78,31 +66,68 @@ void DeleteSymbol(TextEditorContext *txEd)
 {
     if (txEd->currCol == 0)
     {
-        if (txEd->currRow != 0)
+        if (txEd->currRow > 0)
         {
-            txEd->currCol = strlen(txEd->text[txEd->currRow - 1]);
+            int prevLen = strlen(txEd->text[txEd->currRow - 1]);
+            int currLen = strlen(txEd->text[txEd->currRow]);
 
-            txEd->text[txEd->currRow - 1][strlen(txEd->text[txEd->currRow - 1])] = '\0';
-            strmac(txEd->text[txEd->currRow - 1], MAX_CHARS_PER_LINE, "%s%s", txEd->text[txEd->currRow - 1], txEd->text[txEd->currRow]);
+            if (prevLen + currLen < MAX_CHARS_PER_LINE)
+            {
+                strmac(txEd->text[txEd->currRow - 1], MAX_CHARS_PER_LINE, "%s%s",
+                       txEd->text[txEd->currRow - 1], txEd->text[txEd->currRow]);
+            }
 
-            for (int i = txEd->currRow; i < txEd->lineCount - 1; i++)
+            for (int i = txEd->currRow; i < txEd->rowCount - 1; i++)
             {
                 strmac(txEd->text[i], MAX_CHARS_PER_LINE, "%s", txEd->text[i + 1]);
             }
-            txEd->lineCount--;
 
+            txEd->text[txEd->rowCount - 1][0] = '\0';
+            txEd->rowCount--;
             txEd->currRow--;
+            txEd->currCol = prevLen;
         }
         return;
     }
 
-    txEd->currCol--;
-
-    for (int i = txEd->currCol; i < strlen(txEd->text[txEd->currRow]) - 1; i++)
+    if (txEd->currCol > 0)
     {
-        txEd->text[txEd->currRow][i] = txEd->text[txEd->currRow][i + 1];
+        txEd->currCol--;
+        int len = strlen(txEd->text[txEd->currRow]);
+        for (int i = txEd->currCol; i < len; i++)
+        {
+            txEd->text[txEd->currRow][i] = txEd->text[txEd->currRow][i + 1];
+        }
     }
-    txEd->text[txEd->currRow][strlen(txEd->text[txEd->currRow]) - 1] = '\0';
+}
+
+void AddNewLine(TextEditorContext *txEd)
+{
+    if (txEd->rowCount < MAX_LINES)
+    {
+        for (int i = txEd->rowCount - 1; i >= txEd->currRow; i--)
+        {
+            strmac(txEd->text[i + 1], MAX_CHARS_PER_LINE, "%s", txEd->text[i]);
+        }
+
+        char *currText = txEd->text[txEd->currRow];
+        int col = txEd->currCol;
+        int len = strlen(currText);
+
+        if (col < len)
+        {
+            strmac(txEd->text[txEd->currRow + 1], MAX_CHARS_PER_LINE, "%s", currText + col);
+            currText[col] = '\0';
+        }
+        else
+        {
+            txEd->text[txEd->currRow + 1][0] = '\0';
+        }
+
+        txEd->currRow++;
+        txEd->currCol = 0;
+        txEd->rowCount++;
+    }
 }
 
 void ArrowKeysInput(TextEditorContext *txEd, float frameTime)
@@ -144,7 +169,7 @@ void ArrowKeysInput(TextEditorContext *txEd, float frameTime)
         upHeld = false;
     }
 
-    if (IsKeyDown(KEY_DOWN) && txEd->currRow != txEd->lineCount - 1)
+    if (IsKeyDown(KEY_DOWN) && txEd->currRow != txEd->rowCount - 1)
     {
         if (downHeld)
         {
@@ -226,18 +251,20 @@ void ArrowKeysInput(TextEditorContext *txEd, float frameTime)
     }
 }
 
-void HandleTextEditor(TextEditorContext *txEd, Vector2 mousePos, Rectangle viewportBoundary, RenderTexture2D *viewport, Font font)
+void HandleTextEditor(TextEditorContext *txEd, Vector2 mousePos, Rectangle viewportBoundary, RenderTexture2D *viewport, Font font, bool isViewportFocused)
 {
-    int x = viewportBoundary.x + 40;
+    int x = viewportBoundary.x + 50;
     int y = viewportBoundary.y + 60;
 
     float frameTime = GetFrameTime();
 
     txEd->cursorBlinkTime += frameTime;
 
-    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && isViewportFocused)
     {
-        for (int i = 0; i < txEd->lineCount; i++)
+        txEd->cursorBlinkTime = 0;
+
+        for (int i = 0; i < txEd->rowCount; i++)
         {
             if (mousePos.y > y + i * 34 && mousePos.y < y + i * 34 + 34)
             {
@@ -247,10 +274,10 @@ void HandleTextEditor(TextEditorContext *txEd, Vector2 mousePos, Rectangle viewp
 
         for (int i = strlen(txEd->text[txEd->currRow]); i >= 0; i--)
         {
-            float left = MeasureTextUntilEx(font, txEd->text[txEd->currRow], i, 30, 3.0f) + viewportBoundary.x + 40;
+            float left = MeasureTextUntilEx(font, txEd->text[txEd->currRow], i, 30, TEXT_EDITOR_TEXT_SPACING) + x;
             if (mousePos.x >= left)
             {
-                float right = MeasureTextUntilEx(font, txEd->text[txEd->currRow], i + 1, 30, 3.0f) + viewportBoundary.x + 40;
+                float right = MeasureTextUntilEx(font, txEd->text[txEd->currRow], i + 1, 30, TEXT_EDITOR_TEXT_SPACING) + x;
                 float mid = (left + right) * 0.5f;
                 txEd->currCol = (mousePos.x < mid) ? i : i + 1;
                 break;
@@ -268,6 +295,12 @@ void HandleTextEditor(TextEditorContext *txEd, Vector2 mousePos, Rectangle viewp
         txEd->cursorBlinkTime = 0;
     }
 
+    if (IsKeyPressed(KEY_ENTER))
+    {
+        AddNewLine(txEd);
+        txEd->cursorBlinkTime = 0;
+    }
+
     ArrowKeysInput(txEd, frameTime);
 
     BeginTextureMode(*viewport);
@@ -282,17 +315,22 @@ void HandleTextEditor(TextEditorContext *txEd, Vector2 mousePos, Rectangle viewp
         DrawTextEx(font, GetFileName(txEd->openedFileName), (Vector2){viewportBoundary.x + 10, viewportBoundary.y + 10}, 32, 2.0f, GRAY_70);
     }
 
-    for (int i = 0; i < txEd->lineCount; i++)
+    DrawLineEx((Vector2){x - 10, y}, (Vector2){x - 10, y + viewportBoundary.height}, 1.0f, GRAY_40);
+
+    for (int i = 0; i < txEd->rowCount; i++)
     {
-        DrawTextEx(font, TextFormat("%d", i), (Vector2){x - 30, y}, 30, 1.0f, GRAY);
-        DrawTextEx(font, txEd->text[i], (Vector2){x, y}, 30, 3.0f, COLOR_TE_FONT);
+        DrawTextEx(font, TextFormat("%d", i), (Vector2){x - 42 + 5 * !((int)(i / 10) > 0), y + 2}, 26, 1.0f, GRAY);
+        DrawTextEx(font, txEd->text[i], (Vector2){x, y}, 30, TEXT_EDITOR_TEXT_SPACING, COLOR_TE_FONT);
         y += 34;
-        DrawRectangleGradientH(viewportBoundary.x, y - 2, viewportBoundary.width, 1, GRAY_50, GRAY_128);
+        DrawRectangleGradientH(viewportBoundary.x, y - 2, viewportBoundary.width, 1, GRAY_50, GRAY_80);
     }
 
     if (txEd->cursorBlinkTime <= 1.0f)
     {
-        DrawText("|", MeasureTextUntilEx(font, txEd->text[txEd->currRow], txEd->currCol, 30, 3.0f) + x, viewportBoundary.y + txEd->currRow * 34 + 61, 32, WHITE);
+        Vector2 start = {MeasureTextUntilEx(font, txEd->text[txEd->currRow], txEd->currCol, 30, TEXT_EDITOR_TEXT_SPACING) + x + TEXT_EDITOR_TEXT_SPACING / 2, viewportBoundary.y + txEd->currRow * 34 + 58};
+        Vector2 end = {start.x, start.y + 34};
+
+        DrawLineEx(start, end, 2.0f, RAPID_PURPLE);
     }
     else if (txEd->cursorBlinkTime >= 1.4f)
     {

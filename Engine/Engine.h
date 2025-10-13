@@ -56,7 +56,7 @@ typedef enum
     VAR_FILTER_BOOLS,
     VAR_FILTER_COLORS,
     VAR_FILTER_SPRITES
-}VarFilter;
+} VarFilter;
 
 typedef struct LogEntry
 {
@@ -115,12 +115,13 @@ typedef struct UIElement
     int fileIndex;
 } UIElement;
 
-typedef enum{
+typedef enum
+{
     VIEWPORT_CG_EDITOR,
     VIEWPORT_GAME_SCREEN,
     VIEWPORT_HITBOX_EDITOR,
     VIEWPORT_TEXT_EDITOR
-}ViewportMode;
+} ViewportMode;
 
 typedef enum
 {
@@ -129,7 +130,7 @@ typedef enum
     RESIZING_WINDOW_SOUTH,
     RESIZING_WINDOW_EAST,
     RESIZING_WINDOW_WEST
-}WindowResizingButton;
+} WindowResizingButton;
 
 typedef enum
 {
@@ -137,7 +138,7 @@ typedef enum
     RESIZING_MENU_BOTTOMBAR,
     RESIZING_MENU_SIDEBAR,
     RESIZING_MENU_SIDEBAR_MIDDLE
-}MenuResizingButton;
+} MenuResizingButton;
 
 typedef struct EngineContext
 {
@@ -213,26 +214,17 @@ typedef struct EngineContext
 
     int draggingFileIndex;
 
+    bool openFilesWithRapidEditor;
+
 } EngineContext;
 
-typedef struct Settings{
-    bool isSoundOn;
-    int fpsLimit;
-    bool shouldShowFPS;
-    bool isAutoSaveON;
-    bool shouldHideCursorInGameFullscreen;
-    bool isLowSpecModeOn;
-    
-    bool isInfiniteLoopProtectionOn;
-    bool shouldShowHitboxes;
-}Settings;
-
-typedef enum {
+typedef enum
+{
     FILE_FOLDER = 0,
-    FILE_CG     = 1,
+    FILE_CG = 1,
     FILE_CONFIG = 2,
-    FILE_IMAGE  = 3,
-    FILE_OTHER  = 4
+    FILE_IMAGE = 3,
+    FILE_OTHER = 4
 } FileType;
 
 typedef enum
@@ -241,4 +233,4 @@ typedef enum
     SETTINGS_MODE_GAME,
     SETTINGS_MODE_KEYBINDS,
     SETTINGS_MODE_EXPORT
-}SettingsMode;
+} SettingsMode;

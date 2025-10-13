@@ -129,6 +129,8 @@ EngineContext InitEngineContext()
 
     eng.draggingFileIndex = -1;
 
+    eng.openFilesWithRapidEditor = DEVELOPER_MODE ? true : false;
+
     return eng;
 }
 
@@ -511,20 +513,21 @@ bool SaveSettings(EngineContext *eng, InterpreterContext *intp, CGEditorContext 
         return false;
     }
 
-    fprintf(fptr, "Engine:");
+    fprintf(fptr, "Engine:\n\n");
     fprintf(fptr, "Sound=%s\n", eng->isSoundOn ? "true" : "false");
     fprintf(fptr, "FPSLimit=%d\n", eng->fpsLimit);
     fprintf(fptr, "ShowFPS=%s\n", eng->shouldShowFPS ? "true" : "false");
     fprintf(fptr, "AutoSave=%s\n", eng->isAutoSaveON ? "true" : "false");
     fprintf(fptr, "HideCursorinFullscreen=%s\n", eng->shouldHideCursorInGameFullscreen ? "true" : "false");
     fprintf(fptr, "LowSpecMode=%s\n", eng->isLowSpecModeOn ? "true" : "false");
+    fprintf(fptr, "OpenFilesWithRapidEditor=%s\n", eng->openFilesWithRapidEditor ? "true" : "false");
 
-    fprintf(fptr, "Interpreter:");
+    fprintf(fptr, "\nInterpreter:\n\n");
     fprintf(fptr, "InfiniteLoopProtection=%s\n", intp->isInfiniteLoopProtectionOn ? "true" : "false");
     fprintf(fptr, "ShowHitboxes=%s\n", intp->shouldShowHitboxes ? "true" : "false");
 
-    // fprintf(fptr, "Keybinds:");
-    // fprintf(fptr, "Export:");
+    // fprintf(fptr, "\nKeybinds:\n\n");
+    // fprintf(fptr, "\nExport:\n\n");
 
     fclose(fptr);
     return true;
@@ -583,6 +586,10 @@ bool LoadSettingsConfig(EngineContext *eng, InterpreterContext *intp, CGEditorCo
         else if (strcmp(key, "LowSpecMode") == 0)
         {
             eng->isLowSpecModeOn = strcmp(value, "true") == 0 ? true : false;
+        }
+        else if (strcmp(key, "OpenFilesWithRapidEditor") == 0)
+        {
+            eng->openFilesWithRapidEditor = strcmp(value, "true") == 0 ? true : false;
         }
 
         else if (strcmp(key, "InfiniteLoopProtection") == 0)
@@ -736,6 +743,9 @@ bool DrawSettingsMenu(EngineContext *eng, InterpreterContext *intp, CGEditorCont
             cgEd->isLowSpecModeOn = eng->isLowSpecModeOn;
             cgEd->delayFrames = true;
         }
+
+        DrawTextEx(eng->font, "Open files with Rapid Editor(In Development)", (Vector2){eng->screenWidth / 4 + 200, 550}, 28, 1, WHITE); //test
+        DrawSlider((Vector2){eng->screenWidth * 3 / 4 - 70, 555}, &eng->openFilesWithRapidEditor, eng->mousePos, &hasChanged);
         break;
     case SETTINGS_MODE_GAME:
         DrawTextEx(eng->font, "Infinite Loop Protection", (Vector2){eng->screenWidth / 4 + 200, 300}, 28, 1, WHITE);
@@ -828,7 +838,7 @@ void CountingSortByLayer(EngineContext *eng)
     free(elements);
 }
 
-void DrawUIElements(EngineContext *eng, GraphContext *graph, CGEditorContext *cgEd, InterpreterContext *intp, RuntimeGraphContext *runtimeGraph)
+void DrawUIElements(EngineContext *eng, GraphContext *graph, CGEditorContext *cgEd, InterpreterContext *intp, RuntimeGraphContext *runtimeGraph, TextEditorContext *txEd)
 {
     BeginTextureMode(eng->uiTex);
     ClearBackground(COLOR_TRANSPARENT);
@@ -1078,13 +1088,30 @@ void DrawUIElements(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
 
                         eng->viewportMode = VIEWPORT_CG_EDITOR;
                     }
+                    else if (fileType == FILE_IMAGE)
+                    {
+                        OpenFile(eng->uiElements[eng->hoveredUIElementIndex].name);
+                    }
                     else if (fileType != FILE_FOLDER)
                     {
-                        OpenFile(TextFormat("%s%c%s", eng->currentPath, PATH_SEPARATOR, eng->uiElements[eng->hoveredUIElementIndex].text.string));
+                        if (eng->openFilesWithRapidEditor)
+                        {
+                            eng->delayFrames = true;
+                            eng->viewportMode = VIEWPORT_TEXT_EDITOR;
+                            txEd->currRow = 0;
+                            txEd->currCol = 0;
+                            if (!LoadFileInTextEditor(eng->uiElements[eng->hoveredUIElementIndex].name, txEd))
+                            {
+                                AddToLog(eng, "Failed to load file{T200}", 2);
+                            }
+                        }
+                        else{
+                            OpenFile(eng->uiElements[eng->hoveredUIElementIndex].name);
+                        }
                     }
                     else
                     {
-                        strmac(eng->currentPath, MAX_FILE_PATH, "%s%c%s", eng->currentPath, PATH_SEPARATOR, eng->uiElements[eng->hoveredUIElementIndex].text.string);
+                        strmac(eng->currentPath, MAX_FILE_PATH, "%s", eng->uiElements[eng->hoveredUIElementIndex].name);
 
                         UnloadDirectoryFiles(eng->files);
                         eng->files = LoadAndSortFiles(eng->currentPath);
@@ -1207,7 +1234,7 @@ void DrawUIElements(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
     EndTextureMode();
 }
 
-void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cgEd, InterpreterContext *intp, RuntimeGraphContext *runtimeGraph)
+void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cgEd, InterpreterContext *intp, RuntimeGraphContext *runtimeGraph, TextEditorContext *txEd)
 {
     eng->uiElementCount = 0;
 
@@ -1839,7 +1866,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
     }
 
     CountingSortByLayer(eng);
-    DrawUIElements(eng, graph, cgEd, intp, runtimeGraph);
+    DrawUIElements(eng, graph, cgEd, intp, runtimeGraph, txEd);
 }
 
 bool HandleUICollisions(EngineContext *eng, GraphContext *graph, InterpreterContext *intp, CGEditorContext *cgEd, RuntimeGraphContext *runtimeGraph)
@@ -2523,20 +2550,6 @@ int main()
             EmergencyExit(&eng, &cgEd, &intp);
         }
 
-        if(IsKeyPressed(KEY_J) && DEVELOPER_MODE){
-            if(eng.viewportMode == VIEWPORT_CG_EDITOR){
-                eng.viewportMode = VIEWPORT_TEXT_EDITOR;
-                eng.delayFrames = true;
-                if(!LoadFileInTextEditor("C:\\Users\\user\\Desktop\\RapidEngine\\Projects\\Tetris\\ex.txt", &txEd)){
-                    AddToLog(&eng, "Failed to load file{T200}", 2);
-                }
-            }
-            else if(eng.viewportMode == VIEWPORT_TEXT_EDITOR){
-                eng.viewportMode = VIEWPORT_CG_EDITOR;
-                eng.delayFrames = true;
-            }
-        }
-
         ContextChangePerFrame(&eng);
 
         int prevHoveredUIIndex = eng.hoveredUIElementIndex;
@@ -2546,14 +2559,14 @@ int main()
         {
             if (((prevHoveredUIIndex != eng.hoveredUIElementIndex || IsMouseButtonDown(MOUSE_LEFT_BUTTON)) && eng.showSaveWarning != 1 && eng.showSettingsMenu == false) || eng.delayFrames)
             {
-                BuildUITexture(&eng, &graph, &cgEd, &intp, &runtimeGraph);
+                BuildUITexture(&eng, &graph, &cgEd, &intp, &runtimeGraph, &txEd);
                 eng.fps = FPS_HIGH;
             }
             eng.delayFrames = true;
         }
         else if (eng.delayFrames && !eng.isViewportFullscreen)
         {
-            BuildUITexture(&eng, &graph, &cgEd, &intp, &runtimeGraph);
+            BuildUITexture(&eng, &graph, &cgEd, &intp, &runtimeGraph, &txEd);
             eng.fps = FPS_DEFAULT;
             eng.delayFrames = false;
         }
@@ -2772,7 +2785,7 @@ int main()
         }
         case VIEWPORT_TEXT_EDITOR:
         {
-            HandleTextEditor(&txEd, mouseInViewportTex, viewportRecInViewportTex, &eng.viewportTex, eng.font);
+            HandleTextEditor(&txEd, mouseInViewportTex, viewportRecInViewportTex, &eng.viewportTex, eng.font, eng.isViewportFocused);
 
             break;
         }
