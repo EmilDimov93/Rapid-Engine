@@ -12,6 +12,9 @@ typedef struct TextEditorContext{
     int lineCount;
     bool isFileOpened;
     char openedFileName[MAX_FILE_NAME];
+    int currRow;
+    int currCol;
+    float cursorBlinkTime;
 }TextEditorContext;
 
 TextEditorContext InitTextEditorContext();
