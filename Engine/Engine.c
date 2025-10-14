@@ -2280,7 +2280,7 @@ bool HandleUICollisions(EngineContext *eng, GraphContext *graph, InterpreterCont
 void ContextChangePerFrame(EngineContext *eng)
 {
     eng->mousePos = GetMousePosition();
-    eng->isViewportFocused = CheckCollisionPointRec(eng->mousePos, (Rectangle){eng->sideBarWidth, 0, eng->screenWidth - eng->sideBarWidth, eng->screenHeight - eng->bottomBarHeight});
+    eng->isViewportFocused = eng->hoveredUIElementIndex == -1 && CheckCollisionPointRec(eng->mousePos, (Rectangle){eng->sideBarWidth, 0, eng->screenWidth - eng->sideBarWidth, eng->screenHeight - eng->bottomBarHeight});
 
     eng->screenWidth = GetScreenWidth();
     eng->screenHeight = GetScreenHeight();

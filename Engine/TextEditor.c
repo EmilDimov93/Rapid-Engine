@@ -392,6 +392,15 @@ void HandleTextEditor(TextEditorContext *txEd, Vector2 mousePos, Rectangle viewp
         DrawTextEx(font, GetFileName(txEd->openedFileName), (Vector2){viewportBoundary.x + 10, viewportBoundary.y + 10}, 32, 2.0f, GRAY_70);
     }
 
+    DrawRectangleRounded((Rectangle){viewportBoundary.x + MeasureTextEx(font, GetFileName(txEd->openedFileName), 32, 2.0f).x + 30, viewportBoundary.y + 15, 60, 30}, 0.4f, 4, GRAY_50);
+    DrawTextEx(font, "Open", (Vector2){viewportBoundary.x + MeasureTextEx(font, GetFileName(txEd->openedFileName), 32, 2.0f).x + 35, viewportBoundary.y + 20}, 18, 2.0f, WHITE);
+    if(CheckCollisionPointRec(mousePos, (Rectangle){viewportBoundary.x + MeasureTextEx(font, GetFileName(txEd->openedFileName), 32, 2.0f).x + 30, viewportBoundary.y + 15, 60, 30})){
+        DrawRectangleRounded((Rectangle){viewportBoundary.x + MeasureTextEx(font, GetFileName(txEd->openedFileName), 32, 2.0f).x + 30, viewportBoundary.y + 15, 60, 30}, 0.4f, 4, COLOR_PM_CREATE_BTN_HOVER);
+        if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON)){
+            OpenFile(txEd->openedFileName);
+        }
+    }
+
     DrawLineEx((Vector2){x - 10, y}, (Vector2){x - 10, y + viewportBoundary.height}, 1.0f, GRAY_40);
 
     for (int i = 0; i < txEd->rowCount; i++)

@@ -224,7 +224,7 @@ const char *AddEllipsis(Font font, const char *text, float fontSize, float maxWi
 #define COLOR_PM_CHECKBOX_X (Color){202, 97, 255, 255}
 #define COLOR_PM_CHECKBOX_HOVER (Color){255, 255, 255, 100}
 
-#define COLOR_HE_BACKGROUND (Color){80, 0, 90, 100}
+#define COLOR_HE_BACKGROUND (Color){30, 0, 30, 255}
 
 #define COLOR_TE_FONT (Color){151, 188, 207, 255}
 
