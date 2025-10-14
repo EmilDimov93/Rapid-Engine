@@ -12,10 +12,12 @@
 typedef struct TextEditorContext{
     char **text;
     int rowCount;
-    char openedFileName[MAX_FILE_NAME];
+    char openedFilePath[MAX_FILE_NAME];
     int currRow;
     int currCol;
     float cursorBlinkTime;
+
+    MouseCursor cursor;
 
     bool newLogMessage;
     char logMessages[MAX_LOG_MESSAGES][MAX_LOG_MESSAGE_SIZE];

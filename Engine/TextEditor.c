@@ -58,8 +58,8 @@ bool LoadFileInTextEditor(const char *fileName, TextEditorContext *txEd)
         line++;
     }
 
-    strmac(txEd->openedFileName, MAX_FILE_NAME - 1, "%s", fileName);
-    txEd->openedFileName[MAX_FILE_NAME - 1] = '\0';
+    strmac(txEd->openedFilePath, MAX_FILE_NAME - 1, "%s", fileName);
+    txEd->openedFilePath[MAX_FILE_NAME - 1] = '\0';
 
     fclose(file);
 
@@ -142,7 +142,8 @@ void AddNewLine(TextEditorContext *txEd)
         txEd->currCol = 0;
         txEd->rowCount++;
     }
-    else{
+    else
+    {
         AddToLogFromTextEditor(txEd, "Line limit reached! Open file in another text editor{T201}", LOG_LEVEL_ERROR);
     }
 }
@@ -288,6 +289,8 @@ void AddSymbol(TextEditorContext *txEd, char newChar)
 
 void HandleTextEditor(TextEditorContext *txEd, Vector2 mousePos, Rectangle viewportBoundary, RenderTexture2D *viewport, Font font, bool isViewportFocused)
 {
+    txEd->cursor = MOUSE_CURSOR_IBEAM;
+
     int x = viewportBoundary.x + 50;
     int y = viewportBoundary.y + 60;
 
@@ -299,11 +302,23 @@ void HandleTextEditor(TextEditorContext *txEd, Vector2 mousePos, Rectangle viewp
     {
         txEd->cursorBlinkTime = 0;
 
-        for (int i = 0; i < txEd->rowCount; i++)
+        if (mousePos.y < y)
         {
-            if (mousePos.y > y + i * 34 && mousePos.y < y + i * 34 + 34)
+            txEd->currRow = 0;
+        }
+        else if (mousePos.y > y + txEd->rowCount * 34)
+        {
+            txEd->currRow = txEd->rowCount - 1;
+        }
+        else
+        {
+            for (int i = 0; i < txEd->rowCount; i++)
             {
-                txEd->currRow = i;
+                if (mousePos.y > y + i * 34 && mousePos.y < y + i * 34 + 34)
+                {
+                    txEd->currRow = i;
+                    break;
+                }
             }
         }
 
@@ -380,6 +395,9 @@ void HandleTextEditor(TextEditorContext *txEd, Vector2 mousePos, Rectangle viewp
         txEd->currCol--;
     }
 
+    const char *fileName = GetFileName(txEd->openedFilePath);
+    int fileNameSize = MeasureTextEx(font, fileName, 32, 2.0f).x;
+
     BeginTextureMode(*viewport);
     ClearBackground(GRAY_30);
 
@@ -389,15 +407,18 @@ void HandleTextEditor(TextEditorContext *txEd, Vector2 mousePos, Rectangle viewp
     }
     else
     {
-        DrawTextEx(font, GetFileName(txEd->openedFileName), (Vector2){viewportBoundary.x + 10, viewportBoundary.y + 10}, 32, 2.0f, GRAY_70);
+        DrawTextEx(font, fileName, (Vector2){viewportBoundary.x + 10, viewportBoundary.y + 10}, 32, 2.0f, GRAY_70);
     }
 
-    DrawRectangleRounded((Rectangle){viewportBoundary.x + MeasureTextEx(font, GetFileName(txEd->openedFileName), 32, 2.0f).x + 30, viewportBoundary.y + 15, 60, 30}, 0.4f, 4, GRAY_50);
-    DrawTextEx(font, "Open", (Vector2){viewportBoundary.x + MeasureTextEx(font, GetFileName(txEd->openedFileName), 32, 2.0f).x + 35, viewportBoundary.y + 20}, 18, 2.0f, WHITE);
-    if(CheckCollisionPointRec(mousePos, (Rectangle){viewportBoundary.x + MeasureTextEx(font, GetFileName(txEd->openedFileName), 32, 2.0f).x + 30, viewportBoundary.y + 15, 60, 30})){
-        DrawRectangleRounded((Rectangle){viewportBoundary.x + MeasureTextEx(font, GetFileName(txEd->openedFileName), 32, 2.0f).x + 30, viewportBoundary.y + 15, 60, 30}, 0.4f, 4, COLOR_PM_CREATE_BTN_HOVER);
-        if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON)){
-            OpenFile(txEd->openedFileName);
+    DrawRectangleRounded((Rectangle){viewportBoundary.x + fileNameSize + 30, viewportBoundary.y + 15, 60, 30}, 0.4f, 4, GRAY_50);
+    DrawTextEx(font, "Open", (Vector2){viewportBoundary.x + fileNameSize + 35, viewportBoundary.y + 20}, 18, 2.0f, WHITE);
+    if (CheckCollisionPointRec(mousePos, (Rectangle){viewportBoundary.x + fileNameSize + 30, viewportBoundary.y + 15, 60, 30}))
+    {
+        DrawRectangleRounded((Rectangle){viewportBoundary.x + fileNameSize + 30, viewportBoundary.y + 15, 60, 30}, 0.4f, 4, COlOR_TE_OPEN_BTN_HOVER);
+        txEd->cursor = MOUSE_CURSOR_POINTING_HAND;
+        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+        {
+            OpenFile(txEd->openedFilePath);
         }
     }
 
@@ -411,12 +432,14 @@ void HandleTextEditor(TextEditorContext *txEd, Vector2 mousePos, Rectangle viewp
         DrawRectangleGradientH(viewportBoundary.x, y - 2, viewportBoundary.width, 1, GRAY_50, GRAY_80);
     }
 
-    if (txEd->cursorBlinkTime > 1.5f){
+    if (txEd->cursorBlinkTime > 1.5f)
+    {
         txEd->cursorBlinkTime = 0;
     }
 
     float alpha = 255;
-    if (txEd->cursorBlinkTime > 0.5f){
+    if (txEd->cursorBlinkTime > 0.5f)
+    {
         alpha = 255 - (txEd->cursorBlinkTime - 0.5f) * (200 / 1.0f);
     }
 

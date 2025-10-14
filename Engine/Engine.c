@@ -2297,7 +2297,7 @@ void ContextChangePerFrame(EngineContext *eng)
     }
 }
 
-void SetEngineMouseCursor(EngineContext *eng, CGEditorContext *cgEd)
+void SetEngineMouseCursor(EngineContext *eng, CGEditorContext *cgEd, TextEditorContext *txEd)
 {
     if (!(eng->viewportMode == VIEWPORT_GAME_SCREEN && eng->shouldHideCursorInGameFullscreen && eng->isViewportFullscreen))
     {
@@ -2357,7 +2357,7 @@ void SetEngineMouseCursor(EngineContext *eng, CGEditorContext *cgEd)
             SetMouseCursor(MOUSE_CURSOR_CROSSHAIR);
             return;
         case VIEWPORT_TEXT_EDITOR:
-            SetMouseCursor(MOUSE_CURSOR_IBEAM);
+            SetMouseCursor(txEd->cursor);
             return;
         default:
             eng->viewportMode = VIEWPORT_CG_EDITOR;
@@ -2594,7 +2594,7 @@ int main()
             eng.delayFrames = false;
         }
 
-        SetEngineMouseCursor(&eng, &cgEd);
+        SetEngineMouseCursor(&eng, &cgEd, &txEd);
 
         SetEngineFPS(&eng, &cgEd, &intp);
 

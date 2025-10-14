@@ -53,7 +53,7 @@ typedef struct
 
     int editingNodeNameIndex;
 
-    int cursor;
+    MouseCursor cursor;
 
     bool hasChanged;
     bool hasChangedInLastFrame;
