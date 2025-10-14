@@ -744,7 +744,7 @@ bool DrawSettingsMenu(EngineContext *eng, InterpreterContext *intp, CGEditorCont
             cgEd->delayFrames = true;
         }
 
-        DrawTextEx(eng->font, "Open files with Rapid Editor(In Development)", (Vector2){eng->screenWidth / 4 + 200, 550}, 28, 1, WHITE); //test
+        DrawTextEx(eng->font, "Open files with Rapid Editor(Beta)", (Vector2){eng->screenWidth / 4 + 200, 550}, 28, 1, WHITE); //test
         DrawSlider((Vector2){eng->screenWidth * 3 / 4 - 70, 555}, &eng->openFilesWithRapidEditor, eng->mousePos, &hasChanged);
         break;
     case SETTINGS_MODE_GAME:
@@ -1347,8 +1347,25 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
     int logY = eng->screenHeight - eng->bottomBarHeight - 30;
     for (int i = eng->logs.count - 1; i >= 0 && logY > eng->sideBarMiddleY + 60 + eng->sideBarHalfSnap * 40; i--)
     {
+       int batchCount = 0;
+        for(int j = i - 1; j >= 0; j--){
+            if(strcmp(eng->logs.entries[i].message + 8, eng->logs.entries[j].message + 8) == 0){
+                batchCount++;
+            }
+            else{
+                break;
+            }
+        }
+
         char logMessage[MAX_LOG_MESSAGE_SIZE];
-        strmac(logMessage, MAX_LOG_MESSAGE_SIZE, "%s", eng->logs.entries[i]);
+
+        if(batchCount == 0){
+            strmac(logMessage, MAX_LOG_MESSAGE_SIZE, "%s", eng->logs.entries[i].message);
+        }
+        else{
+            strmac(logMessage, MAX_LOG_MESSAGE_SIZE, "[%d]%s", batchCount + 1, eng->logs.entries[i].message);
+            i -= batchCount;
+        }
 
         if (eng->sideBarHalfSnap)
         {
