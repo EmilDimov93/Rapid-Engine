@@ -744,7 +744,7 @@ bool DrawSettingsMenu(EngineContext *eng, InterpreterContext *intp, CGEditorCont
             cgEd->delayFrames = true;
         }
 
-        DrawTextEx(eng->font, "Open files with Rapid Editor(Beta)", (Vector2){eng->screenWidth / 4 + 200, 550}, 28, 1, WHITE); //test
+        DrawTextEx(eng->font, "Open files with Rapid Editor(Beta)", (Vector2){eng->screenWidth / 4 + 200, 550}, 28, 1, WHITE); // test
         DrawSlider((Vector2){eng->screenWidth * 3 / 4 - 70, 555}, &eng->openFilesWithRapidEditor, eng->mousePos, &hasChanged);
         break;
     case SETTINGS_MODE_GAME:
@@ -1105,7 +1105,8 @@ void DrawUIElements(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                                 AddToLog(eng, "Failed to load file{T200}", LOG_LEVEL_ERROR);
                             }
                         }
-                        else{
+                        else
+                        {
                             OpenFile(eng->uiElements[eng->hoveredUIElementIndex].name);
                         }
                     }
@@ -1347,22 +1348,27 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
     int logY = eng->screenHeight - eng->bottomBarHeight - 30;
     for (int i = eng->logs.count - 1; i >= 0 && logY > eng->sideBarMiddleY + 60 + eng->sideBarHalfSnap * 40; i--)
     {
-       int batchCount = 0;
-        for(int j = i - 1; j >= 0; j--){
-            if(strcmp(eng->logs.entries[i].message + 8, eng->logs.entries[j].message + 8) == 0){
+        int batchCount = 0;
+        for (int j = i - 1; j >= 0; j--)
+        {
+            if (strcmp(eng->logs.entries[i].message + 8, eng->logs.entries[j].message + 8) == 0)
+            {
                 batchCount++;
             }
-            else{
+            else
+            {
                 break;
             }
         }
 
         char logMessage[MAX_LOG_MESSAGE_SIZE];
 
-        if(batchCount == 0){
+        if (batchCount == 0)
+        {
             strmac(logMessage, MAX_LOG_MESSAGE_SIZE, "%s", eng->logs.entries[i].message);
         }
-        else{
+        else
+        {
             strmac(logMessage, MAX_LOG_MESSAGE_SIZE, "[%d]%s", batchCount + 1, eng->logs.entries[i].message);
             i -= batchCount;
         }
@@ -2574,7 +2580,7 @@ int main()
 
         if (HandleUICollisions(&eng, &graph, &intp, &cgEd, &runtimeGraph) && !eng.isViewportFullscreen)
         {
-            if (((prevHoveredUIIndex != eng.hoveredUIElementIndex || IsMouseButtonDown(MOUSE_LEFT_BUTTON)) && eng.showSaveWarning != 1 && eng.showSettingsMenu == false) || eng.delayFrames)
+            if (((prevHoveredUIIndex != eng.hoveredUIElementIndex || IsMouseButtonDown(MOUSE_LEFT_BUTTON) || eng.isSettingsButtonHovered) && eng.showSaveWarning != 1 && eng.showSettingsMenu == false))
             {
                 BuildUITexture(&eng, &graph, &cgEd, &intp, &runtimeGraph, &txEd);
                 eng.fps = FPS_HIGH;
@@ -2658,7 +2664,8 @@ int main()
 
             if (cgEd.newLogMessage)
             {
-                for(int i = 0; i < cgEd.logMessageCount; i++){
+                for (int i = 0; i < cgEd.logMessageCount; i++)
+                {
                     AddToLog(&eng, cgEd.logMessages[i], cgEd.logMessageLevels[i]);
                 }
 
@@ -2806,7 +2813,8 @@ int main()
             HandleTextEditor(&txEd, mouseInViewportTex, viewportRecInViewportTex, &eng.viewportTex, eng.font, eng.isViewportFocused);
             if (txEd.newLogMessage)
             {
-                for(int i = 0; i < txEd.logMessageCount; i++){
+                for (int i = 0; i < txEd.logMessageCount; i++)
+                {
                     AddToLog(&eng, txEd.logMessages[i], txEd.logMessageLevels[i]);
                 }
 
