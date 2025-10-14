@@ -11,7 +11,7 @@
 #define MENU_BORDER_THICKNESS 3
 #define SUBMENU_WIDTH 250
 
-void AddToLogFromEditor(CGEditorContext *cgEd, char *message, int level);
+void AddToLogFromCGEditor(CGEditorContext *cgEd, char *message, int level);
 
 CGEditorContext InitEditorContext()
 {
@@ -48,7 +48,7 @@ CGEditorContext InitEditorContext()
     if (cgEd.gearTxt.id == 0)
     {
         cgEd.hasFatalErrorOccurred = true;
-        AddToLogFromEditor(&cgEd, "Failed to load texture{C220}", LOG_LEVEL_ERROR);
+        AddToLogFromCGEditor(&cgEd, "Failed to load texture{C220}", LOG_LEVEL_ERROR);
         return cgEd;
     }
 
@@ -59,7 +59,7 @@ CGEditorContext InitEditorContext()
     if (cgEd.font.texture.id == 0)
     {
         cgEd.hasFatalErrorOccurred = true;
-        AddToLogFromEditor(&cgEd, "Failed to load font{C221}", LOG_LEVEL_ERROR);
+        AddToLogFromCGEditor(&cgEd, "Failed to load font{C221}", LOG_LEVEL_ERROR);
         return cgEd;
     }
 
@@ -105,7 +105,7 @@ void FreeEditorContext(CGEditorContext *cgEd)
     }
 }
 
-void AddToLogFromEditor(CGEditorContext *cgEd, char *message, int level)
+void AddToLogFromCGEditor(CGEditorContext *cgEd, char *message, int level)
 {
     if (cgEd->logMessageCount >= MAX_LOG_MESSAGES)
     {
@@ -897,7 +897,7 @@ void DrawNodes(CGEditorContext *cgEd, GraphContext *graph)
         }
         else
         {
-            AddToLogFromEditor(cgEd, "Error drawing connection{C110}", LOG_LEVEL_WARNING);
+            AddToLogFromCGEditor(cgEd, "Error drawing connection{C110}", LOG_LEVEL_WARNING);
         }
     }
 
@@ -1208,7 +1208,7 @@ void DrawNodes(CGEditorContext *cgEd, GraphContext *graph)
         if (!CreateNode(graph, NODE_LITERAL_STRING, (Vector2){cgEd->mousePos.x - getNodeInfoByType(NODE_LITERAL_STRING, INFO_NODE_WIDTH) / 2, cgEd->mousePos.y - getNodeInfoByType(NODE_LITERAL_STRING, INFO_NODE_HEIGHT) / 2}))
         {
             cgEd->hasFatalErrorOccurred = true;
-            AddToLogFromEditor(cgEd, "Error creating node{C230}", LOG_LEVEL_ERROR);
+            AddToLogFromCGEditor(cgEd, "Error creating node{C230}", LOG_LEVEL_ERROR);
             return;
         }
         else
@@ -1606,7 +1606,7 @@ void DrawFullTexture(CGEditorContext *cgEd, GraphContext *graph, RenderTexture2D
             if (!CreateNode(graph, newNodeType, cgEd->rightClickPos))
             {
                 cgEd->hasFatalErrorOccurred = true;
-                AddToLogFromEditor(cgEd, "Error creating node{C230}", LOG_LEVEL_ERROR);
+                AddToLogFromCGEditor(cgEd, "Error creating node{C230}", LOG_LEVEL_ERROR);
                 return;
             }
             else if (newNodeType == NODE_CREATE_NUMBER || newNodeType == NODE_CREATE_STRING || newNodeType == NODE_CREATE_BOOL || newNodeType == NODE_CREATE_COLOR || newNodeType == NODE_CREATE_SPRITE)
@@ -1777,7 +1777,7 @@ void HandleEditor(CGEditorContext *cgEd, GraphContext *graph, RenderTexture2D *v
             if (!DuplicateNode(graph, &cgEd->copiedNodes[i], cgEd->mousePos, nodeY))
             {
                 cgEd->hasFatalErrorOccurred = true;
-                AddToLogFromEditor(cgEd, "Error duplicating node{C231}", LOG_LEVEL_ERROR);
+                AddToLogFromCGEditor(cgEd, "Error duplicating node{C231}", LOG_LEVEL_ERROR);
                 return;
             }
             else if (cgEd->copiedNodes[i].type == NODE_CREATE_NUMBER || cgEd->copiedNodes[i].type == NODE_CREATE_STRING || cgEd->copiedNodes[i].type == NODE_CREATE_BOOL || cgEd->copiedNodes[i].type == NODE_CREATE_COLOR || cgEd->copiedNodes[i].type == NODE_CREATE_SPRITE)

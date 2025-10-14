@@ -299,28 +299,28 @@ FileType GetFileType(const char *folderPath, const char *fileName)
     {
         if (DirectoryExists(fullPath))
         {
-            return FILE_FOLDER;
+            return FILE_TYPE_FOLDER;
         }
         else
         {
-            return FILE_OTHER;
+            return FILE_TYPE_OTHER;
         }
     }
 
     if (strcmp(ext + 1, "cg") == 0)
     {
-        return FILE_CG;
+        return FILE_TYPE_CG;
     }
     else if (strcmp(ext + 1, "png") == 0 || strcmp(ext + 1, "jpg") == 0 || strcmp(ext + 1, "jpeg") == 0)
     {
-        return FILE_IMAGE;
+        return FILE_TYPE_IMAGE;
     }
     else if (strcmp(ext + 1, "config") == 0)
     {
-        return FILE_CONFIG;
+        return FILE_TYPE_CONFIG;
     }
 
-    return FILE_OTHER;
+    return FILE_TYPE_OTHER;
 }
 
 void PrepareCGFilePath(EngineContext *eng, const char *projectName)
@@ -1071,7 +1071,7 @@ void DrawUIElements(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                 if (currentTime - lastClickTime <= DOUBLE_CLICK_THRESHOLD)
                 {
                     FileType fileType = GetFileType(eng->currentPath, GetFileName(eng->uiElements[eng->hoveredUIElementIndex].name));
-                    if (fileType == FILE_CG)
+                    if (fileType == FILE_TYPE_CG)
                     {
                         char openedFileName[MAX_FILE_NAME];
                         strmac(openedFileName, MAX_FILE_NAME, "%s", eng->uiElements[eng->hoveredUIElementIndex].text.string);
@@ -1088,11 +1088,11 @@ void DrawUIElements(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
 
                         eng->viewportMode = VIEWPORT_CG_EDITOR;
                     }
-                    else if (fileType == FILE_IMAGE)
+                    else if (fileType == FILE_TYPE_IMAGE)
                     {
                         OpenFile(eng->uiElements[eng->hoveredUIElementIndex].name);
                     }
-                    else if (fileType != FILE_FOLDER)
+                    else if (fileType != FILE_TYPE_FOLDER)
                     {
                         if (eng->openFilesWithRapidEditor)
                         {
@@ -1102,7 +1102,7 @@ void DrawUIElements(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                             txEd->currCol = 0;
                             if (!LoadFileInTextEditor(eng->uiElements[eng->hoveredUIElementIndex].name, txEd))
                             {
-                                AddToLog(eng, "Failed to load file{T200}", 2);
+                                AddToLog(eng, "Failed to load file{T200}", LOG_LEVEL_ERROR);
                             }
                         }
                         else{
@@ -1621,25 +1621,25 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
 
         switch (GetFileType(eng->currentPath, fileName))
         {
-        case FILE_FOLDER:
-            fileOutlineColor = COLOR_FILE_FOLDER_OUTLINE;
-            fileTextColor = COLOR_FILE_FOLDER_TEXT;
+        case FILE_TYPE_FOLDER:
+            fileOutlineColor = COLOR_FILE_TYPE_FOLDER_OUTLINE;
+            fileTextColor = COLOR_FILE_TYPE_FOLDER_TEXT;
             break;
-        case FILE_CG:
-            fileOutlineColor = COLOR_FILE_CG_OUTLINE;
-            fileTextColor = COLOR_FILE_CG_TEXT;
+        case FILE_TYPE_CG:
+            fileOutlineColor = COLOR_FILE_TYPE_CG_OUTLINE;
+            fileTextColor = COLOR_FILE_TYPE_CG_TEXT;
             break;
-        case FILE_CONFIG:
-            fileOutlineColor = COLOR_FILE_CONFIG_OUTLINE;
-            fileTextColor = COLOR_FILE_CONFIG_TEXT;
+        case FILE_TYPE_CONFIG:
+            fileOutlineColor = COLOR_FILE_TYPE_CONFIG_OUTLINE;
+            fileTextColor = COLOR_FILE_TYPE_CONFIG_TEXT;
             break;
-        case FILE_IMAGE:
-            fileOutlineColor = COLOR_FILE_IMAGE_OUTLINE;
-            fileTextColor = COLOR_FILE_IMAGE_TEXT;
+        case FILE_TYPE_IMAGE:
+            fileOutlineColor = COLOR_FILE_TYPE_IMAGE_OUTLINE;
+            fileTextColor = COLOR_FILE_TYPE_IMAGE_TEXT;
             break;
-        case FILE_OTHER:
-            fileOutlineColor = COLOR_FILE_OTHER_OUTLINE;
-            fileTextColor = COLOR_FILE_OTHER_TEXT;
+        case FILE_TYPE_OTHER:
+            fileOutlineColor = COLOR_FILE_TYPE_OTHER_OUTLINE;
+            fileTextColor = COLOR_FILE_TYPE_OTHER_TEXT;
             break;
         default:
             AddToLog(eng, "Out of bounds enum{O201}", LOG_LEVEL_ERROR);
@@ -1743,25 +1743,25 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
 
         switch (GetFileType(eng->currentPath, GetFileName(eng->files.paths[eng->draggingFileIndex])))
         {
-        case FILE_FOLDER:
-            fileOutlineColor = COLOR_FILE_FOLDER_OUTLINE;
-            fileTextColor = COLOR_FILE_FOLDER_TEXT;
+        case FILE_TYPE_FOLDER:
+            fileOutlineColor = COLOR_FILE_TYPE_FOLDER_OUTLINE;
+            fileTextColor = COLOR_FILE_TYPE_FOLDER_TEXT;
             break;
-        case FILE_CG:
-            fileOutlineColor = COLOR_FILE_CG_OUTLINE;
-            fileTextColor = COLOR_FILE_CG_TEXT;
+        case FILE_TYPE_CG:
+            fileOutlineColor = COLOR_FILE_TYPE_CG_OUTLINE;
+            fileTextColor = COLOR_FILE_TYPE_CG_TEXT;
             break;
-        case FILE_CONFIG:
-            fileOutlineColor = COLOR_FILE_CONFIG_OUTLINE;
-            fileTextColor = COLOR_FILE_CONFIG_TEXT;
+        case FILE_TYPE_CONFIG:
+            fileOutlineColor = COLOR_FILE_TYPE_CONFIG_OUTLINE;
+            fileTextColor = COLOR_FILE_TYPE_CONFIG_TEXT;
             break;
-        case FILE_IMAGE:
-            fileOutlineColor = COLOR_FILE_IMAGE_OUTLINE;
-            fileTextColor = COLOR_FILE_IMAGE_TEXT;
+        case FILE_TYPE_IMAGE:
+            fileOutlineColor = COLOR_FILE_TYPE_IMAGE_OUTLINE;
+            fileTextColor = COLOR_FILE_TYPE_IMAGE_TEXT;
             break;
-        case FILE_OTHER:
-            fileOutlineColor = COLOR_FILE_OTHER_OUTLINE;
-            fileTextColor = COLOR_FILE_OTHER_TEXT;
+        case FILE_TYPE_OTHER:
+            fileOutlineColor = COLOR_FILE_TYPE_OTHER_OUTLINE;
+            fileTextColor = COLOR_FILE_TYPE_OTHER_TEXT;
             break;
         default:
             AddToLog(eng, "Out of bounds enum{O201}", LOG_LEVEL_ERROR);
@@ -2641,8 +2641,9 @@ int main()
 
             if (cgEd.newLogMessage)
             {
-                for (int i = 0; i < cgEd.logMessageCount; i++)
+                for(int i = 0; i < cgEd.logMessageCount; i++){
                     AddToLog(&eng, cgEd.logMessages[i], cgEd.logMessageLevels[i]);
+                }
 
                 cgEd.newLogMessage = false;
                 cgEd.logMessageCount = 0;
@@ -2786,7 +2787,16 @@ int main()
         case VIEWPORT_TEXT_EDITOR:
         {
             HandleTextEditor(&txEd, mouseInViewportTex, viewportRecInViewportTex, &eng.viewportTex, eng.font, eng.isViewportFocused);
+            if (txEd.newLogMessage)
+            {
+                for(int i = 0; i < txEd.logMessageCount; i++){
+                    AddToLog(&eng, txEd.logMessages[i], txEd.logMessageLevels[i]);
+                }
 
+                txEd.newLogMessage = false;
+                txEd.logMessageCount = 0;
+                eng.delayFrames = true;
+            }
             break;
         }
         default:

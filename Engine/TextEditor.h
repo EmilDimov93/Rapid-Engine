@@ -4,19 +4,23 @@
 #include "raylib.h"
 #include "definitions.h"
 
-#define MAX_LINES 1000
-#define MAX_CHARS_PER_LINE 1000
+#define MAX_ROWS 1000
+#define MAX_CHARS_PER_ROW 100
 
 #define TEXT_EDITOR_TEXT_SPACING 3.0f
 
 typedef struct TextEditorContext{
     char **text;
     int rowCount;
-    bool isFileOpened;
     char openedFileName[MAX_FILE_NAME];
     int currRow;
     int currCol;
     float cursorBlinkTime;
+
+    bool newLogMessage;
+    char logMessages[MAX_LOG_MESSAGES][MAX_LOG_MESSAGE_SIZE];
+    LogLevel logMessageLevels[MAX_LOG_MESSAGES];
+    int logMessageCount;
 }TextEditorContext;
 
 TextEditorContext InitTextEditorContext();

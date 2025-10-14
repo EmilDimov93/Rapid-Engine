@@ -4,10 +4,10 @@ TextEditorContext InitTextEditorContext()
 {
     TextEditorContext txEd = {0};
 
-    txEd.text = malloc(MAX_LINES * sizeof(char *));
-    for (int i = 0; i < MAX_LINES; i++)
+    txEd.text = malloc(MAX_ROWS * sizeof(char *));
+    for (int i = 0; i < MAX_ROWS; i++)
     {
-        txEd.text[i] = malloc(MAX_CHARS_PER_LINE);
+        txEd.text[i] = malloc(MAX_CHARS_PER_ROW);
     }
 
     txEd.rowCount = 0;
@@ -19,11 +19,24 @@ TextEditorContext InitTextEditorContext()
 
 void FreeTextEditorContext(TextEditorContext *txEd)
 {
-    for (int i = 0; i < MAX_LINES; i++)
+    for (int i = 0; i < MAX_ROWS; i++)
     {
         free(txEd->text[i]);
     }
     free(txEd->text);
+}
+
+void AddToLogFromTextEditor(TextEditorContext *txEd, char *message, int level)
+{
+    if (txEd->logMessageCount >= MAX_LOG_MESSAGES)
+    {
+        return;
+    }
+
+    strmac(txEd->logMessages[txEd->logMessageCount], MAX_LOG_MESSAGE_SIZE, "%s", message);
+    txEd->logMessageLevels[txEd->logMessageCount] = level;
+    txEd->logMessageCount++;
+    txEd->newLogMessage = true;
 }
 
 bool LoadFileInTextEditor(const char *fileName, TextEditorContext *txEd)
@@ -35,10 +48,11 @@ bool LoadFileInTextEditor(const char *fileName, TextEditorContext *txEd)
     }
 
     int line = 0;
-    while (line < MAX_LINES && fgets(txEd->text[line], MAX_CHARS_PER_LINE, file))
+    while (line < MAX_ROWS && fgets(txEd->text[line], MAX_CHARS_PER_ROW, file))
     {
         size_t len = strlen(txEd->text[line]);
-        if (len > 0 && txEd->text[line][len - 1] == '\n'){
+        if (len > 0 && txEd->text[line][len - 1] == '\n')
+        {
             txEd->text[line][len - 1] = '\0';
         }
         line++;
@@ -71,15 +85,15 @@ void DeleteSymbol(TextEditorContext *txEd)
             int prevLen = strlen(txEd->text[txEd->currRow - 1]);
             int currLen = strlen(txEd->text[txEd->currRow]);
 
-            if (prevLen + currLen < MAX_CHARS_PER_LINE)
+            if (prevLen + currLen < MAX_CHARS_PER_ROW)
             {
-                strmac(txEd->text[txEd->currRow - 1], MAX_CHARS_PER_LINE, "%s%s",
+                strmac(txEd->text[txEd->currRow - 1], MAX_CHARS_PER_ROW, "%s%s",
                        txEd->text[txEd->currRow - 1], txEd->text[txEd->currRow]);
             }
 
             for (int i = txEd->currRow; i < txEd->rowCount - 1; i++)
             {
-                strmac(txEd->text[i], MAX_CHARS_PER_LINE, "%s", txEd->text[i + 1]);
+                strmac(txEd->text[i], MAX_CHARS_PER_ROW, "%s", txEd->text[i + 1]);
             }
 
             txEd->text[txEd->rowCount - 1][0] = '\0';
@@ -103,11 +117,11 @@ void DeleteSymbol(TextEditorContext *txEd)
 
 void AddNewLine(TextEditorContext *txEd)
 {
-    if (txEd->rowCount < MAX_LINES)
+    if (txEd->rowCount < MAX_ROWS)
     {
         for (int i = txEd->rowCount - 1; i >= txEd->currRow; i--)
         {
-            strmac(txEd->text[i + 1], MAX_CHARS_PER_LINE, "%s", txEd->text[i]);
+            strmac(txEd->text[i + 1], MAX_CHARS_PER_ROW, "%s", txEd->text[i]);
         }
 
         char *currText = txEd->text[txEd->currRow];
@@ -116,7 +130,7 @@ void AddNewLine(TextEditorContext *txEd)
 
         if (col < len)
         {
-            strmac(txEd->text[txEd->currRow + 1], MAX_CHARS_PER_LINE, "%s", currText + col);
+            strmac(txEd->text[txEd->currRow + 1], MAX_CHARS_PER_ROW, "%s", currText + col);
             currText[col] = '\0';
         }
         else
@@ -127,6 +141,9 @@ void AddNewLine(TextEditorContext *txEd)
         txEd->currRow++;
         txEd->currCol = 0;
         txEd->rowCount++;
+    }
+    else{
+        AddToLogFromTextEditor(txEd, "Line limit reached! Open file in another text editor{T201}", LOG_LEVEL_ERROR);
     }
 }
 
@@ -251,6 +268,24 @@ void ArrowKeysInput(TextEditorContext *txEd, float frameTime)
     }
 }
 
+void AddSymbol(TextEditorContext *txEd, char newChar)
+{
+
+    if (txEd->currCol < MAX_CHARS_PER_ROW)
+    {
+        for (int i = strlen(txEd->text[txEd->currRow]); i >= txEd->currCol; i--)
+        {
+            txEd->text[txEd->currRow][i + 1] = txEd->text[txEd->currRow][i];
+        }
+        txEd->text[txEd->currRow][txEd->currCol] = newChar;
+        txEd->currCol++;
+    }
+    else
+    {
+        AddToLogFromTextEditor(txEd, "Character per line limit reached! Go to new line or open file in another text editor{T202}", LOG_LEVEL_ERROR);
+    }
+}
+
 void HandleTextEditor(TextEditorContext *txEd, Vector2 mousePos, Rectangle viewportBoundary, RenderTexture2D *viewport, Font font, bool isViewportFocused)
 {
     int x = viewportBoundary.x + 50;
@@ -289,10 +324,35 @@ void HandleTextEditor(TextEditorContext *txEd, Vector2 mousePos, Rectangle viewp
         }
     }
 
-    if (IsKeyPressed(KEY_BACKSPACE))
+    static float backspaceTime = 0;
+    static bool backspaceHeld = false;
+
+    if (IsKeyDown(KEY_BACKSPACE))
     {
-        DeleteSymbol(txEd);
-        txEd->cursorBlinkTime = 0;
+        if (backspaceHeld)
+        {
+            backspaceTime -= frameTime;
+            if (backspaceTime <= 0)
+            {
+                DeleteSymbol(txEd);
+                txEd->cursorBlinkTime = 0;
+
+                backspaceTime = 0.05;
+            }
+        }
+        else
+        {
+            DeleteSymbol(txEd);
+            txEd->cursorBlinkTime = 0;
+
+            backspaceHeld = true;
+            backspaceTime = 0.5f;
+        }
+    }
+    else
+    {
+        backspaceHeld = false;
+        backspaceTime = 0.5f;
     }
 
     if (IsKeyPressed(KEY_ENTER))
@@ -301,7 +361,24 @@ void HandleTextEditor(TextEditorContext *txEd, Vector2 mousePos, Rectangle viewp
         txEd->cursorBlinkTime = 0;
     }
 
+    while (1)
+    {
+        char pressed = GetCharPressed();
+
+        if (pressed == 0)
+        {
+            break;
+        }
+
+        AddSymbol(txEd, pressed);
+    }
+
     ArrowKeysInput(txEd, frameTime);
+
+    if (txEd->text[txEd->currRow][txEd->currCol - 1] == '\0')
+    {
+        txEd->currCol--;
+    }
 
     BeginTextureMode(*viewport);
     ClearBackground(GRAY_30);
@@ -325,17 +402,19 @@ void HandleTextEditor(TextEditorContext *txEd, Vector2 mousePos, Rectangle viewp
         DrawRectangleGradientH(viewportBoundary.x, y - 2, viewportBoundary.width, 1, GRAY_50, GRAY_80);
     }
 
-    if (txEd->cursorBlinkTime <= 1.0f)
-    {
-        Vector2 start = {MeasureTextUntilEx(font, txEd->text[txEd->currRow], txEd->currCol, 30, TEXT_EDITOR_TEXT_SPACING) + x + TEXT_EDITOR_TEXT_SPACING / 2, viewportBoundary.y + txEd->currRow * 34 + 58};
-        Vector2 end = {start.x, start.y + 34};
-
-        DrawLineEx(start, end, 2.0f, RAPID_PURPLE);
-    }
-    else if (txEd->cursorBlinkTime >= 1.4f)
-    {
+    if (txEd->cursorBlinkTime > 1.5f){
         txEd->cursorBlinkTime = 0;
     }
+
+    float alpha = 255;
+    if (txEd->cursorBlinkTime > 0.5f){
+        alpha = 255 - (txEd->cursorBlinkTime - 0.5f) * (200 / 1.0f);
+    }
+
+    Vector2 start = {MeasureTextUntilEx(font, txEd->text[txEd->currRow], txEd->currCol, 30, TEXT_EDITOR_TEXT_SPACING) + x + TEXT_EDITOR_TEXT_SPACING / 2, viewportBoundary.y + txEd->currRow * 34 + 58};
+    Vector2 end = {start.x, start.y + 34};
+
+    DrawLineEx(start, end, 3.0f, (Color){RAPID_PURPLE.r, RAPID_PURPLE.g, RAPID_PURPLE.b, alpha});
 
     EndTextureMode();
 }

@@ -220,11 +220,11 @@ typedef struct EngineContext
 
 typedef enum
 {
-    FILE_FOLDER = 0,
-    FILE_CG = 1,
-    FILE_CONFIG = 2,
-    FILE_IMAGE = 3,
-    FILE_OTHER = 4
+    FILE_TYPE_FOLDER = 0,
+    FILE_TYPE_CG = 1,
+    FILE_TYPE_CONFIG = 2,
+    FILE_TYPE_IMAGE = 3,
+    FILE_TYPE_OTHER = 4
 } FileType;
 
 typedef enum
