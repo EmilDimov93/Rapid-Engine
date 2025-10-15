@@ -211,6 +211,8 @@ const char *AddEllipsis(Font font, const char *text, float fontSize, float maxWi
 #define COLOR_FILE_UNKNOWN GRAY_80
 #define COLOR_RESIZE_BUTTON (Color){255, 255, 255, 1}
 #define COLOR_COREGRAPH_WATERMARK (Color){255, 255, 255, 51}
+#define COLOR_LOG_HOVER (Color){255, 255, 255, 20}
+#define COLOR_DRAGGED_FILE_BACKGROUND (Color){40, 40, 40, 200}
 
 #define COLOR_PM_MOVING_DOT (Color){180, 100, 200, 255}
 #define COLOR_PM_BACKGROUND (Color){40, 42, 54, 255}
@@ -229,6 +231,10 @@ const char *AddEllipsis(Font font, const char *text, float fontSize, float maxWi
 #define COLOR_TE_FONT (Color){151, 188, 207, 255}
 #define COlOR_TE_OPEN_BTN_HOVER (Color){255, 255, 255, 150}
 #define COLOR_TE_SELECTOR (Color){202, 97, 255, 100}
+#define COLOR_TE_OPTIONS_MENU (Color){70, 70, 70, 240}
+#define COLOR_TE_CUT (Color){255, 67, 64, 255}
+#define COLOR_TE_COPY (Color){0, 191, 255, 255}
+#define COLOR_TE_PASTE (Color){57, 255, 20, 255}
 
 #define COLOR_INTP_PAUSE_BLUR (Color){80, 80, 80, 50}
 

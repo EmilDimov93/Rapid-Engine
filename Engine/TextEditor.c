@@ -459,8 +459,9 @@ void DrawOptionsMenu(TextEditorContext *txEd, Vector2 mousePos, Font font)
         return;
     }
 
-    DrawRectangleRounded((Rectangle){txEd->optionsMenuPos.x - 60, txEd->optionsMenuPos.y - 95, 80, 95}, 0.2f, 4, (Color){70, 70, 70, 240});
-    DrawTextEx(font, "Cut", (Vector2){txEd->optionsMenuPos.x - 55, txEd->optionsMenuPos.y - 90}, 24, 1.0f, (Color){255, 67, 64, 255});
+    DrawRectangleRounded((Rectangle){txEd->optionsMenuPos.x - 60, txEd->optionsMenuPos.y - 95, 80, 95}, 0.2f, 4, COLOR_TE_OPTIONS_MENU);
+
+    DrawTextEx(font, "Cut", (Vector2){txEd->optionsMenuPos.x - 55, txEd->optionsMenuPos.y - 90}, 24, 1.0f, COLOR_TE_CUT);
     if (CheckCollisionPointRec(mousePos, (Rectangle){txEd->optionsMenuPos.x - 58, txEd->optionsMenuPos.y - 90, 74, 26}))
     {
         txEd->cursor = MOUSE_CURSOR_POINTING_HAND;
@@ -471,7 +472,7 @@ void DrawOptionsMenu(TextEditorContext *txEd, Vector2 mousePos, Font font)
             AddToLogFromTextEditor(txEd, "Can't cut yet!{B200}", LOG_LEVEL_WARNING);
         }
     }
-    DrawTextEx(font, "Copy", (Vector2){txEd->optionsMenuPos.x - 55, txEd->optionsMenuPos.y - 60}, 24, 1.0f, (Color){0, 191, 255, 255});
+    DrawTextEx(font, "Copy", (Vector2){txEd->optionsMenuPos.x - 55, txEd->optionsMenuPos.y - 60}, 24, 1.0f, COLOR_TE_COPY);
     if (CheckCollisionPointRec(mousePos, (Rectangle){txEd->optionsMenuPos.x - 58, txEd->optionsMenuPos.y - 60, 74, 26}))
     {
         txEd->cursor = MOUSE_CURSOR_POINTING_HAND;
@@ -481,7 +482,7 @@ void DrawOptionsMenu(TextEditorContext *txEd, Vector2 mousePos, Font font)
             TextEditorCopy(txEd);
         }
     }
-    DrawTextEx(font, "Paste", (Vector2){txEd->optionsMenuPos.x - 55, txEd->optionsMenuPos.y - 30}, 24, 1.0f, (Color){57, 255, 20, 255});
+    DrawTextEx(font, "Paste", (Vector2){txEd->optionsMenuPos.x - 55, txEd->optionsMenuPos.y - 30}, 24, 1.0f, COLOR_TE_PASTE);
     if (CheckCollisionPointRec(mousePos, (Rectangle){txEd->optionsMenuPos.x - 58, txEd->optionsMenuPos.y - 30, 74, 26}))
     {
         txEd->cursor = MOUSE_CURSOR_POINTING_HAND;

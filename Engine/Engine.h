@@ -37,7 +37,8 @@ typedef enum
     UI_ACTION_OPEN_FILE,
     UI_ACTION_CHANGE_VARS_FILTER,
     UI_ACTION_VAR_TOOLTIP_RUNTIME,
-    UI_ACTION_FULLSCREEN_BUTTON_VIEWPORT
+    UI_ACTION_FULLSCREEN_BUTTON_VIEWPORT,
+    UI_ACTION_SHOW_ERROR_CODE
 } UIAction;
 
 typedef enum
@@ -215,6 +216,8 @@ typedef struct EngineContext
     int draggedFileIndex;
 
     bool openFilesWithRapidEditor;
+
+    bool isLogMessageHovered;
 
 } EngineContext;
 

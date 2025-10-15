@@ -2,7 +2,7 @@
 #include <raylib.h>
 #include <stdlib.h>
 #include <time.h>
-#include "build_version.h"
+#include "version.h"
 #include "CGEditor.h"
 #include "ProjectManager.h"
 #include "Engine.h"
@@ -131,6 +131,8 @@ EngineContext InitEngineContext()
     eng.draggedFileIndex = -1;
 
     eng.openFilesWithRapidEditor = DEVELOPER_MODE ? true : false;
+
+    eng.isLogMessageHovered = false;
 
     return eng;
 }
@@ -875,7 +877,7 @@ void DrawUIElements(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
     eng->isSaveButtonHovered = false;
     eng->isBuildButtonHovered = false;
     eng->isSettingsButtonHovered = false;
-    char temp[256];
+    eng->isLogMessageHovered = false;
     if (eng->hoveredUIElementIndex != -1 && !eng->isAnyMenuOpen && eng->draggedFileIndex == -1)
     {
         switch (eng->uiElements[eng->hoveredUIElementIndex].type)
@@ -1196,6 +1198,18 @@ void DrawUIElements(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
             {
                 eng->isViewportFullscreen = true;
             }
+        case UI_ACTION_SHOW_ERROR_CODE:
+            eng->isLogMessageHovered = true;
+            AddUIElement(eng, (UIElement){
+                                          .name = "LogErrorCode",
+                                          .shape = UIRectangle,
+                                          .type = UI_ACTION_NO_COLLISION_ACTION,
+                                          .rect = {.pos = (Vector2){eng->mousePos.x, eng->mousePos.y - 24}, .recSize = {50, 24}, .roundness = 0, .roundSegments = 0},
+                                          .color = GRAY_30,
+                                          .layer = 1,
+                                          .text = {.string = "", .textPos = (Vector2){eng->mousePos.x + 5, eng->mousePos.y - 22}, .textSize = 20, .textSpacing = 0, .textColor = RAPID_PURPLE}});
+
+            strmac(eng->uiElements[eng->uiElementCount - 1].text.string, 5, "%s", eng->uiElements[eng->hoveredUIElementIndex].name + strlen(eng->uiElements[eng->hoveredUIElementIndex].name) - 5);
         }
     }
 
@@ -1428,6 +1442,17 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
             logColor = WHITE;
             break;
         }
+
+        AddUIElement(eng, (UIElement){
+                              .name = "LogBackground",
+                              .shape = UIRectangle,
+                              .type = UI_ACTION_SHOW_ERROR_CODE,
+                              .rect = {.pos = {10, logY}, .recSize = {MeasureTextEx(eng->font, logMessage, 20, 2.0f).x, 20}, .roundness = 0, .roundSegments = 0, .hoverColor = COLOR_LOG_HOVER},
+                              .color = COLOR_TRANSPARENT,
+                              .layer = 1,
+                          });
+
+        strmac(eng->uiElements[eng->uiElementCount - 1].name, MAX_LOG_MESSAGE_SIZE, "%s", eng->logs.entries[i].message);
 
         AddUIElement(eng, (UIElement){
                               .name = "LogText",
@@ -1832,7 +1857,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                               .shape = UIRectangle,
                               .type = UI_ACTION_NO_COLLISION_ACTION,
                               .rect = {.pos = (Vector2){eng->mousePos.x - 71, eng->mousePos.y - 26}, .recSize = {150 > fileNameSize ? 150 : fileNameSize + 24, 60}, .roundness = 0.4f, .roundSegments = 8, .hoverColor = COLOR_TRANSPARENT},
-                              .color = (Color){GRAY_40.r, GRAY_40.g, GRAY_40.b, GRAY_40.a - 50},
+                              .color = COLOR_DRAGGED_FILE_BACKGROUND,
                               .layer = 4,
                               .text = {.string = "", .textPos = (Vector2){eng->mousePos.x - 61, eng->mousePos.y - 8}, .textSize = 22, .textSpacing = 0, .textColor = fileTextColor}});
         strmac(eng->uiElements[eng->uiElementCount - 1].text.string, MAX_FILE_NAME, "%s", fileName);
@@ -1964,8 +1989,9 @@ bool HandleUICollisions(EngineContext *eng, GraphContext *graph, InterpreterCont
         eng->isViewportFullscreen = false;
         FreeInterpreterContext(intp);
     }
-    else if(IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_T)){
-        //test open TextEditor
+    else if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_T))
+    {
+        // test open TextEditor
     }
     else if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_B))
     {
@@ -2604,7 +2630,7 @@ int main()
 
         if (HandleUICollisions(&eng, &graph, &intp, &cgEd, &runtimeGraph, &txEd) && !eng.isViewportFullscreen)
         {
-            if (((prevHoveredUIIndex != eng.hoveredUIElementIndex || IsMouseButtonDown(MOUSE_LEFT_BUTTON) || eng.isSettingsButtonHovered || eng.draggedFileIndex != -1) && eng.showSaveWarning != 1 && eng.showSettingsMenu == false))
+            if (((prevHoveredUIIndex != eng.hoveredUIElementIndex || IsMouseButtonDown(MOUSE_LEFT_BUTTON) || eng.isSettingsButtonHovered || eng.draggedFileIndex != -1 || eng.isLogMessageHovered) && eng.showSaveWarning != 1 && eng.showSettingsMenu == false))
             {
                 BuildUITexture(&eng, &graph, &cgEd, &intp, &runtimeGraph, &txEd);
                 eng.fps = FPS_HIGH;
