@@ -4,8 +4,8 @@
 #include "raylib.h"
 #include "definitions.h"
 
-#define MAX_ROWS 1000
-#define MAX_CHARS_PER_ROW 100
+#define MAX_ROWS 10000
+#define MAX_CHARS_PER_ROW 1000
 
 #define TEXT_EDITOR_TEXT_SPACING 3.0f
 

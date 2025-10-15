@@ -128,7 +128,7 @@ EngineContext InitEngineContext()
 
     eng.isSettingsButtonHovered = false;
 
-    eng.draggingFileIndex = -1;
+    eng.draggedFileIndex = -1;
 
     eng.openFilesWithRapidEditor = DEVELOPER_MODE ? true : false;
 
@@ -876,7 +876,7 @@ void DrawUIElements(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
     eng->isBuildButtonHovered = false;
     eng->isSettingsButtonHovered = false;
     char temp[256];
-    if (eng->hoveredUIElementIndex != -1 && !eng->isAnyMenuOpen && eng->draggingFileIndex == -1)
+    if (eng->hoveredUIElementIndex != -1 && !eng->isAnyMenuOpen && eng->draggedFileIndex == -1)
     {
         switch (eng->uiElements[eng->hoveredUIElementIndex].type)
         {
@@ -1155,9 +1155,9 @@ void DrawUIElements(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                     startedDragging = true;
                 }
 
-                if (currentTime - startHoldTime > HOLD_TO_DRAG_THRESHOLD && startedDragging && eng->draggingFileIndex == -1)
+                if (currentTime - startHoldTime > HOLD_TO_DRAG_THRESHOLD && startedDragging && eng->draggedFileIndex == -1)
                 {
-                    eng->draggingFileIndex = eng->uiElements[eng->hoveredUIElementIndex].fileIndex;
+                    eng->draggedFileIndex = eng->uiElements[eng->hoveredUIElementIndex].fileIndex;
                 }
             }
             else if (IsMouseButtonUp(MOUSE_LEFT_BUTTON))
@@ -1779,12 +1779,12 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
         }
     }
 
-    if (eng->draggingFileIndex != -1)
+    if (eng->draggedFileIndex != -1)
     {
         Color fileOutlineColor;
         Color fileTextColor;
 
-        switch (GetFileType(eng->currentPath, GetFileName(eng->files.paths[eng->draggingFileIndex])))
+        switch (GetFileType(eng->currentPath, GetFileName(eng->files.paths[eng->draggedFileIndex])))
         {
         case FILE_TYPE_FOLDER:
             fileOutlineColor = COLOR_FILE_TYPE_FOLDER_OUTLINE;
@@ -1814,7 +1814,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
         }
 
         char fileName[MAX_FILE_NAME];
-        strmac(fileName, MAX_FILE_NAME, "%s", GetFileName(eng->files.paths[eng->draggingFileIndex]));
+        strmac(fileName, MAX_FILE_NAME, "%s", GetFileName(eng->files.paths[eng->draggedFileIndex]));
         int fileNameSize = MeasureTextEx(eng->font, fileName, 22, 0).x;
 
         fileOutlineColor.a -= 50;
@@ -2022,14 +2022,14 @@ bool HandleUICollisions(EngineContext *eng, GraphContext *graph, InterpreterCont
         eng->isViewportFullscreen = false;
     }
 
-    if (eng->draggingFileIndex != -1)
+    if (eng->draggedFileIndex != -1)
     {
         if (IsMouseButtonUp(MOUSE_LEFT_BUTTON))
         {
             size_t len = strlen(eng->projectPath);
-            if (strncmp(eng->projectPath, eng->files.paths[eng->draggingFileIndex], len) == 0)
+            if (strncmp(eng->projectPath, eng->files.paths[eng->draggedFileIndex], len) == 0)
             {
-                const char *remainder = eng->files.paths[eng->draggingFileIndex] + len;
+                const char *remainder = eng->files.paths[eng->draggedFileIndex] + len;
 
                 if (*remainder == PATH_SEPARATOR)
                 {
@@ -2051,7 +2051,7 @@ bool HandleUICollisions(EngineContext *eng, GraphContext *graph, InterpreterCont
                 cgEd->hasDroppedFile = false;
             }
 
-            eng->draggingFileIndex = -1;
+            eng->draggedFileIndex = -1;
         }
         eng->delayFrames = true;
     }
@@ -2327,7 +2327,7 @@ void SetEngineMouseCursor(EngineContext *eng, CGEditorContext *cgEd, TextEditorC
         ShowCursor();
     }
 
-    if (eng->draggingFileIndex != -1)
+    if (eng->draggedFileIndex != -1)
     {
         SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
         return;
@@ -2433,7 +2433,7 @@ int SetEngineFPS(EngineContext *eng, CGEditorContext *cgEd, InterpreterContext *
     }
     else
     {
-        if (eng->draggingFileIndex != -1)
+        if (eng->draggedFileIndex != -1)
         {
             eng->fps = FPS_HIGH;
         }
@@ -2603,7 +2603,7 @@ int main()
 
         if (HandleUICollisions(&eng, &graph, &intp, &cgEd, &runtimeGraph, &txEd) && !eng.isViewportFullscreen)
         {
-            if (((prevHoveredUIIndex != eng.hoveredUIElementIndex || IsMouseButtonDown(MOUSE_LEFT_BUTTON) || eng.isSettingsButtonHovered) && eng.showSaveWarning != 1 && eng.showSettingsMenu == false))
+            if (((prevHoveredUIIndex != eng.hoveredUIElementIndex || IsMouseButtonDown(MOUSE_LEFT_BUTTON) || eng.isSettingsButtonHovered || eng.draggedFileIndex != -1) && eng.showSaveWarning != 1 && eng.showSettingsMenu == false))
             {
                 BuildUITexture(&eng, &graph, &cgEd, &intp, &runtimeGraph, &txEd);
                 eng.fps = FPS_HIGH;
@@ -2626,10 +2626,10 @@ int main()
         Vector2 mouseInViewportTex = (Vector2){(eng.mousePos.x - eng.sideBarWidth) / eng.zoom + (eng.viewportTex.texture.width - (eng.isViewportFullscreen ? eng.screenWidth : eng.viewportWidth / eng.zoom)) / 2.0f, eng.mousePos.y / eng.zoom + (eng.viewportTex.texture.height - (eng.isViewportFullscreen ? eng.screenHeight : eng.viewportHeight / eng.zoom)) / 2.0f};
 
         Rectangle viewportRecInViewportTex = (Rectangle){
-            (eng.viewportTex.texture.width - (eng.isViewportFullscreen ? eng.screenWidth : eng.viewportWidth)) / 2.0f,
-            (eng.viewportTex.texture.height - (eng.isViewportFullscreen ? eng.screenHeight : eng.viewportHeight)) / 2.0f,
-            eng.screenWidth - (eng.isViewportFullscreen ? 0 : eng.sideBarWidth),
-            eng.screenHeight - (eng.isViewportFullscreen ? 0 : eng.bottomBarHeight)};
+            (eng.viewportTex.texture.width - (eng.isViewportFullscreen ? eng.screenWidth : eng.viewportWidth) / eng.zoom) / 2.0f,
+            (eng.viewportTex.texture.height - (eng.isViewportFullscreen ? eng.screenHeight : eng.viewportHeight) / eng.zoom) / 2.0f,
+            (eng.screenWidth - (eng.isViewportFullscreen ? 0 : eng.sideBarWidth)) / eng.zoom,
+            (eng.screenHeight - (eng.isViewportFullscreen ? 0 : eng.bottomBarHeight)) / eng.zoom};
 
         if (eng.showSaveWarning == 1 || eng.showSettingsMenu || eng.windowResizeButton != RESIZING_WINDOW_NONE)
         {

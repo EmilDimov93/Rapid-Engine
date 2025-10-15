@@ -212,7 +212,7 @@ typedef struct EngineContext
 
     Logs logs;
 
-    int draggingFileIndex;
+    int draggedFileIndex;
 
     bool openFilesWithRapidEditor;
 
