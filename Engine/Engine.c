@@ -2052,6 +2052,7 @@ bool HandleUICollisions(EngineContext *eng, GraphContext *graph, InterpreterCont
             }
 
             eng->draggedFileIndex = -1;
+            eng->delayFrames = true;
         }
         eng->delayFrames = true;
     }
@@ -2303,7 +2304,7 @@ bool HandleUICollisions(EngineContext *eng, GraphContext *graph, InterpreterCont
 void ContextChangePerFrame(EngineContext *eng)
 {
     eng->mousePos = GetMousePosition();
-    eng->isViewportFocused = eng->hoveredUIElementIndex == -1 && CheckCollisionPointRec(eng->mousePos, (Rectangle){eng->sideBarWidth, 0, eng->screenWidth - eng->sideBarWidth, eng->screenHeight - eng->bottomBarHeight});
+    eng->isViewportFocused = (eng->hoveredUIElementIndex == -1 || eng->uiElements[eng->hoveredUIElementIndex].type == UI_ACTION_NO_COLLISION_ACTION) && CheckCollisionPointRec(eng->mousePos, (Rectangle){eng->sideBarWidth, 0, eng->screenWidth - eng->sideBarWidth, eng->screenHeight - eng->bottomBarHeight});
 
     eng->screenWidth = GetScreenWidth();
     eng->screenHeight = GetScreenHeight();
