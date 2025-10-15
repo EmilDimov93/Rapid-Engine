@@ -1198,18 +1198,20 @@ void DrawUIElements(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
             {
                 eng->isViewportFullscreen = true;
             }
+            break;
         case UI_ACTION_SHOW_ERROR_CODE:
             eng->isLogMessageHovered = true;
             AddUIElement(eng, (UIElement){
-                                          .name = "LogErrorCode",
-                                          .shape = UIRectangle,
-                                          .type = UI_ACTION_NO_COLLISION_ACTION,
-                                          .rect = {.pos = (Vector2){eng->mousePos.x, eng->mousePos.y - 24}, .recSize = {50, 24}, .roundness = 0, .roundSegments = 0},
-                                          .color = GRAY_30,
-                                          .layer = 1,
-                                          .text = {.string = "", .textPos = (Vector2){eng->mousePos.x + 5, eng->mousePos.y - 22}, .textSize = 20, .textSpacing = 0, .textColor = RAPID_PURPLE}});
+                                  .name = "LogErrorCode",
+                                  .shape = UIRectangle,
+                                  .type = UI_ACTION_NO_COLLISION_ACTION,
+                                  .rect = {.pos = (Vector2){eng->mousePos.x, eng->mousePos.y - 24}, .recSize = {50, 24}, .roundness = 0, .roundSegments = 0},
+                                  .color = GRAY_30,
+                                  .layer = 1,
+                                  .text = {.string = "", .textPos = (Vector2){eng->mousePos.x + 5, eng->mousePos.y - 22}, .textSize = 20, .textSpacing = 0, .textColor = RAPID_PURPLE}});
 
             strmac(eng->uiElements[eng->uiElementCount - 1].text.string, 5, "%s", eng->uiElements[eng->hoveredUIElementIndex].name + strlen(eng->uiElements[eng->hoveredUIElementIndex].name) - 5);
+            break;
         }
     }
 
@@ -2078,9 +2080,10 @@ bool HandleUICollisions(EngineContext *eng, GraphContext *graph, InterpreterCont
             }
 
             eng->draggedFileIndex = -1;
-            eng->delayFrames = true;
         }
         eng->delayFrames = true;
+        eng->hoveredUIElementIndex = -1;
+        return false;
     }
 
     if (eng->isWindowMoving)
@@ -2630,7 +2633,7 @@ int main()
 
         if (HandleUICollisions(&eng, &graph, &intp, &cgEd, &runtimeGraph, &txEd) && !eng.isViewportFullscreen)
         {
-            if (((prevHoveredUIIndex != eng.hoveredUIElementIndex || IsMouseButtonDown(MOUSE_LEFT_BUTTON) || eng.isSettingsButtonHovered || eng.draggedFileIndex != -1 || eng.isLogMessageHovered) && eng.showSaveWarning != 1 && eng.showSettingsMenu == false))
+            if ((prevHoveredUIIndex != eng.hoveredUIElementIndex || IsMouseButtonDown(MOUSE_LEFT_BUTTON) || eng.isSettingsButtonHovered || eng.draggedFileIndex != -1 || eng.isLogMessageHovered) && eng.showSaveWarning != 1 && eng.showSettingsMenu == false)
             {
                 BuildUITexture(&eng, &graph, &cgEd, &intp, &runtimeGraph, &txEd);
                 eng.fps = FPS_HIGH;
