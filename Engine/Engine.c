@@ -2,6 +2,7 @@
 #include <raylib.h>
 #include <stdlib.h>
 #include <time.h>
+#include "build_version.h"
 #include "CGEditor.h"
 #include "ProjectManager.h"
 #include "Engine.h"
@@ -233,7 +234,7 @@ void EmergencyExit(EngineContext *eng, CGEditorContext *cgEd, InterpreterContext
     FILE *logFile = fopen("engine_log.txt", "w");
     if (logFile)
     {
-        fprintf(logFile, "Crash Report - Date: %02d-%02d-%04d\n\n", tm_info->tm_mday, tm_info->tm_mon + 1, tm_info->tm_year + 1900);
+        fprintf(logFile, "Crash Report - Date: %02d-%02d-%04d - Version: Beta(%d)\n\n", tm_info->tm_mday, tm_info->tm_mon + 1, tm_info->tm_year + 1900, RAPID_ENGINE_VERSION);
 
         for (int i = 0; i < eng->logs.count; i++)
         {
@@ -693,6 +694,17 @@ bool DrawSettingsMenu(EngineContext *eng, InterpreterContext *intp, CGEditorCont
         }
     }
 
+    DrawTextEx(eng->font, "About", (Vector2){eng->screenWidth / 4 + 30, 500}, 30, 1, settingsMode == SETTINGS_MODE_ABOUT ? WHITE : GRAY);
+
+    if (CheckCollisionPointRec(eng->mousePos, (Rectangle){eng->screenWidth / 4 + 20, 490, MeasureTextEx(eng->font, "About", 30, 1).x + 20, 50}) && settingsMode != SETTINGS_MODE_ABOUT)
+    {
+        SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+        {
+            settingsMode = SETTINGS_MODE_ABOUT;
+        }
+    }
+
     DrawRectangleGradientV(eng->screenWidth / 4 + 180, 300, 2, eng->screenHeight - 400, GRAY, GRAY_30);
 
     static bool hasChanged = false;
@@ -768,6 +780,9 @@ bool DrawSettingsMenu(EngineContext *eng, InterpreterContext *intp, CGEditorCont
         break;
     case SETTINGS_MODE_EXPORT:
         DrawTextEx(eng->font, "No Export settings yet!", (Vector2){eng->screenWidth / 4 + 200, 300}, 28, 1, RED);
+        break;
+    case SETTINGS_MODE_ABOUT:
+        DrawTextEx(eng->font, TextFormat("Version: Beta(%d)", RAPID_ENGINE_VERSION), (Vector2){eng->screenWidth / 4 + 200, 300}, 28, 1, WHITE);
         break;
     default:
         settingsMode = SETTINGS_MODE_ENGINE;

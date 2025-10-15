@@ -4,3 +4,4 @@ RapidEngine.exe
 engine_log.txt
 error_codes.txt
 Makefile
+gitbuild.ps1
