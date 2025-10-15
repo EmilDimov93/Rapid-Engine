@@ -287,6 +287,44 @@ void AddSymbol(TextEditorContext *txEd, char newChar)
     }
 }
 
+void DrawSelector(TextEditorContext *txEd, Rectangle viewportBoundary, Font font){
+    int startRow = txEd->selectedStart.x;
+    int startCol = txEd->selectedStart.y;
+    int endRow = txEd->selectedEnd.x;
+    int endCol = txEd->selectedEnd.y;
+
+    if(startRow > endRow){
+        int temp;
+        temp = startRow;
+        startRow = endRow;
+        endRow = temp;
+
+        temp = startCol;
+        startCol = endCol;
+        endCol = temp;
+    }
+    else if(startCol > endCol && startRow == endRow){
+        int temp;
+        temp = startRow;
+        startRow = endRow;
+        endRow = temp;
+
+        temp = startCol;
+        startCol = endCol;
+        endCol = temp;
+    }
+
+    DrawRectangle(viewportBoundary.x + MeasureTextUntilEx(font, txEd->text[startRow], startCol, 30, TEXT_EDITOR_TEXT_SPACING) + 50, viewportBoundary.y + startRow * 34 + 60, MeasureTextUntilEx(font, txEd->text[startRow] + startCol, startRow == endRow ? endCol - startCol : strlen(txEd->text[startRow]), 30, TEXT_EDITOR_TEXT_SPACING) + 5, 30, COLOR_TE_SELECTOR);
+
+    for(int i = startRow + 1; i < endRow; i++){
+        DrawRectangle(viewportBoundary.x + 50, viewportBoundary.y + i * 34 + 60, MeasureTextEx(font, txEd->text[i], 30, TEXT_EDITOR_TEXT_SPACING).x + 5, 30, COLOR_TE_SELECTOR);
+    }
+
+    if(startRow != endRow){
+        DrawRectangle(viewportBoundary.x + 50, viewportBoundary.y + endRow * 34 + 60, MeasureTextUntilEx(font, txEd->text[endRow], endCol, 30, TEXT_EDITOR_TEXT_SPACING), 30, COLOR_TE_SELECTOR);
+    }
+}
+
 void HandleTextEditor(TextEditorContext *txEd, Vector2 mousePos, Rectangle viewportBoundary, RenderTexture2D *viewport, Font font, bool isViewportFocused)
 {
     txEd->cursor = MOUSE_CURSOR_IBEAM;
@@ -298,7 +336,7 @@ void HandleTextEditor(TextEditorContext *txEd, Vector2 mousePos, Rectangle viewp
 
     txEd->cursorBlinkTime += frameTime;
 
-    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && isViewportFocused)
+    if (IsMouseButtonDown(MOUSE_LEFT_BUTTON) && isViewportFocused)
     {
         txEd->cursorBlinkTime = 0;
 
@@ -337,6 +375,13 @@ void HandleTextEditor(TextEditorContext *txEd, Vector2 mousePos, Rectangle viewp
                 txEd->currCol = 0;
             }
         }
+
+        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && isViewportFocused)
+        {
+            txEd->selectedStart = (Vector2){txEd->currRow, txEd->currCol};
+        }
+
+        txEd->selectedEnd = (Vector2){txEd->currRow, txEd->currCol};
     }
 
     static float backspaceTime = 0;
@@ -447,6 +492,8 @@ void HandleTextEditor(TextEditorContext *txEd, Vector2 mousePos, Rectangle viewp
     Vector2 end = {start.x, start.y + 34};
 
     DrawLineEx(start, end, 3.0f, (Color){RAPID_PURPLE.r, RAPID_PURPLE.g, RAPID_PURPLE.b, alpha});
+
+    DrawSelector(txEd, viewportBoundary, font);
 
     EndTextureMode();
 }

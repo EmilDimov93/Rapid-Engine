@@ -17,6 +17,9 @@ typedef struct TextEditorContext{
     int currCol;
     float cursorBlinkTime;
 
+    Vector2 selectedStart;
+    Vector2 selectedEnd;
+
     MouseCursor cursor;
 
     bool newLogMessage;
