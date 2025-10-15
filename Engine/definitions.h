@@ -235,6 +235,7 @@ const char *AddEllipsis(Font font, const char *text, float fontSize, float maxWi
 #define COLOR_TE_CUT (Color){255, 67, 64, 255}
 #define COLOR_TE_COPY (Color){0, 191, 255, 255}
 #define COLOR_TE_PASTE (Color){57, 255, 20, 255}
+#define COLOR_TE_OPTIONS_MENU_ITEM_HOVER (Color){255, 255, 255, 50}
 
 #define COLOR_INTP_PAUSE_BLUR (Color){80, 80, 80, 50}
 

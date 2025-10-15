@@ -1087,11 +1087,12 @@ void DrawUIElements(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
             strmac(eng->uiElements[eng->uiElementCount - 1].text.string, MAX_FILE_TOOLTIP_SIZE, "%s", tooltipText);
 
             double currentTime = GetTime();
+            static int lastClickedFileIndex = -1;
             if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
             {
                 static double lastClickTime = 0;
 
-                if (currentTime - lastClickTime <= DOUBLE_CLICK_THRESHOLD)
+                if (currentTime - lastClickTime <= DOUBLE_CLICK_THRESHOLD && lastClickedFileIndex == eng->uiElements[eng->hoveredUIElementIndex].fileIndex)
                 {
                     FileType fileType = GetFileType(eng->currentPath, GetFileName(eng->uiElements[eng->hoveredUIElementIndex].name));
                     if (fileType == FILE_TYPE_CG)
@@ -1146,18 +1147,21 @@ void DrawUIElements(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                     }
                 }
                 lastClickTime = currentTime;
+                lastClickedFileIndex = eng->uiElements[eng->hoveredUIElementIndex].fileIndex;
             }
-            static double startHoldTime = 0;
+            static double holdDelta = 0;
             static bool startedDragging = false;
+            Vector2 mouseDelta = GetMouseDelta();
             if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
             {
+                holdDelta += abs(mouseDelta.x) + abs(mouseDelta.y);
                 if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
                 {
-                    startHoldTime = GetTime();
+                    holdDelta = 0;
                     startedDragging = true;
                 }
 
-                if (currentTime - startHoldTime > HOLD_TO_DRAG_THRESHOLD && startedDragging && eng->draggedFileIndex == -1)
+                if (holdDelta > 15 && startedDragging && eng->draggedFileIndex == -1)
                 {
                     eng->draggedFileIndex = eng->uiElements[eng->hoveredUIElementIndex].fileIndex;
                 }
@@ -1174,7 +1178,7 @@ void DrawUIElements(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                                   .name = "VarTooltip",
                                   .shape = UIRectangle,
                                   .type = UI_ACTION_NO_COLLISION_ACTION,
-                                  .rect = {.pos = {eng->sideBarWidth, eng->uiElements[eng->hoveredUIElementIndex].rect.pos.y}, .recSize = {0, 40}, .roundness = 0.4f, .roundSegments = 8},
+                                  .rect = {.pos = {eng->sideBarWidth, eng->uiElements[eng->hoveredUIElementIndex].rect.pos.y}, .recSize = {0, 40}, .roundness = 0.4f, .roundSegments = 4},
                                   .color = DARKGRAY,
                                   .layer = 1,
                                   .text = {.textPos = {eng->sideBarWidth + 10, eng->uiElements[eng->hoveredUIElementIndex].rect.pos.y + 10}, .textSize = 20, .textSpacing = 0, .textColor = WHITE}});
@@ -1330,7 +1334,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                           .name = "SaveButton",
                           .shape = UIRectangle,
                           .type = UI_ACTION_SAVE_CG,
-                          .rect = {.pos = saveButtonPos, .recSize = {64, 30}, .roundness = 0.2f, .roundSegments = 8, .hoverColor = (eng->viewportMode == VIEWPORT_CG_EDITOR ? Fade(WHITE, 0.2f) : COLOR_TRANSPARENT)},
+                          .rect = {.pos = saveButtonPos, .recSize = {64, 30}, .roundness = 0.2f, .roundSegments = 4, .hoverColor = (eng->viewportMode == VIEWPORT_CG_EDITOR ? Fade(WHITE, 0.2f) : COLOR_TRANSPARENT)},
                           .color = GRAY_50,
                           .layer = 1,
                           .text = {.textPos = {cgEd->hasChanged ? saveButtonPos.x + 5 : saveButtonPos.x + 8, saveButtonPos.y + 5}, .textSize = 20, .textSpacing = 2, .textColor = (eng->viewportMode == VIEWPORT_CG_EDITOR ? WHITE : GRAY)},
@@ -1350,7 +1354,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                               .name = "StopButton",
                               .shape = UIRectangle,
                               .type = UI_ACTION_STOP_GAME,
-                              .rect = {.pos = {eng->sideBarWidth - 70, eng->sideBarMiddleY + 15}, .recSize = {64, 30}, .roundness = 0.2f, .roundSegments = 8, .hoverColor = Fade(WHITE, 0.4f)},
+                              .rect = {.pos = {eng->sideBarWidth - 70, eng->sideBarMiddleY + 15}, .recSize = {64, 30}, .roundness = 0.2f, .roundSegments = 4, .hoverColor = Fade(WHITE, 0.4f)},
                               .color = RED,
                               .layer = 1,
                               .text = {.string = "Stop", .textPos = {eng->sideBarWidth - 62, eng->sideBarMiddleY + 20}, .textSize = 20, .textSpacing = 2, .textColor = WHITE},
@@ -1362,7 +1366,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                               .name = "RunButton",
                               .shape = UIRectangle,
                               .type = UI_ACTION_RUN_GAME,
-                              .rect = {.pos = {eng->sideBarWidth - 70, eng->sideBarMiddleY + 15}, .recSize = {64, 30}, .roundness = 0.2f, .roundSegments = 8, .hoverColor = Fade(WHITE, 0.4f)},
+                              .rect = {.pos = {eng->sideBarWidth - 70, eng->sideBarMiddleY + 15}, .recSize = {64, 30}, .roundness = 0.2f, .roundSegments = 4, .hoverColor = Fade(WHITE, 0.4f)},
                               .color = DARKGREEN,
                               .layer = 1,
                               .text = {.string = "Run", .textPos = {eng->sideBarWidth - 56, eng->sideBarMiddleY + 20}, .textSize = 20, .textSpacing = 2, .textColor = WHITE},
@@ -1374,7 +1378,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                               .name = "BuildButton",
                               .shape = UIRectangle,
                               .type = UI_ACTION_BUILD_GRAPH,
-                              .rect = {.pos = {eng->sideBarWidth - 70, eng->sideBarMiddleY + 15}, .recSize = {64, 30}, .roundness = 0.2f, .roundSegments = 8, .hoverColor = ((!cgEd->hasChanged && eng->viewportMode == VIEWPORT_CG_EDITOR) ? Fade(WHITE, 0.2f) : COLOR_TRANSPARENT)},
+                              .rect = {.pos = {eng->sideBarWidth - 70, eng->sideBarMiddleY + 15}, .recSize = {64, 30}, .roundness = 0.2f, .roundSegments = 4, .hoverColor = ((!cgEd->hasChanged && eng->viewportMode == VIEWPORT_CG_EDITOR) ? Fade(WHITE, 0.2f) : COLOR_TRANSPARENT)},
                               .color = GRAY_50,
                               .layer = 1,
                               .text = {.string = "Build", .textPos = {eng->sideBarWidth - 64, eng->sideBarMiddleY + 20}, .textSize = 20, .textSpacing = 2, .textColor = ((!cgEd->hasChanged && eng->viewportMode == VIEWPORT_CG_EDITOR) ? WHITE : GRAY)},
@@ -1514,7 +1518,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                               .name = "VarsFilterButton",
                               .shape = UIRectangle,
                               .type = UI_ACTION_CHANGE_VARS_FILTER,
-                              .rect = {.pos = {eng->sideBarWidth - 85 + eng->sideBarHalfSnap * 15, 15}, .recSize = {78 - eng->sideBarHalfSnap * 15, 30}, .roundness = 0.2f, .roundSegments = 8, .hoverColor = Fade(WHITE, 0.2f)},
+                              .rect = {.pos = {eng->sideBarWidth - 85 + eng->sideBarHalfSnap * 15, 15}, .recSize = {78 - eng->sideBarHalfSnap * 15, 30}, .roundness = 0.2f, .roundSegments = 4, .hoverColor = Fade(WHITE, 0.2f)},
                               .color = GRAY_50,
                               .layer = 1,
                               .text = {.textPos = {eng->sideBarWidth - 85 + (80 - MeasureTextEx(eng->font, varsFilterText, 20 - eng->sideBarHalfSnap * 3, 1).x) / 2 + eng->sideBarHalfSnap * 5, 20 + eng->sideBarHalfSnap * 2}, .textSize = 20 - eng->sideBarHalfSnap * 3, .textSpacing = 1, .textColor = varFilterColor},
@@ -1592,7 +1596,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                               .name = "Variable Background",
                               .shape = UIRectangle,
                               .type = eng->isGameRunning ? UI_ACTION_VAR_TOOLTIP_RUNTIME : UI_ACTION_NO_COLLISION_ACTION,
-                              .rect = {.pos = {15, varsY - 5}, .recSize = {eng->sideBarWidth - 25, 35}, .roundness = 0.6f, .roundSegments = 8, .hoverColor = Fade(WHITE, 0.2f)},
+                              .rect = {.pos = {15, varsY - 5}, .recSize = {eng->sideBarWidth - 25, 35}, .roundness = 0.6f, .roundSegments = 4, .hoverColor = Fade(WHITE, 0.2f)},
                               .color = GRAY_59,
                               .layer = 1,
                               .valueIndex = i});
@@ -1929,7 +1933,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                               .name = "ViewportFullscreenButton",
                               .shape = UIRectangle,
                               .type = UI_ACTION_FULLSCREEN_BUTTON_VIEWPORT,
-                              .rect = {.pos = {eng->sideBarWidth + 8, 10}, .recSize = {50, 50}, .roundness = 0.2f, .roundSegments = 8, .hoverColor = GRAY},
+                              .rect = {.pos = {eng->sideBarWidth + 8, 10}, .recSize = {50, 50}, .roundness = 0.2f, .roundSegments = 4, .hoverColor = GRAY},
                               .color = GRAY_60,
                               .layer = 1,
                           });

@@ -465,7 +465,7 @@ void DrawOptionsMenu(TextEditorContext *txEd, Vector2 mousePos, Font font)
     if (CheckCollisionPointRec(mousePos, (Rectangle){txEd->optionsMenuPos.x - 58, txEd->optionsMenuPos.y - 90, 74, 26}))
     {
         txEd->cursor = MOUSE_CURSOR_POINTING_HAND;
-        DrawRectangleRounded((Rectangle){txEd->optionsMenuPos.x - 58, txEd->optionsMenuPos.y - 90, 74, 26}, 0.4f, 4, COLOR_PM_BACK_BTN_HOVER);
+        DrawRectangleRounded((Rectangle){txEd->optionsMenuPos.x - 58, txEd->optionsMenuPos.y - 90, 74, 26}, 0.4f, 4, COLOR_TE_OPTIONS_MENU_ITEM_HOVER);
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
         {
             // Cut
@@ -476,7 +476,7 @@ void DrawOptionsMenu(TextEditorContext *txEd, Vector2 mousePos, Font font)
     if (CheckCollisionPointRec(mousePos, (Rectangle){txEd->optionsMenuPos.x - 58, txEd->optionsMenuPos.y - 60, 74, 26}))
     {
         txEd->cursor = MOUSE_CURSOR_POINTING_HAND;
-        DrawRectangleRounded((Rectangle){txEd->optionsMenuPos.x - 58, txEd->optionsMenuPos.y - 60, 74, 26}, 0.4f, 4, COLOR_PM_BACK_BTN_HOVER);
+        DrawRectangleRounded((Rectangle){txEd->optionsMenuPos.x - 58, txEd->optionsMenuPos.y - 60, 74, 26}, 0.4f, 4, COLOR_TE_OPTIONS_MENU_ITEM_HOVER);
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
         {
             TextEditorCopy(txEd);
@@ -486,7 +486,7 @@ void DrawOptionsMenu(TextEditorContext *txEd, Vector2 mousePos, Font font)
     if (CheckCollisionPointRec(mousePos, (Rectangle){txEd->optionsMenuPos.x - 58, txEd->optionsMenuPos.y - 30, 74, 26}))
     {
         txEd->cursor = MOUSE_CURSOR_POINTING_HAND;
-        DrawRectangleRounded((Rectangle){txEd->optionsMenuPos.x - 58, txEd->optionsMenuPos.y - 30, 74, 26}, 0.4f, 4, COLOR_PM_BACK_BTN_HOVER);
+        DrawRectangleRounded((Rectangle){txEd->optionsMenuPos.x - 58, txEd->optionsMenuPos.y - 30, 74, 26}, 0.4f, 4, COLOR_TE_OPTIONS_MENU_ITEM_HOVER);
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
         {
             // Paste
