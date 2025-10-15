@@ -14,6 +14,8 @@ TextEditorContext InitTextEditorContext()
 
     txEd.cursorBlinkTime = 0;
 
+    txEd.isOptionsMenuOpen = false;
+
     return txEd;
 }
 
@@ -24,6 +26,17 @@ void FreeTextEditorContext(TextEditorContext *txEd)
         free(txEd->text[i]);
     }
     free(txEd->text);
+}
+
+void ClearTextEditorContext(TextEditorContext *txEd){
+    txEd->rowCount = 0;
+    txEd->openedFilePath[0] = '\0';
+    txEd->currRow = 0;
+    txEd->currCol = 0;
+    txEd->cursorBlinkTime = 0;
+    txEd->selectedStart = (Vector2){0, 0};
+    txEd->selectedEnd = (Vector2){0, 0};
+    txEd->isOptionsMenuOpen = false;
 }
 
 void AddToLogFromTextEditor(TextEditorContext *txEd, char *message, int level)
@@ -287,25 +300,16 @@ void AddSymbol(TextEditorContext *txEd, char newChar)
     }
 }
 
-void DrawSelector(TextEditorContext *txEd, Rectangle viewportBoundary, Font font){
+void DrawSelector(TextEditorContext *txEd, Rectangle viewportBoundary, Font font)
+{
     int startRow = txEd->selectedStart.x;
     int startCol = txEd->selectedStart.y;
     int endRow = txEd->selectedEnd.x;
     int endCol = txEd->selectedEnd.y;
 
-    if(startRow > endRow){
-        int temp;
-        temp = startRow;
-        startRow = endRow;
-        endRow = temp;
-
-        temp = startCol;
-        startCol = endCol;
-        endCol = temp;
-    }
-    else if(startCol > endCol && startRow == endRow){
-        int temp;
-        temp = startRow;
+    if (startRow > endRow || (startCol > endCol && startRow == endRow))
+    {
+        int temp = startRow;
         startRow = endRow;
         endRow = temp;
 
@@ -316,12 +320,182 @@ void DrawSelector(TextEditorContext *txEd, Rectangle viewportBoundary, Font font
 
     DrawRectangle(viewportBoundary.x + MeasureTextUntilEx(font, txEd->text[startRow], startCol, 30, TEXT_EDITOR_TEXT_SPACING) + 50, viewportBoundary.y + startRow * 34 + 60, MeasureTextUntilEx(font, txEd->text[startRow] + startCol, startRow == endRow ? endCol - startCol : strlen(txEd->text[startRow]), 30, TEXT_EDITOR_TEXT_SPACING) + 5, 30, COLOR_TE_SELECTOR);
 
-    for(int i = startRow + 1; i < endRow; i++){
+    for (int i = startRow + 1; i < endRow; i++)
+    {
         DrawRectangle(viewportBoundary.x + 50, viewportBoundary.y + i * 34 + 60, MeasureTextEx(font, txEd->text[i], 30, TEXT_EDITOR_TEXT_SPACING).x + 5, 30, COLOR_TE_SELECTOR);
     }
 
-    if(startRow != endRow){
+    if (startRow != endRow)
+    {
         DrawRectangle(viewportBoundary.x + 50, viewportBoundary.y + endRow * 34 + 60, MeasureTextUntilEx(font, txEd->text[endRow], endCol, 30, TEXT_EDITOR_TEXT_SPACING), 30, COLOR_TE_SELECTOR);
+    }
+}
+
+void TextEditorDeleteSelected(TextEditorContext *txEd)
+{
+    int startRow = txEd->selectedStart.x;
+    int startCol = txEd->selectedStart.y;
+    int endRow = txEd->selectedEnd.x;
+    int endCol = txEd->selectedEnd.y;
+
+    if (startRow > endRow || (startCol > endCol && startRow == endRow))
+    {
+        int temp = startRow;
+        startRow = endRow;
+        endRow = temp;
+
+        temp = startCol;
+        startCol = endCol;
+        endCol = temp;
+    }
+
+    if (startRow == endRow)
+    {
+        memmove(txEd->text[startRow] + startCol, txEd->text[startRow] + endCol, strlen(txEd->text[startRow] + endCol) + 1);
+    }
+    else
+    {
+        txEd->text[startRow][startCol] = '\0';
+        char lastPart[MAX_CHARS_PER_ROW + 1];
+        strcpy(lastPart, txEd->text[endRow] + endCol);
+        strcat(txEd->text[startRow], lastPart);
+
+        int numRowsToMove = txEd->rowCount - (endRow + 1);
+        for (int i = 0; i < numRowsToMove; i++)
+        {
+            strcpy(txEd->text[startRow + 1 + i], txEd->text[endRow + 1 + i]);
+        }
+
+        for (int i = txEd->rowCount - (endRow - startRow); i < txEd->rowCount; i++){
+            txEd->text[i][0] = '\0';
+        }
+
+        txEd->rowCount -= (endRow - startRow);
+    }
+
+    txEd->selectedStart = (Vector2){startRow, startCol};
+    txEd->selectedEnd = (Vector2){startRow, startCol};
+    txEd->currRow = startRow;
+    txEd->currCol = startCol;
+}
+
+void TextEditorCopy(TextEditorContext *txEd)
+{
+    int startRow = txEd->selectedStart.x;
+    int startCol = txEd->selectedStart.y;
+    int endRow = txEd->selectedEnd.x;
+    int endCol = txEd->selectedEnd.y;
+
+    if (startRow > endRow || (startCol > endCol && startRow == endRow))
+    {
+        int temp = startRow;
+        startRow = endRow;
+        endRow = temp;
+
+        temp = startCol;
+        startCol = endCol;
+        endCol = temp;
+    }
+
+    char *copiedText = NULL;
+    char *lastRow = NULL;
+    if (startRow == endRow)
+    {
+        copiedText = strmac(NULL, MAX_CHARS_PER_ROW * MAX_ROWS + 1, "%s", txEd->text[startRow]);
+        copiedText[endCol] = '\0';
+
+        copiedText = strmac(NULL, MAX_CHARS_PER_ROW * MAX_ROWS + 1, "%s", copiedText + startCol);
+    }
+    else
+    {
+        copiedText = strmac(NULL, MAX_CHARS_PER_ROW * MAX_ROWS + 1, "%s", txEd->text[startRow] + startCol);
+        int copiedTextLen = strlen(copiedText);
+        copiedText[copiedTextLen] = '\n';
+        copiedText[copiedTextLen + 1] = '\0';
+
+        for (int i = startRow + 1; i < endRow; i++)
+        {
+            copiedText = strmac(NULL, MAX_CHARS_PER_ROW * MAX_ROWS + 1, "%s%s", copiedText, txEd->text[i]);
+            int copiedTextLen = strlen(copiedText);
+            copiedText[copiedTextLen] = '\n';
+            copiedText[copiedTextLen + 1] = '\0';
+        }
+
+        lastRow = strmac(NULL, MAX_CHARS_PER_ROW + 1, "%s", txEd->text[endRow]);
+        lastRow[endCol] = '\0';
+
+        copiedText = strmac(NULL, MAX_CHARS_PER_ROW * MAX_ROWS + 1, "%s%s", copiedText, lastRow);
+    }
+
+    SetClipboardText(copiedText);
+
+    if (copiedText)
+    {
+        free(copiedText);
+    }
+    if (lastRow)
+    {
+        free(lastRow);
+    }
+}
+
+void DrawOptionsMenu(TextEditorContext *txEd, Vector2 mousePos, Font font)
+{
+    if (txEd->selectedStart.x != txEd->selectedEnd.x || txEd->selectedStart.y != txEd->selectedEnd.y)
+    {
+        if (IsMouseButtonPressed(MOUSE_RIGHT_BUTTON))
+        {
+            txEd->isOptionsMenuOpen = true;
+            txEd->optionsMenuPos = mousePos;
+        }
+    }
+    else
+    {
+        txEd->isOptionsMenuOpen = false;
+    }
+
+    if (!txEd->isOptionsMenuOpen)
+    {
+        return;
+    }
+
+    DrawRectangleRounded((Rectangle){txEd->optionsMenuPos.x - 60, txEd->optionsMenuPos.y - 95, 80, 95}, 0.2f, 4, (Color){70, 70, 70, 240});
+    DrawTextEx(font, "Cut", (Vector2){txEd->optionsMenuPos.x - 55, txEd->optionsMenuPos.y - 90}, 24, 1.0f, (Color){255, 67, 64, 255});
+    if (CheckCollisionPointRec(mousePos, (Rectangle){txEd->optionsMenuPos.x - 58, txEd->optionsMenuPos.y - 90, 74, 26}))
+    {
+        txEd->cursor = MOUSE_CURSOR_POINTING_HAND;
+        DrawRectangleRounded((Rectangle){txEd->optionsMenuPos.x - 58, txEd->optionsMenuPos.y - 90, 74, 26}, 0.4f, 4, COLOR_PM_BACK_BTN_HOVER);
+        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+        {
+            // Cut
+            AddToLogFromTextEditor(txEd, "Can't cut yet!{B200}", LOG_LEVEL_WARNING);
+        }
+    }
+    DrawTextEx(font, "Copy", (Vector2){txEd->optionsMenuPos.x - 55, txEd->optionsMenuPos.y - 60}, 24, 1.0f, (Color){0, 191, 255, 255});
+    if (CheckCollisionPointRec(mousePos, (Rectangle){txEd->optionsMenuPos.x - 58, txEd->optionsMenuPos.y - 60, 74, 26}))
+    {
+        txEd->cursor = MOUSE_CURSOR_POINTING_HAND;
+        DrawRectangleRounded((Rectangle){txEd->optionsMenuPos.x - 58, txEd->optionsMenuPos.y - 60, 74, 26}, 0.4f, 4, COLOR_PM_BACK_BTN_HOVER);
+        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+        {
+            TextEditorCopy(txEd);
+        }
+    }
+    DrawTextEx(font, "Paste", (Vector2){txEd->optionsMenuPos.x - 55, txEd->optionsMenuPos.y - 30}, 24, 1.0f, (Color){57, 255, 20, 255});
+    if (CheckCollisionPointRec(mousePos, (Rectangle){txEd->optionsMenuPos.x - 58, txEd->optionsMenuPos.y - 30, 74, 26}))
+    {
+        txEd->cursor = MOUSE_CURSOR_POINTING_HAND;
+        DrawRectangleRounded((Rectangle){txEd->optionsMenuPos.x - 58, txEd->optionsMenuPos.y - 30, 74, 26}, 0.4f, 4, COLOR_PM_BACK_BTN_HOVER);
+        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+        {
+            // Paste
+            AddToLogFromTextEditor(txEd, "Can't paste yet!{B200}", LOG_LEVEL_WARNING);
+        }
+    }
+
+    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+    {
+        txEd->isOptionsMenuOpen = false;
     }
 }
 
@@ -336,108 +510,129 @@ void HandleTextEditor(TextEditorContext *txEd, Vector2 mousePos, Rectangle viewp
 
     txEd->cursorBlinkTime += frameTime;
 
-    if (IsMouseButtonDown(MOUSE_LEFT_BUTTON) && isViewportFocused)
+    if (!txEd->isOptionsMenuOpen)
     {
-        txEd->cursorBlinkTime = 0;
-
-        if (mousePos.y < y)
+        if (IsMouseButtonDown(MOUSE_LEFT_BUTTON) && isViewportFocused)
         {
-            txEd->currRow = 0;
-        }
-        else if (mousePos.y > y + txEd->rowCount * 34)
-        {
-            txEd->currRow = txEd->rowCount - 1;
-        }
-        else
-        {
-            for (int i = 0; i < txEd->rowCount; i++)
-            {
-                if (mousePos.y > y + i * 34 && mousePos.y < y + i * 34 + 34)
-                {
-                    txEd->currRow = i;
-                    break;
-                }
-            }
-        }
-
-        for (int i = strlen(txEd->text[txEd->currRow]); i >= 0; i--)
-        {
-            float left = MeasureTextUntilEx(font, txEd->text[txEd->currRow], i, 30, TEXT_EDITOR_TEXT_SPACING) + x;
-            if (mousePos.x >= left)
-            {
-                float right = MeasureTextUntilEx(font, txEd->text[txEd->currRow], i + 1, 30, TEXT_EDITOR_TEXT_SPACING) + x;
-                float mid = (left + right) * 0.5f;
-                txEd->currCol = (mousePos.x < mid) ? i : i + 1;
-                break;
-            }
-            else if (i == 0)
-            {
-                txEd->currCol = 0;
-            }
-        }
-
-        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && isViewportFocused)
-        {
-            txEd->selectedStart = (Vector2){txEd->currRow, txEd->currCol};
-        }
-
-        txEd->selectedEnd = (Vector2){txEd->currRow, txEd->currCol};
-    }
-
-    static float backspaceTime = 0;
-    static bool backspaceHeld = false;
-
-    if (IsKeyDown(KEY_BACKSPACE))
-    {
-        if (backspaceHeld)
-        {
-            backspaceTime -= frameTime;
-            if (backspaceTime <= 0)
-            {
-                DeleteSymbol(txEd);
-                txEd->cursorBlinkTime = 0;
-
-                backspaceTime = 0.05;
-            }
-        }
-        else
-        {
-            DeleteSymbol(txEd);
             txEd->cursorBlinkTime = 0;
 
-            backspaceHeld = true;
+            if (mousePos.y < y)
+            {
+                txEd->currRow = 0;
+            }
+            else if (mousePos.y > y + txEd->rowCount * 34)
+            {
+                txEd->currRow = txEd->rowCount - 1;
+            }
+            else
+            {
+                for (int i = 0; i < txEd->rowCount; i++)
+                {
+                    if (mousePos.y > y + i * 34 && mousePos.y < y + i * 34 + 34)
+                    {
+                        txEd->currRow = i;
+                        break;
+                    }
+                }
+            }
+
+            for (int i = strlen(txEd->text[txEd->currRow]); i >= 0; i--)
+            {
+                float left = MeasureTextUntilEx(font, txEd->text[txEd->currRow], i, 30, TEXT_EDITOR_TEXT_SPACING) + x;
+                if (mousePos.x >= left)
+                {
+                    float right = MeasureTextUntilEx(font, txEd->text[txEd->currRow], i + 1, 30, TEXT_EDITOR_TEXT_SPACING) + x;
+                    float mid = (left + right) * 0.5f;
+                    txEd->currCol = (mousePos.x < mid) ? i : i + 1;
+                    break;
+                }
+                else if (i == 0)
+                {
+                    txEd->currCol = 0;
+                }
+            }
+
+            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && isViewportFocused)
+            {
+                txEd->selectedStart = (Vector2){txEd->currRow, txEd->currCol};
+            }
+
+            txEd->selectedEnd = (Vector2){txEd->currRow, txEd->currCol};
+        }
+
+        static float backspaceTime = 0;
+        static bool backspaceHeld = false;
+
+        if (IsKeyDown(KEY_BACKSPACE))
+        {
+            if (backspaceHeld)
+            {
+                backspaceTime -= frameTime;
+                if (backspaceTime <= 0)
+                {
+                    if (txEd->selectedStart.x != txEd->selectedEnd.x || txEd->selectedStart.y != txEd->selectedEnd.y)
+                    {
+                        DeleteSymbol(txEd);//TextEditorDeleteSelected(txEd);
+                    }
+                    else
+                    {
+                        DeleteSymbol(txEd);
+                    }
+                    txEd->cursorBlinkTime = 0;
+
+                    backspaceTime = 0.05;
+                }
+            }
+            else
+            {
+                if (txEd->selectedStart.x != txEd->selectedEnd.x || txEd->selectedStart.y != txEd->selectedEnd.y)
+                {
+                    DeleteSymbol(txEd);//TextEditorDeleteSelected(txEd);
+                }
+                else
+                {
+                    DeleteSymbol(txEd);
+                }
+                txEd->cursorBlinkTime = 0;
+
+                backspaceHeld = true;
+                backspaceTime = 0.5f;
+            }
+        }
+        else
+        {
+            backspaceHeld = false;
             backspaceTime = 0.5f;
+        }
+
+        if (IsKeyPressed(KEY_ENTER))
+        {
+            AddNewLine(txEd);
+            txEd->cursorBlinkTime = 0;
+        }
+
+        while (1)
+        {
+            char pressed = GetCharPressed();
+
+            if (pressed == 0)
+            {
+                break;
+            }
+
+            AddSymbol(txEd, pressed);
+        }
+
+        ArrowKeysInput(txEd, frameTime);
+
+        if (txEd->text[txEd->currRow][txEd->currCol - 1] == '\0')
+        {
+            txEd->currCol--;
         }
     }
     else
     {
-        backspaceHeld = false;
-        backspaceTime = 0.5f;
-    }
-
-    if (IsKeyPressed(KEY_ENTER))
-    {
-        AddNewLine(txEd);
-        txEd->cursorBlinkTime = 0;
-    }
-
-    while (1)
-    {
-        char pressed = GetCharPressed();
-
-        if (pressed == 0)
-        {
-            break;
-        }
-
-        AddSymbol(txEd, pressed);
-    }
-
-    ArrowKeysInput(txEd, frameTime);
-
-    if (txEd->text[txEd->currRow][txEd->currCol - 1] == '\0')
-    {
-        txEd->currCol--;
+        txEd->cursor = MOUSE_CURSOR_ARROW;
     }
 
     const char *fileName = GetFileName(txEd->openedFilePath);
@@ -494,6 +689,8 @@ void HandleTextEditor(TextEditorContext *txEd, Vector2 mousePos, Rectangle viewp
     DrawLineEx(start, end, 3.0f, (Color){RAPID_PURPLE.r, RAPID_PURPLE.g, RAPID_PURPLE.b, alpha});
 
     DrawSelector(txEd, viewportBoundary, font);
+
+    DrawOptionsMenu(txEd, mousePos, font);
 
     EndTextureMode();
 }

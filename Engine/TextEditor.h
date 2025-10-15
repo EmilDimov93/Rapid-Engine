@@ -26,11 +26,16 @@ typedef struct TextEditorContext{
     char logMessages[MAX_LOG_MESSAGES][MAX_LOG_MESSAGE_SIZE];
     LogLevel logMessageLevels[MAX_LOG_MESSAGES];
     int logMessageCount;
+
+    bool isOptionsMenuOpen;
+    Vector2 optionsMenuPos;
 }TextEditorContext;
 
 TextEditorContext InitTextEditorContext();
 
 void FreeTextEditorContext(TextEditorContext *txEd);
+
+void ClearTextEditorContext(TextEditorContext *txEd);
 
 bool LoadFileInTextEditor(const char *fileName, TextEditorContext *txEd);
 

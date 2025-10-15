@@ -22,7 +22,7 @@ Logs InitLogs()
 
 void AddToLog(EngineContext *eng, const char *newLine, int level);
 
-void EmergencyExit(EngineContext *eng, CGEditorContext *cgEd, InterpreterContext *intp);
+void EmergencyExit(EngineContext *eng, CGEditorContext *cgEd, InterpreterContext *intp, TextEditorContext *txEd);
 
 EngineContext InitEngineContext()
 {
@@ -62,7 +62,7 @@ EngineContext InitEngineContext()
     if (eng.uiTex.id == 0 || eng.viewportTex.id == 0 || eng.resizeButton.id == 0 || eng.viewportFullscreenButton.id == 0)
     {
         AddToLog(&eng, "Failed to load texture{E223}", LOG_LEVEL_ERROR);
-        EmergencyExit(&eng, &(CGEditorContext){0}, &(InterpreterContext){0});
+        EmergencyExit(&eng, &(CGEditorContext){0}, &(InterpreterContext){0}, &(TextEditorContext){0});
     }
 
     eng.delayFrames = true;
@@ -72,7 +72,7 @@ EngineContext InitEngineContext()
     if (eng.font.texture.id == 0)
     {
         AddToLog(&eng, "Failed to load font{E224}", LOG_LEVEL_ERROR);
-        EmergencyExit(&eng, &(CGEditorContext){0}, &(InterpreterContext){0});
+        EmergencyExit(&eng, &(CGEditorContext){0}, &(InterpreterContext){0}, &(TextEditorContext){0});
     }
 
     eng.wasViewportFocusedLastFrame = false;
@@ -89,7 +89,7 @@ EngineContext InitEngineContext()
     if (eng.saveSound.frameCount == 0)
     {
         AddToLog(&eng, "Failed to load audio{E225}", LOG_LEVEL_ERROR);
-        EmergencyExit(&eng, &(CGEditorContext){0}, &(InterpreterContext){0});
+        EmergencyExit(&eng, &(CGEditorContext){0}, &(InterpreterContext){0}, &(TextEditorContext){0});
     }
 
     eng.isSoundOn = true;
@@ -179,7 +179,7 @@ void AddUIElement(EngineContext *eng, UIElement element)
     else
     {
         AddToLog(eng, "UIElement limit reached{E212}", LOG_LEVEL_ERROR);
-        EmergencyExit(eng, &(CGEditorContext){0}, &(InterpreterContext){0});
+        EmergencyExit(eng, &(CGEditorContext){0}, &(InterpreterContext){0}, &(TextEditorContext){0});
     }
 }
 
@@ -225,7 +225,7 @@ char *LogLevelToString(LogLevel level)
     }
 }
 
-void EmergencyExit(EngineContext *eng, CGEditorContext *cgEd, InterpreterContext *intp)
+void EmergencyExit(EngineContext *eng, CGEditorContext *cgEd, InterpreterContext *intp, TextEditorContext *txEd)
 {
     time_t timestamp = time(NULL);
     struct tm *tm_info = localtime(&timestamp);
@@ -250,6 +250,11 @@ void EmergencyExit(EngineContext *eng, CGEditorContext *cgEd, InterpreterContext
             fprintf(logFile, "[INTERPRETER %s] %02d:%02d:%02d %s\n", LogLevelToString(intp->logMessageLevels[i]), tm_info->tm_hour, tm_info->tm_min, tm_info->tm_sec, intp->logMessages[i]);
         }
 
+        for (int i = 0; i < txEd->logMessageCount; i++)
+        {
+            fprintf(logFile, "[TEXTEDITOR %s] %02d:%02d:%02d %s\n", LogLevelToString(intp->logMessageLevels[i]), tm_info->tm_hour, tm_info->tm_min, tm_info->tm_sec, intp->logMessages[i]);
+        }
+
         fprintf(logFile, "\nTo submit a crash report, please email support@rapidengine.eu");
 
         fclose(logFile);
@@ -260,6 +265,7 @@ void EmergencyExit(EngineContext *eng, CGEditorContext *cgEd, InterpreterContext
     FreeEngineContext(eng);
     FreeEditorContext(cgEd);
     FreeInterpreterContext(intp);
+    FreeTextEditorContext(txEd);
 
     free(intp->projectPath);
     intp->projectPath = NULL;
@@ -276,14 +282,14 @@ char *SetProjectFolderPath(EngineContext *eng, const char *fileName)
     if (!fileName)
     {
         AddToLog(eng, "Failed to get working directory{E226}", LOG_LEVEL_ERROR);
-        EmergencyExit(eng, &(CGEditorContext){0}, &(InterpreterContext){0});
+        EmergencyExit(eng, &(CGEditorContext){0}, &(InterpreterContext){0}, &(TextEditorContext){0});
     }
 
     char cwd[MAX_FILE_PATH];
     if (!GetCWD(cwd, sizeof(cwd)))
     {
         AddToLog(eng, "Failed to get working directory{E226}", LOG_LEVEL_ERROR);
-        EmergencyExit(eng, &(CGEditorContext){0}, &(InterpreterContext){0});
+        EmergencyExit(eng, &(CGEditorContext){0}, &(InterpreterContext){0}, &(TextEditorContext){0});
     }
 
     return strmac(NULL, MAX_FILE_PATH, "%s%cProjects%c%s", cwd, PATH_SEPARATOR, PATH_SEPARATOR, fileName);
@@ -330,7 +336,7 @@ void PrepareCGFilePath(EngineContext *eng, const char *projectName)
     if (!GetCWD(cwd, sizeof(cwd)))
     {
         AddToLog(eng, "Failed to get working directory{E226}", LOG_LEVEL_ERROR);
-        EmergencyExit(eng, &(CGEditorContext){0}, &(InterpreterContext){0});
+        EmergencyExit(eng, &(CGEditorContext){0}, &(InterpreterContext){0}, &(TextEditorContext){0});
     }
 
     strmac(eng->CGFilePath, MAX_FILE_PATH, "%s%cProjects%c%s%c%s.cg", cwd, PATH_SEPARATOR, PATH_SEPARATOR, projectName, PATH_SEPARATOR, projectName);
@@ -931,7 +937,7 @@ void DrawUIElements(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                 intp->runtimeGraph = runtimeGraph;
                 if (intp->buildFailed)
                 {
-                    EmergencyExit(eng, cgEd, intp);
+                    EmergencyExit(eng, cgEd, intp, txEd);
                 }
                 else if (intp->buildErrorOccured || runtimeGraph == NULL)
                 {
@@ -971,7 +977,7 @@ void DrawUIElements(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                 if (!eng->files.paths || eng->files.count < 0)
                 {
                     AddToLog(eng, "Error loading files{E201}", LOG_LEVEL_ERROR);
-                    EmergencyExit(eng, cgEd, intp);
+                    EmergencyExit(eng, cgEd, intp, txEd);
                 }
                 eng->uiElementCount = 0;
                 eng->delayFrames = true;
@@ -986,7 +992,7 @@ void DrawUIElements(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                 if (!eng->files.paths || eng->files.count < 0)
                 {
                     AddToLog(eng, "Error loading files{E201}", LOG_LEVEL_ERROR);
-                    EmergencyExit(eng, cgEd, intp);
+                    EmergencyExit(eng, cgEd, intp, txEd);
                 }
             }
             break;
@@ -1098,8 +1104,7 @@ void DrawUIElements(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                         {
                             eng->delayFrames = true;
                             eng->viewportMode = VIEWPORT_TEXT_EDITOR;
-                            txEd->currRow = 0;
-                            txEd->currCol = 0;
+                            ClearTextEditorContext(txEd);
                             if (!LoadFileInTextEditor(eng->uiElements[eng->hoveredUIElementIndex].name, txEd))
                             {
                                 AddToLog(eng, "Failed to load file{T200}", LOG_LEVEL_ERROR);
@@ -1119,7 +1124,7 @@ void DrawUIElements(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                         if (!eng->files.paths || eng->files.count < 0)
                         {
                             AddToLog(eng, "Error loading files{E201}", LOG_LEVEL_ERROR);
-                            EmergencyExit(eng, cgEd, intp);
+                            EmergencyExit(eng, cgEd, intp, txEd);
                         }
                     }
                 }
@@ -1892,7 +1897,7 @@ void BuildUITexture(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
     DrawUIElements(eng, graph, cgEd, intp, runtimeGraph, txEd);
 }
 
-bool HandleUICollisions(EngineContext *eng, GraphContext *graph, InterpreterContext *intp, CGEditorContext *cgEd, RuntimeGraphContext *runtimeGraph)
+bool HandleUICollisions(EngineContext *eng, GraphContext *graph, InterpreterContext *intp, CGEditorContext *cgEd, RuntimeGraphContext *runtimeGraph, TextEditorContext *txEd)
 {
     if (eng->uiElementCount == 0)
     {
@@ -1944,6 +1949,9 @@ bool HandleUICollisions(EngineContext *eng, GraphContext *graph, InterpreterCont
         eng->isViewportFullscreen = false;
         FreeInterpreterContext(intp);
     }
+    else if(IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_T)){
+        //test open TextEditor
+    }
     else if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_B))
     {
         if (cgEd->hasChanged)
@@ -1956,7 +1964,7 @@ bool HandleUICollisions(EngineContext *eng, GraphContext *graph, InterpreterCont
             intp->runtimeGraph = runtimeGraph;
             if (intp->buildFailed)
             {
-                EmergencyExit(eng, cgEd, intp);
+                EmergencyExit(eng, cgEd, intp, txEd);
             }
             else if (intp->buildErrorOccured || runtimeGraph == NULL)
             {
@@ -2530,7 +2538,7 @@ int main()
     if (!eng.files.paths || eng.files.count <= 0)
     {
         AddToLog(&eng, "Error loading files{E201}", LOG_LEVEL_ERROR);
-        EmergencyExit(&eng, &cgEd, &intp);
+        EmergencyExit(&eng, &cgEd, &intp, &txEd);
     }
 
     PrepareCGFilePath(&eng, fileName);
@@ -2564,13 +2572,13 @@ int main()
     {
         if (!IsWindowReady())
         {
-            EmergencyExit(&eng, &cgEd, &intp);
+            EmergencyExit(&eng, &cgEd, &intp, &txEd);
         }
 
         if (STRING_ALLOCATION_FAILURE)
         {
             AddToLog(&eng, "String allocation failed{O200}", LOG_LEVEL_ERROR);
-            EmergencyExit(&eng, &cgEd, &intp);
+            EmergencyExit(&eng, &cgEd, &intp, &txEd);
         }
 
         ContextChangePerFrame(&eng);
@@ -2578,7 +2586,7 @@ int main()
         int prevHoveredUIIndex = eng.hoveredUIElementIndex;
         eng.isAnyMenuOpen = eng.showSaveWarning == 1 || eng.showSettingsMenu;
 
-        if (HandleUICollisions(&eng, &graph, &intp, &cgEd, &runtimeGraph) && !eng.isViewportFullscreen)
+        if (HandleUICollisions(&eng, &graph, &intp, &cgEd, &runtimeGraph, &txEd) && !eng.isViewportFullscreen)
         {
             if (((prevHoveredUIIndex != eng.hoveredUIElementIndex || IsMouseButtonDown(MOUSE_LEFT_BUTTON) || eng.isSettingsButtonHovered) && eng.showSaveWarning != 1 && eng.showSettingsMenu == false))
             {
@@ -2692,7 +2700,7 @@ int main()
             }
             if (cgEd.hasFatalErrorOccurred)
             {
-                EmergencyExit(&eng, &cgEd, &intp);
+                EmergencyExit(&eng, &cgEd, &intp, &txEd);
             }
 
             break;
