@@ -4,4 +4,6 @@ RapidEngine.exe
 engine_log.txt
 error_codes.txt
 Makefile
-gitbuild.ps1
+lines.ps1
+push.ps1
+run.ps1
