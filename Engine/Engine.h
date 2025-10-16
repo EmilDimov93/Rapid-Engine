@@ -219,6 +219,8 @@ typedef struct EngineContext
 
     bool isLogMessageHovered;
 
+    bool isTopBarHovered;
+
 } EngineContext;
 
 typedef enum

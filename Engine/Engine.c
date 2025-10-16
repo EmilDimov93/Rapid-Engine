@@ -134,6 +134,8 @@ EngineContext InitEngineContext()
 
     eng.isLogMessageHovered = false;
 
+    eng.isTopBarHovered = false;
+
     return eng;
 }
 
@@ -878,6 +880,7 @@ void DrawUIElements(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
     eng->isBuildButtonHovered = false;
     eng->isSettingsButtonHovered = false;
     eng->isLogMessageHovered = false;
+    eng->isTopBarHovered = false;
     if (eng->hoveredUIElementIndex != -1 && !eng->isAnyMenuOpen && eng->draggedFileIndex == -1)
     {
         switch (eng->uiElements[eng->hoveredUIElementIndex].type)
@@ -1015,6 +1018,7 @@ void DrawUIElements(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
             break;
         case UI_ACTION_CLOSE_WINDOW:
             eng->isViewportFocused = false;
+            eng->isTopBarHovered = true;
             if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
             {
                 if (cgEd->hasChanged)
@@ -1030,6 +1034,7 @@ void DrawUIElements(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
             break;
         case UI_ACTION_MINIMIZE_WINDOW:
             eng->isViewportFocused = false;
+            eng->isTopBarHovered = true;
             if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
             {
                 MinimizeWindow();
@@ -1037,6 +1042,7 @@ void DrawUIElements(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
             break;
         case UI_ACTION_OPEN_SETTINGS:
             eng->isViewportFocused = false;
+            eng->isTopBarHovered = true;
             eng->isSettingsButtonHovered = true;
             if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
             {
@@ -1045,6 +1051,7 @@ void DrawUIElements(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
             break;
         case UI_ACTION_MOVE_WINDOW:
             eng->isViewportFocused = false;
+            eng->isTopBarHovered = true;
             DrawCircleSector((Vector2){eng->screenWidth - 152, 7}, 38, 90, 180, 8, GRAY_150);
             if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
             {
@@ -2136,7 +2143,7 @@ bool HandleUICollisions(EngineContext *eng, GraphContext *graph, InterpreterCont
     }
 
     static Vector2 totalWindowResizeDelta;
-    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !eng->isWindowMoving)
+    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !eng->isWindowMoving && !eng->isTopBarHovered)
     {
         if (CheckCollisionPointLine(eng->mousePos, (Vector2){0, 5}, (Vector2){eng->screenWidth, 5}, 10.0f))
         {
