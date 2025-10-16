@@ -2018,7 +2018,10 @@ bool HandleUICollisions(EngineContext *eng, GraphContext *graph, InterpreterCont
     }
     else if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_T))
     {
-        // test open TextEditor
+        if(txEd->isFileOpened){
+            eng->viewportMode = VIEWPORT_TEXT_EDITOR;
+            eng->delayFrames = true;
+        }
     }
     else if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_B))
     {

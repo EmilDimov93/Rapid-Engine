@@ -16,6 +16,8 @@ TextEditorContext InitTextEditorContext()
 
     txEd.isOptionsMenuOpen = false;
 
+    txEd.isFileOpened = false;
+
     return txEd;
 }
 
@@ -29,6 +31,7 @@ void FreeTextEditorContext(TextEditorContext *txEd)
 }
 
 void ClearTextEditorContext(TextEditorContext *txEd){
+    txEd->isFileOpened = false;
     txEd->rowCount = 0;
     txEd->openedFilePath[0] = '\0';
     txEd->currRow = 0;
@@ -77,6 +80,8 @@ bool LoadFileInTextEditor(const char *fileName, TextEditorContext *txEd)
     fclose(file);
 
     txEd->rowCount = line;
+
+    txEd->isFileOpened = true;
 
     return true;
 }

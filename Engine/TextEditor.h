@@ -10,6 +10,8 @@
 #define TEXT_EDITOR_TEXT_SPACING 3.0f
 
 typedef struct TextEditorContext{
+    bool isFileOpened;
+
     char **text;
     int rowCount;
     char openedFilePath[MAX_FILE_NAME];
