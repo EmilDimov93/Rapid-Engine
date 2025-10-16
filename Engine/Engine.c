@@ -114,7 +114,7 @@ EngineContext InitEngineContext()
     eng.isAutoSaveON = false;
     eng.autoSaveTimer = 0.0f;
 
-    eng.fpsLimit = FPS_DEFAULT;
+    eng.fpsLimit = FPS_HIGH;
     eng.shouldShowFPS = false;
 
     eng.isAnyMenuOpen = false;
@@ -2664,7 +2664,7 @@ int main()
 
         SetEngineZoom(&eng, &cgEd, &intp);
 
-        Vector2 mouseInViewportTex = (Vector2){(eng.mousePos.x - eng.sideBarWidth) / eng.zoom + (eng.viewportTex.texture.width - (eng.isViewportFullscreen ? eng.screenWidth : eng.viewportWidth / eng.zoom)) / 2.0f, eng.mousePos.y / eng.zoom + (eng.viewportTex.texture.height - (eng.isViewportFullscreen ? eng.screenHeight : eng.viewportHeight / eng.zoom)) / 2.0f};
+        Vector2 mouseInViewportTex = (Vector2){(eng.mousePos.x - (eng.isViewportFullscreen ? 0 : eng.sideBarWidth)) / eng.zoom + (eng.viewportTex.texture.width - (eng.isViewportFullscreen ? eng.screenWidth : eng.viewportWidth / eng.zoom)) / 2.0f, eng.mousePos.y / eng.zoom + (eng.viewportTex.texture.height - (eng.isViewportFullscreen ? eng.screenHeight : eng.viewportHeight / eng.zoom)) / 2.0f};
 
         Rectangle viewportRecInViewportTex = (Rectangle){
             (eng.viewportTex.texture.width - (eng.isViewportFullscreen ? eng.screenWidth : eng.viewportWidth) / eng.zoom) / 2.0f,
