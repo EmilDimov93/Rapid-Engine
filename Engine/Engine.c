@@ -742,42 +742,56 @@ bool DrawSettingsMenu(EngineContext *eng, InterpreterContext *intp, CGEditorCont
     {
     case SETTINGS_MODE_ENGINE:
         DrawTextEx(eng->font, "Sound", (Vector2){eng->screenWidth / 4 + 200, 300}, 28, 1, WHITE);
-        DrawSlider((Vector2){eng->screenWidth * 3 / 4 - 70, 305}, &eng->isSoundOn, eng->mousePos, &hasChanged);
+        DrawSlider((Vector2){eng->screenWidth * 3 / 4 - 70, 303}, &eng->isSoundOn, eng->mousePos, &hasChanged);
         if (intp->isSoundOn != eng->isSoundOn)
         {
             intp->isSoundOn = eng->isSoundOn;
             intp->hasSoundOnChanged = true;
         }
 
+        DrawLine(eng->screenWidth / 4 + 182, 340, eng->screenWidth * 3 / 4, 340, GRAY_50);
+
         DrawTextEx(eng->font, "Auto Save Every 2 Minutes", (Vector2){eng->screenWidth / 4 + 200, 350}, 28, 1, WHITE);
-        DrawSlider((Vector2){eng->screenWidth * 3 / 4 - 70, 355}, &eng->isAutoSaveON, eng->mousePos, &hasChanged);
+        DrawSlider((Vector2){eng->screenWidth * 3 / 4 - 70, 353}, &eng->isAutoSaveON, eng->mousePos, &hasChanged);
+
+        DrawLine(eng->screenWidth / 4 + 182, 390, eng->screenWidth * 3 / 4, 390, GRAY_50);
 
         DrawTextEx(eng->font, "Show FPS", (Vector2){eng->screenWidth / 4 + 200, 400}, 28, 1, WHITE);
-        DrawSlider((Vector2){eng->screenWidth * 3 / 4 - 70, 405}, &eng->shouldShowFPS, eng->mousePos, &hasChanged);
+        DrawSlider((Vector2){eng->screenWidth * 3 / 4 - 70, 403}, &eng->shouldShowFPS, eng->mousePos, &hasChanged);
+
+        DrawLine(eng->screenWidth / 4 + 182, 440, eng->screenWidth * 3 / 4, 440, GRAY_50);
 
         DrawTextEx(eng->font, "FPS Limit", (Vector2){eng->screenWidth / 4 + 200, 450}, 28, 1, WHITE);
-        DrawFPSLimitDropdown((Vector2){eng->screenWidth * 3 / 4 - 100, 455}, &eng->fpsLimit, eng->mousePos, eng->font, &hasChanged);
+        DrawFPSLimitDropdown((Vector2){eng->screenWidth * 3 / 4 - 100, 450}, &eng->fpsLimit, eng->mousePos, eng->font, &hasChanged);
+
+        DrawLine(eng->screenWidth / 4 + 182, 490, eng->screenWidth * 3 / 4, 490, GRAY_50);
 
         DrawTextEx(eng->font, "Low-spec mode", (Vector2){eng->screenWidth / 4 + 200, 500}, 28, 1, WHITE);
-        DrawSlider((Vector2){eng->screenWidth * 3 / 4 - 70, 505}, &eng->isLowSpecModeOn, eng->mousePos, &hasChanged);
+        DrawSlider((Vector2){eng->screenWidth * 3 / 4 - 70, 503}, &eng->isLowSpecModeOn, eng->mousePos, &hasChanged);
         if (cgEd->isLowSpecModeOn != eng->isLowSpecModeOn)
         {
             cgEd->isLowSpecModeOn = eng->isLowSpecModeOn;
             cgEd->delayFrames = true;
         }
 
-        DrawTextEx(eng->font, "Open files with Rapid Editor(Beta)", (Vector2){eng->screenWidth / 4 + 200, 550}, 28, 1, WHITE); // test
-        DrawSlider((Vector2){eng->screenWidth * 3 / 4 - 70, 555}, &eng->openFilesWithRapidEditor, eng->mousePos, &hasChanged);
+        DrawLine(eng->screenWidth / 4 + 182, 540, eng->screenWidth * 3 / 4, 540, GRAY_50);
+
+        DrawTextEx(eng->font, "Open files with Rapid Editor(Beta)", (Vector2){eng->screenWidth / 4 + 200, 550}, 28, 1, WHITE);
+        DrawSlider((Vector2){eng->screenWidth * 3 / 4 - 70, 553}, &eng->openFilesWithRapidEditor, eng->mousePos, &hasChanged);
         break;
     case SETTINGS_MODE_GAME:
         DrawTextEx(eng->font, "Infinite Loop Protection", (Vector2){eng->screenWidth / 4 + 200, 300}, 28, 1, WHITE);
-        DrawSlider((Vector2){eng->screenWidth * 3 / 4 - 70, 305}, &intp->isInfiniteLoopProtectionOn, eng->mousePos, &hasChanged);
+        DrawSlider((Vector2){eng->screenWidth * 3 / 4 - 70, 303}, &intp->isInfiniteLoopProtectionOn, eng->mousePos, &hasChanged);
+
+        DrawLine(eng->screenWidth / 4 + 182, 340, eng->screenWidth * 3 / 4, 340, GRAY_50);
 
         DrawTextEx(eng->font, "Show Hitboxes", (Vector2){eng->screenWidth / 4 + 200, 350}, 28, 1, WHITE);
-        DrawSlider((Vector2){eng->screenWidth * 3 / 4 - 70, 355}, &intp->shouldShowHitboxes, eng->mousePos, &hasChanged);
+        DrawSlider((Vector2){eng->screenWidth * 3 / 4 - 70, 353}, &intp->shouldShowHitboxes, eng->mousePos, &hasChanged);
+
+        DrawLine(eng->screenWidth / 4 + 182, 390, eng->screenWidth * 3 / 4, 390, GRAY_50);
 
         DrawTextEx(eng->font, "Hide Mouse Cursor in Fullscreen", (Vector2){eng->screenWidth / 4 + 200, 400}, 28, 1, WHITE);
-        DrawSlider((Vector2){eng->screenWidth * 3 / 4 - 70, 405}, &eng->shouldHideCursorInGameFullscreen, eng->mousePos, &hasChanged);
+        DrawSlider((Vector2){eng->screenWidth * 3 / 4 - 70, 403}, &eng->shouldHideCursorInGameFullscreen, eng->mousePos, &hasChanged);
         break;
     case SETTINGS_MODE_KEYBINDS:
         DrawTextEx(eng->font, "No Keybind settings yet!", (Vector2){eng->screenWidth / 4 + 200, 300}, 28, 1, RED);
