@@ -975,7 +975,7 @@ void DrawNodes(CGEditorContext *cgEd, GraphContext *graph)
             DrawRectangleGradientH(x - 2, y + fullRadius - 2, width + 4, 38 - fullRadius, nodeLeftGradientColor, nodeRightGradientColor);
         }
 
-        DrawRectangleRoundedLinesEx((Rectangle){x - 1, y - 1, width + 2, height + 2}, roundness, segments, 2.0f + 1.0f / fabs(cgEd->zoom), COLOR_CGED_NODE_BORDER);
+        DrawRectangleRoundedLinesEx((Rectangle){x - 1, y - 1, width + 2, height + 2}, roundness, segments, 2.0f + 1.0f / round(cgEd->zoom), COLOR_CGED_NODE_BORDER);
 
         DrawTextEx(cgEd->font, NodeTypeToString(graph->nodes[i].type), (Vector2){x + 8, y + 6}, 28, 1, WHITE);
 
@@ -1080,7 +1080,7 @@ void DrawNodes(CGEditorContext *cgEd, GraphContext *graph)
                 DrawRectangleRounded((Rectangle){graph->pins[i].position.x - 6, graph->pins[i].position.y - 10, 96, 24}, 0.4f, 4, COLOR_CGED_EDIT_HITBOX_BTN_HOVER);
                 if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
                 {
-                    // Find texture file name from linked literal node(shouldn't only work with literal nodes)
+                    // TODO: find texture file name from linked literal node(shouldn't only work with literal nodes)
                     for (int b = 0; b < graph->nodeCount; b++)
                     {
                         if (graph->nodes[b].id == graph->pins[i].nodeID)
@@ -1717,7 +1717,7 @@ void HandleEditor(CGEditorContext *cgEd, GraphContext *graph, RenderTexture2D *v
     {
         cgEd->delayFrames = true;
         cgEd->isNodeCreateMenuOpen = false;
-        deltaSinceRightClick += fabs(GetMouseDelta().x + GetMouseDelta().y);
+        deltaSinceRightClick += fabsf(GetMouseDelta().x + GetMouseDelta().y);
         cgEd->isSelecting = true;
         if (IsMouseButtonPressed(MOUSE_RIGHT_BUTTON))
         {

@@ -476,7 +476,6 @@ void DrawFPSLimitDropdown(Vector2 pos, int *limit, Vector2 mousePos, Font font, 
 
     float blockHeight = 30;
 
-    Rectangle mainBox = {pos.x, pos.y, 90, blockHeight};
     DrawRectangle(pos.x, pos.y, 90, blockHeight, GRAY_60);
     DrawTextEx(font, TextFormat("%d FPS", *limit), (Vector2){pos.x + 14 - 4 * (*limit) / 100, pos.y + 4}, 20, 1, WHITE);
     DrawRectangleLines(pos.x, pos.y, 90, blockHeight, WHITE);
@@ -485,8 +484,8 @@ void DrawFPSLimitDropdown(Vector2 pos, int *limit, Vector2 mousePos, Font font, 
     {
         for (int i = 0; i < fpsCount; i++)
         {
-            Rectangle optionBox = {mainBox.x - (i + 1) * 40, mainBox.y, 40, blockHeight};
-            DrawRectangle(mainBox.x - (i + 1) * 40 - 2, mainBox.y, 40, blockHeight, (*limit == fpsOptions[i]) ? COLOR_SETTINGS_MENU_DROPDOWN_SELECTED_OPTION : GRAY_60);
+            Rectangle optionBox = {pos.x - (i + 1) * 40, pos.y, 40, blockHeight};
+            DrawRectangle(pos.x - (i + 1) * 40 - 2, pos.y, 40, blockHeight, (*limit == fpsOptions[i]) ? COLOR_SETTINGS_MENU_DROPDOWN_SELECTED_OPTION : GRAY_60);
             DrawTextEx(font, TextFormat("%d", fpsOptions[i]), (Vector2){optionBox.x + 10 - 4 * fpsOptions[i] / 100, optionBox.y + 4}, 20, 1, WHITE);
 
             if (CheckCollisionPointRec(mousePos, optionBox))
@@ -502,7 +501,7 @@ void DrawFPSLimitDropdown(Vector2 pos, int *limit, Vector2 mousePos, Font font, 
         }
     }
 
-    if (CheckCollisionPointRec(mousePos, mainBox))
+    if (CheckCollisionPointRec(mousePos, (Rectangle){pos.x, pos.y, 90, blockHeight}))
     {
         SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
@@ -1107,11 +1106,11 @@ void DrawUIElements(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                                   .text = {.string = "", .textPos = {tooltipRect.x + 10, tooltipRect.y + 10}, .textSize = 20, .textSpacing = 0, .textColor = WHITE}});
             strmac(eng->uiElements[eng->uiElementCount - 1].text.string, MAX_FILE_TOOLTIP_SIZE, "%s", tooltipText);
 
-            double currentTime = GetTime();
+            float currentTime = GetTime();
             static int lastClickedFileIndex = -1;
             if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
             {
-                static double lastClickTime = 0;
+                static float lastClickTime = 0;
 
                 if (currentTime - lastClickTime <= DOUBLE_CLICK_THRESHOLD && lastClickedFileIndex == eng->uiElements[eng->hoveredUIElementIndex].fileIndex)
                 {
@@ -1170,7 +1169,7 @@ void DrawUIElements(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                 lastClickTime = currentTime;
                 lastClickedFileIndex = eng->uiElements[eng->hoveredUIElementIndex].fileIndex;
             }
-            static double holdDelta = 0;
+            static float holdDelta = 0;
             static bool startedDragging = false;
             Vector2 mouseDelta = GetMouseDelta();
             if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
@@ -1248,7 +1247,6 @@ void DrawUIElements(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
         {
             hasDrawnSpecialElements = true;
 
-            // special symbols and textures
             DrawRectangleLinesEx((Rectangle){0, 0, eng->screenWidth, eng->screenHeight}, 4.0f, WHITE);
 
             DrawLineEx((Vector2){eng->screenWidth - 35, 15}, (Vector2){eng->screenWidth - 15, 35}, 2, WHITE);
@@ -1996,6 +1994,9 @@ bool HandleUICollisions(EngineContext *eng, GraphContext *graph, InterpreterCont
         else if (!eng->wasBuilt)
         {
             AddToLog(eng, "Project has not been built!{I103}", LOG_LEVEL_WARNING);
+        }
+        else if(eng->isGameRunning){
+            AddToLog(eng, "Project already running!{I107}", LOG_LEVEL_WARNING);
         }
         else
         {
