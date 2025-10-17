@@ -31,6 +31,8 @@ typedef struct TextEditorContext{
 
     bool isOptionsMenuOpen;
     Vector2 optionsMenuPos;
+
+    Font font;
 }TextEditorContext;
 
 TextEditorContext InitTextEditorContext();
@@ -41,4 +43,4 @@ void ClearTextEditorContext(TextEditorContext *txEd);
 
 bool LoadFileInTextEditor(const char *fileName, TextEditorContext *txEd);
 
-void HandleTextEditor(TextEditorContext *txEd, Vector2 mousePos, Rectangle viewportBoundary, RenderTexture2D *viewport, Font font, bool isViewportFocused);
+void HandleTextEditor(TextEditorContext *txEd, Vector2 mousePos, Rectangle viewportBoundary, RenderTexture2D *viewport, bool isViewportFocused, Font fontArial);

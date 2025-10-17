@@ -18,6 +18,7 @@ Logs InitLogs()
     logs.count = 0;
     logs.capacity = 100;
     logs.entries = malloc(sizeof(LogEntry) * logs.capacity);
+    logs.hasNewLogMessage = false;
     return logs;
 }
 
@@ -201,6 +202,8 @@ void AddToLog(EngineContext *eng, const char *newLine, int level)
             exit(1);
         }
     }
+
+    eng->logs.hasNewLogMessage = true;
 
     time_t timestamp = time(NULL);
     struct tm *tm_info = localtime(&timestamp);
@@ -2671,7 +2674,7 @@ int main()
 
         if (HandleUICollisions(&eng, &graph, &intp, &cgEd, &runtimeGraph, &txEd) && !eng.isViewportFullscreen)
         {
-            if ((prevHoveredUIIndex != eng.hoveredUIElementIndex || IsMouseButtonDown(MOUSE_LEFT_BUTTON) || eng.isSettingsButtonHovered || eng.draggedFileIndex != -1 || eng.isLogMessageHovered || eng.isKeyboardShortcutActivated) && eng.showSaveWarning != 1 && eng.showSettingsMenu == false)
+            if ((prevHoveredUIIndex != eng.hoveredUIElementIndex || IsMouseButtonDown(MOUSE_LEFT_BUTTON) || eng.isSettingsButtonHovered || eng.draggedFileIndex != -1 || eng.isLogMessageHovered || eng.isKeyboardShortcutActivated || eng.logs.hasNewLogMessage) && eng.showSaveWarning != 1 && eng.showSettingsMenu == false)
             {
                 BuildUITexture(&eng, &graph, &cgEd, &intp, &runtimeGraph, &txEd);
                 eng.fps = FPS_HIGH;
@@ -2684,6 +2687,8 @@ int main()
             eng.fps = FPS_DEFAULT;
             eng.delayFrames = false;
         }
+        
+        eng.logs.hasNewLogMessage = false;
 
         SetEngineMouseCursor(&eng, &cgEd, &txEd);
 
@@ -2691,13 +2696,17 @@ int main()
 
         SetEngineZoom(&eng, &cgEd, &intp);
 
-        Vector2 mouseInViewportTex = (Vector2){(eng.mousePos.x - (eng.isViewportFullscreen ? 0 : eng.sideBarWidth)) / eng.zoom + (eng.viewportTex.texture.width - (eng.isViewportFullscreen ? eng.screenWidth : eng.viewportWidth / eng.zoom)) / 2.0f, eng.mousePos.y / eng.zoom + (eng.viewportTex.texture.height - (eng.isViewportFullscreen ? eng.screenHeight : eng.viewportHeight / eng.zoom)) / 2.0f};
+        Vector2 mouseInViewportTex = (Vector2){
+            (eng.mousePos.x - (eng.isViewportFullscreen ? 0 : eng.sideBarWidth)) / eng.zoom + (eng.viewportTex.texture.width - (eng.isViewportFullscreen ? eng.screenWidth : eng.viewportWidth / eng.zoom)) / 2.0f, 
+            eng.mousePos.y / eng.zoom + (eng.viewportTex.texture.height - (eng.isViewportFullscreen ? eng.screenHeight : eng.viewportHeight / eng.zoom)) / 2.0f
+        };
 
         Rectangle viewportRecInViewportTex = (Rectangle){
             (eng.viewportTex.texture.width - (eng.isViewportFullscreen ? eng.screenWidth : eng.viewportWidth) / eng.zoom) / 2.0f,
             (eng.viewportTex.texture.height - (eng.isViewportFullscreen ? eng.screenHeight : eng.viewportHeight) / eng.zoom) / 2.0f,
             (eng.screenWidth - (eng.isViewportFullscreen ? 0 : eng.sideBarWidth)) / eng.zoom,
-            (eng.screenHeight - (eng.isViewportFullscreen ? 0 : eng.bottomBarHeight)) / eng.zoom};
+            (eng.screenHeight - (eng.isViewportFullscreen ? 0 : eng.bottomBarHeight)) / eng.zoom
+        };
 
         if (eng.showSaveWarning == 1 || eng.showSettingsMenu || eng.windowResizeButton != RESIZING_WINDOW_NONE)
         {
@@ -2901,7 +2910,7 @@ int main()
         }
         case VIEWPORT_TEXT_EDITOR:
         {
-            HandleTextEditor(&txEd, mouseInViewportTex, viewportRecInViewportTex, &eng.viewportTex, eng.font, eng.isViewportFocused);
+            HandleTextEditor(&txEd, mouseInViewportTex, viewportRecInViewportTex, &eng.viewportTex, eng.isViewportFocused, eng.font);
             if (txEd.newLogMessage)
             {
                 for (int i = 0; i < txEd.logMessageCount; i++)

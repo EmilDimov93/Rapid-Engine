@@ -69,6 +69,7 @@ typedef struct Logs
     LogEntry *entries;
     int count;
     int capacity;
+    bool hasNewLogMessage;
 } Logs;
 
 typedef struct UIElement

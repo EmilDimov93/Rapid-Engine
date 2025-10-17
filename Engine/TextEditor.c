@@ -18,6 +18,8 @@ TextEditorContext InitTextEditorContext()
 
     txEd.isFileOpened = false;
 
+    txEd.font = LoadFontFromMemory(".ttf", JetBrainsMonoNL_ExtraBold_ttf, JetBrainsMonoNL_ExtraBold_ttf_len, FONT_GLYPHS, NULL, 0);
+
     return txEd;
 }
 
@@ -28,6 +30,8 @@ void FreeTextEditorContext(TextEditorContext *txEd)
         free(txEd->text[i]);
     }
     free(txEd->text);
+
+    UnloadFont(txEd->font);
 }
 
 void ClearTextEditorContext(TextEditorContext *txEd){
@@ -290,7 +294,7 @@ void ArrowKeysInput(TextEditorContext *txEd, float frameTime)
 void AddSymbol(TextEditorContext *txEd, char newChar)
 {
 
-    if (txEd->currCol < MAX_CHARS_PER_ROW)
+    if (strlen(txEd->text[txEd->currRow]) < MAX_CHARS_PER_ROW)
     {
         for (int i = strlen(txEd->text[txEd->currRow]); i >= txEd->currCol; i--)
         {
@@ -305,12 +309,16 @@ void AddSymbol(TextEditorContext *txEd, char newChar)
     }
 }
 
-void DrawSelector(TextEditorContext *txEd, Rectangle viewportBoundary, Font font)
+void DrawSelector(TextEditorContext *txEd, Rectangle viewportBoundary)
 {
     int startRow = txEd->selectedStart.x;
     int startCol = txEd->selectedStart.y;
     int endRow = txEd->selectedEnd.x;
     int endCol = txEd->selectedEnd.y;
+
+    if(startRow == endRow && startCol == endCol){
+        return;
+    }
 
     if (startRow > endRow || (startCol > endCol && startRow == endRow))
     {
@@ -323,16 +331,16 @@ void DrawSelector(TextEditorContext *txEd, Rectangle viewportBoundary, Font font
         endCol = temp;
     }
 
-    DrawRectangle(viewportBoundary.x + MeasureTextUntilEx(font, txEd->text[startRow], startCol, 30, TEXT_EDITOR_TEXT_SPACING) + 50, viewportBoundary.y + startRow * 34 + 60, MeasureTextUntilEx(font, txEd->text[startRow] + startCol, startRow == endRow ? endCol - startCol : strlen(txEd->text[startRow]), 30, TEXT_EDITOR_TEXT_SPACING) + 5, 30, COLOR_TE_SELECTOR);
+    DrawRectangle(viewportBoundary.x + MeasureTextUntilEx(txEd->font, txEd->text[startRow], startCol, 30, TEXT_EDITOR_TEXT_SPACING) + 50, viewportBoundary.y + startRow * 34 + 60, MeasureTextUntilEx(txEd->font, txEd->text[startRow] + startCol, startRow == endRow ? endCol - startCol : strlen(txEd->text[startRow]), 30, TEXT_EDITOR_TEXT_SPACING) + 5, 30, COLOR_TE_SELECTOR);
 
     for (int i = startRow + 1; i < endRow; i++)
     {
-        DrawRectangle(viewportBoundary.x + 50, viewportBoundary.y + i * 34 + 60, MeasureTextEx(font, txEd->text[i], 30, TEXT_EDITOR_TEXT_SPACING).x + 5, 30, COLOR_TE_SELECTOR);
+        DrawRectangle(viewportBoundary.x + 50, viewportBoundary.y + i * 34 + 60, MeasureTextEx(txEd->font, txEd->text[i], 30, TEXT_EDITOR_TEXT_SPACING).x + 5, 30, COLOR_TE_SELECTOR);
     }
 
     if (startRow != endRow)
     {
-        DrawRectangle(viewportBoundary.x + 50, viewportBoundary.y + endRow * 34 + 60, MeasureTextUntilEx(font, txEd->text[endRow], endCol, 30, TEXT_EDITOR_TEXT_SPACING), 30, COLOR_TE_SELECTOR);
+        DrawRectangle(viewportBoundary.x + 50, viewportBoundary.y + endRow * 34 + 60, MeasureTextUntilEx(txEd->font, txEd->text[endRow], endCol, 30, TEXT_EDITOR_TEXT_SPACING), 30, COLOR_TE_SELECTOR);
     }
 }
 
@@ -444,7 +452,7 @@ void TextEditorCopy(TextEditorContext *txEd)
     }
 }
 
-void DrawOptionsMenu(TextEditorContext *txEd, Vector2 mousePos, Font font)
+void DrawOptionsMenu(TextEditorContext *txEd, Vector2 mousePos)
 {
     if (txEd->selectedStart.x != txEd->selectedEnd.x || txEd->selectedStart.y != txEd->selectedEnd.y)
     {
@@ -466,7 +474,7 @@ void DrawOptionsMenu(TextEditorContext *txEd, Vector2 mousePos, Font font)
 
     DrawRectangleRounded((Rectangle){txEd->optionsMenuPos.x - 60, txEd->optionsMenuPos.y - 95, 80, 95}, 0.2f, 4, COLOR_TE_OPTIONS_MENU);
 
-    DrawTextEx(font, "Cut", (Vector2){txEd->optionsMenuPos.x - 55, txEd->optionsMenuPos.y - 90}, 24, 1.0f, COLOR_TE_CUT);
+    DrawTextEx(txEd->font, "Cut", (Vector2){txEd->optionsMenuPos.x - 55, txEd->optionsMenuPos.y - 90}, 24, 1.0f, COLOR_TE_CUT);
     if (CheckCollisionPointRec(mousePos, (Rectangle){txEd->optionsMenuPos.x - 58, txEd->optionsMenuPos.y - 90, 74, 26}))
     {
         txEd->cursor = MOUSE_CURSOR_POINTING_HAND;
@@ -477,7 +485,7 @@ void DrawOptionsMenu(TextEditorContext *txEd, Vector2 mousePos, Font font)
             AddToLogFromTextEditor(txEd, "Can't cut yet!{B200}", LOG_LEVEL_WARNING);
         }
     }
-    DrawTextEx(font, "Copy", (Vector2){txEd->optionsMenuPos.x - 55, txEd->optionsMenuPos.y - 60}, 24, 1.0f, COLOR_TE_COPY);
+    DrawTextEx(txEd->font, "Copy", (Vector2){txEd->optionsMenuPos.x - 55, txEd->optionsMenuPos.y - 60}, 24, 1.0f, COLOR_TE_COPY);
     if (CheckCollisionPointRec(mousePos, (Rectangle){txEd->optionsMenuPos.x - 58, txEd->optionsMenuPos.y - 60, 74, 26}))
     {
         txEd->cursor = MOUSE_CURSOR_POINTING_HAND;
@@ -487,7 +495,7 @@ void DrawOptionsMenu(TextEditorContext *txEd, Vector2 mousePos, Font font)
             TextEditorCopy(txEd);
         }
     }
-    DrawTextEx(font, "Paste", (Vector2){txEd->optionsMenuPos.x - 55, txEd->optionsMenuPos.y - 30}, 24, 1.0f, COLOR_TE_PASTE);
+    DrawTextEx(txEd->font, "Paste", (Vector2){txEd->optionsMenuPos.x - 55, txEd->optionsMenuPos.y - 30}, 24, 1.0f, COLOR_TE_PASTE);
     if (CheckCollisionPointRec(mousePos, (Rectangle){txEd->optionsMenuPos.x - 58, txEd->optionsMenuPos.y - 30, 74, 26}))
     {
         txEd->cursor = MOUSE_CURSOR_POINTING_HAND;
@@ -505,7 +513,7 @@ void DrawOptionsMenu(TextEditorContext *txEd, Vector2 mousePos, Font font)
     }
 }
 
-void HandleTextEditor(TextEditorContext *txEd, Vector2 mousePos, Rectangle viewportBoundary, RenderTexture2D *viewport, Font font, bool isViewportFocused)
+void HandleTextEditor(TextEditorContext *txEd, Vector2 mousePos, Rectangle viewportBoundary, RenderTexture2D *viewport, bool isViewportFocused, Font fontArial)
 {
     txEd->cursor = MOUSE_CURSOR_IBEAM;
 
@@ -544,10 +552,10 @@ void HandleTextEditor(TextEditorContext *txEd, Vector2 mousePos, Rectangle viewp
 
             for (int i = strlen(txEd->text[txEd->currRow]); i >= 0; i--)
             {
-                float left = MeasureTextUntilEx(font, txEd->text[txEd->currRow], i, 30, TEXT_EDITOR_TEXT_SPACING) + x;
+                float left = MeasureTextUntilEx(txEd->font, txEd->text[txEd->currRow], i, 30, TEXT_EDITOR_TEXT_SPACING) + x;
                 if (mousePos.x >= left)
                 {
-                    float right = MeasureTextUntilEx(font, txEd->text[txEd->currRow], i + 1, 30, TEXT_EDITOR_TEXT_SPACING) + x;
+                    float right = MeasureTextUntilEx(txEd->font, txEd->text[txEd->currRow], i + 1, 30, TEXT_EDITOR_TEXT_SPACING) + x;
                     float mid = (left + right) * 0.5f;
                     txEd->currCol = (mousePos.x < mid) ? i : i + 1;
                     break;
@@ -642,22 +650,22 @@ void HandleTextEditor(TextEditorContext *txEd, Vector2 mousePos, Rectangle viewp
     }
 
     const char *fileName = GetFileName(txEd->openedFilePath);
-    int fileNameSize = MeasureTextEx(font, fileName, 32, 2.0f).x;
+    int fileNameSize = MeasureTextEx(fontArial, fileName, 32, 2.0f).x;
 
     BeginTextureMode(*viewport);
     ClearBackground(GRAY_30);
 
     if (!DEVELOPER_MODE)
     {
-        DrawTextEx(font, "IN DEVELOPMENT", (Vector2){viewportBoundary.x + 10, viewportBoundary.y + 10}, 40, 2.0f, ORANGE);
+        DrawTextEx(fontArial, "IN DEVELOPMENT", (Vector2){viewportBoundary.x + 10, viewportBoundary.y + 15}, 40, 2.0f, ORANGE);
     }
     else
     {
-        DrawTextEx(font, fileName, (Vector2){viewportBoundary.x + 10, viewportBoundary.y + 10}, 32, 2.0f, GRAY_70);
+        DrawTextEx(fontArial, fileName, (Vector2){viewportBoundary.x + 10, viewportBoundary.y + 15}, 32, 2.0f, GRAY_70);
     }
 
     DrawRectangleRounded((Rectangle){viewportBoundary.x + fileNameSize + 30, viewportBoundary.y + 15, 60, 30}, 0.4f, 4, GRAY_50);
-    DrawTextEx(font, "Open", (Vector2){viewportBoundary.x + fileNameSize + 35, viewportBoundary.y + 20}, 18, 2.0f, WHITE);
+    DrawTextEx(fontArial, "Open", (Vector2){viewportBoundary.x + fileNameSize + 35, viewportBoundary.y + 20}, 18, 2.0f, WHITE);
     if (CheckCollisionPointRec(mousePos, (Rectangle){viewportBoundary.x + fileNameSize + 30, viewportBoundary.y + 15, 60, 30}))
     {
         DrawRectangleRounded((Rectangle){viewportBoundary.x + fileNameSize + 30, viewportBoundary.y + 15, 60, 30}, 0.4f, 4, COlOR_TE_OPEN_BTN_HOVER);
@@ -672,8 +680,8 @@ void HandleTextEditor(TextEditorContext *txEd, Vector2 mousePos, Rectangle viewp
 
     for (int i = 0; i < txEd->rowCount; i++)
     {
-        DrawTextEx(font, TextFormat("%d", i), (Vector2){x - 42 + 5 * !((int)(i / 10) > 0), y + 2}, 26, 1.0f, GRAY);
-        DrawTextEx(font, txEd->text[i], (Vector2){x, y}, 30, TEXT_EDITOR_TEXT_SPACING, COLOR_TE_FONT);
+        DrawTextEx(txEd->font, TextFormat("%d", i), (Vector2){x - 42 + 5 * !((int)(i / 10) > 0), y + 2}, 26, 1.0f, GRAY);
+        DrawTextEx(txEd->font, txEd->text[i], (Vector2){x, y}, 30, TEXT_EDITOR_TEXT_SPACING, COLOR_TE_FONT);
         y += 34;
         DrawRectangleGradientH(viewportBoundary.x, y - 2, viewportBoundary.width, 1, GRAY_50, GRAY_80);
     }
@@ -689,14 +697,14 @@ void HandleTextEditor(TextEditorContext *txEd, Vector2 mousePos, Rectangle viewp
         alpha = 255 - (txEd->cursorBlinkTime - 0.5f) * (200 / 1.0f);
     }
 
-    Vector2 start = {MeasureTextUntilEx(font, txEd->text[txEd->currRow], txEd->currCol, 30, TEXT_EDITOR_TEXT_SPACING) + x + TEXT_EDITOR_TEXT_SPACING / 2, viewportBoundary.y + txEd->currRow * 34 + 58};
+    Vector2 start = {MeasureTextUntilEx(txEd->font, txEd->text[txEd->currRow], txEd->currCol, 30, TEXT_EDITOR_TEXT_SPACING) + x + TEXT_EDITOR_TEXT_SPACING / 2, viewportBoundary.y + txEd->currRow * 34 + 58};
     Vector2 end = {start.x, start.y + 34};
 
     DrawLineEx(start, end, 3.0f, (Color){RAPID_PURPLE.r, RAPID_PURPLE.g, RAPID_PURPLE.b, alpha});
 
-    DrawSelector(txEd, viewportBoundary, font);
+    DrawSelector(txEd, viewportBoundary);
 
-    DrawOptionsMenu(txEd, mousePos, font);
+    DrawOptionsMenu(txEd, mousePos);
 
     EndTextureMode();
 }

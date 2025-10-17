@@ -23,3 +23,6 @@ extern unsigned int arialbd_ttf_len;
 
 extern unsigned char sonsie_ttf[];
 extern unsigned int sonsie_ttf_len;
+
+extern unsigned char JetBrainsMonoNL_ExtraBold_ttf[];
+extern unsigned int JetBrainsMonoNL_ExtraBold_ttf_len;
