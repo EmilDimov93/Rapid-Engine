@@ -302,7 +302,14 @@ char *SetProjectFolderPath(EngineContext *eng, const char *fileName)
         EmergencyExit(eng, &(CGEditorContext){0}, &(InterpreterContext){0}, &(TextEditorContext){0});
     }
 
-    return strmac(NULL, MAX_FILE_PATH, "%s%cProjects%c%s", cwd, PATH_SEPARATOR, PATH_SEPARATOR, fileName);
+    if(DirectoryExists("Projects")){
+        return strmac(NULL, MAX_FILE_PATH, "%s%cProjects%c%s", cwd, PATH_SEPARATOR, PATH_SEPARATOR, fileName);
+    }
+    else{
+        return strmac(NULL, MAX_FILE_PATH, "%s", cwd);
+    }
+
+    
 }
 
 FileType GetFileType(const char *folderPath, const char *fileName)
@@ -349,7 +356,12 @@ void PrepareCGFilePath(EngineContext *eng, const char *projectName)
         EmergencyExit(eng, &(CGEditorContext){0}, &(InterpreterContext){0}, &(TextEditorContext){0});
     }
 
-    strmac(eng->CGFilePath, MAX_FILE_PATH, "%s%cProjects%c%s%c%s.cg", cwd, PATH_SEPARATOR, PATH_SEPARATOR, projectName, PATH_SEPARATOR, projectName);
+    if(DirectoryExists("Projects")){
+        strmac(eng->CGFilePath, MAX_FILE_PATH, "%s%cProjects%c%s%c%s.cg", cwd, PATH_SEPARATOR, PATH_SEPARATOR, projectName, PATH_SEPARATOR, projectName);
+    }
+    else{
+        strmac(eng->CGFilePath, MAX_FILE_PATH, "%s%c%s.cg", cwd, PATH_SEPARATOR, projectName);
+    }
 
     for (int i = 0; i < eng->files.count; i++)
     {
