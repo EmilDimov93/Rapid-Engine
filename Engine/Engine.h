@@ -220,6 +220,8 @@ typedef struct EngineContext
 
     bool isTopBarHovered;
 
+    bool isKeyboardShortcutActivated;
+
 } EngineContext;
 
 typedef enum

@@ -136,6 +136,8 @@ EngineContext InitEngineContext()
 
     eng.isTopBarHovered = false;
 
+    eng.isKeyboardShortcutActivated = false;
+
     return eng;
 }
 
@@ -1971,6 +1973,7 @@ bool HandleUICollisions(EngineContext *eng, GraphContext *graph, InterpreterCont
     }
     if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_S) && !IsKeyDown(KEY_LEFT_SHIFT) && eng->viewportMode == VIEWPORT_CG_EDITOR)
     {
+        eng->isKeyboardShortcutActivated = true;
         if (eng->isSoundOn)
         {
             PlaySound(eng->saveSound);
@@ -1987,6 +1990,7 @@ bool HandleUICollisions(EngineContext *eng, GraphContext *graph, InterpreterCont
     }
     else if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_R))
     {
+        eng->isKeyboardShortcutActivated = true;
         if (cgEd->hasChanged)
         {
             AddToLog(eng, "Project not saved!{I102}", LOG_LEVEL_WARNING);
@@ -2008,6 +2012,7 @@ bool HandleUICollisions(EngineContext *eng, GraphContext *graph, InterpreterCont
     }
     else if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_E))
     {
+        eng->isKeyboardShortcutActivated = true;
         cgEd->delayFrames = true;
         eng->delayFrames = true;
         eng->viewportMode = VIEWPORT_CG_EDITOR;
@@ -2019,6 +2024,7 @@ bool HandleUICollisions(EngineContext *eng, GraphContext *graph, InterpreterCont
     }
     else if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_T))
     {
+        eng->isKeyboardShortcutActivated = true;
         if(txEd->isFileOpened){
             eng->viewportMode = VIEWPORT_TEXT_EDITOR;
             eng->delayFrames = true;
@@ -2026,6 +2032,7 @@ bool HandleUICollisions(EngineContext *eng, GraphContext *graph, InterpreterCont
     }
     else if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_B))
     {
+        eng->isKeyboardShortcutActivated = true;
         if (cgEd->hasChanged)
         {
             AddToLog(eng, "Project not saved!{I102}", LOG_LEVEL_WARNING);
@@ -2064,6 +2071,7 @@ bool HandleUICollisions(EngineContext *eng, GraphContext *graph, InterpreterCont
     }
     else if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_S) && IsKeyDown(KEY_LEFT_SHIFT))
     {
+        eng->isKeyboardShortcutActivated = true;
         cgEd->delayFrames = true;
         eng->delayFrames = true;
         eng->viewportMode = VIEWPORT_CG_EDITOR;
@@ -2076,6 +2084,7 @@ bool HandleUICollisions(EngineContext *eng, GraphContext *graph, InterpreterCont
 
     if (IsKeyPressed(KEY_ESCAPE))
     {
+        eng->isKeyboardShortcutActivated = true;
         eng->isViewportFullscreen = false;
     }
 
@@ -2662,7 +2671,7 @@ int main()
 
         if (HandleUICollisions(&eng, &graph, &intp, &cgEd, &runtimeGraph, &txEd) && !eng.isViewportFullscreen)
         {
-            if ((prevHoveredUIIndex != eng.hoveredUIElementIndex || IsMouseButtonDown(MOUSE_LEFT_BUTTON) || eng.isSettingsButtonHovered || eng.draggedFileIndex != -1 || eng.isLogMessageHovered) && eng.showSaveWarning != 1 && eng.showSettingsMenu == false)
+            if ((prevHoveredUIIndex != eng.hoveredUIElementIndex || IsMouseButtonDown(MOUSE_LEFT_BUTTON) || eng.isSettingsButtonHovered || eng.draggedFileIndex != -1 || eng.isLogMessageHovered || eng.isKeyboardShortcutActivated) && eng.showSaveWarning != 1 && eng.showSettingsMenu == false)
             {
                 BuildUITexture(&eng, &graph, &cgEd, &intp, &runtimeGraph, &txEd);
                 eng.fps = FPS_HIGH;
