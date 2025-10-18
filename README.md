@@ -36,7 +36,7 @@ https://github.com/user-attachments/assets/b6dc9735-5eb8-498a-9802-c1eac80a9a4a
 - File management system in bottom menu
 - Real-time log for error and debug messages
 - Variables menu for viewing information about the current variables and their values
-- Different pin types: flow, dropdown, text box and more
+- Different pin types: flow, dropdown menu, text box and more
 - Custom window management top menu with settings
 
 
@@ -96,9 +96,9 @@ https://github.com/user-attachments/assets/b6dc9735-5eb8-498a-9802-c1eac80a9a4a
 
 ## 🧪 In Development
 
-- Sprite collision events
 - Text Editor
 - Sprite sheet editor
+- Sprite collision events
 - Exporting game
 - Cross platform support
 - New CoreGraph nodes
