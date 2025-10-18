@@ -287,14 +287,8 @@ void EmergencyExit(EngineContext *eng, CGEditorContext *cgEd, InterpreterContext
     exit(EXIT_FAILURE);
 }
 
-char *SetProjectFolderPath(EngineContext *eng, const char *fileName)
+char *SetProjectFolderPath(EngineContext *eng, const char *filePath)
 {
-    if (!fileName)
-    {
-        AddToLog(eng, "Failed to get working directory{E226}", LOG_LEVEL_ERROR);
-        EmergencyExit(eng, &(CGEditorContext){0}, &(InterpreterContext){0}, &(TextEditorContext){0});
-    }
-
     char cwd[MAX_FILE_PATH];
     if (!GetCWD(cwd, sizeof(cwd)))
     {
@@ -302,14 +296,25 @@ char *SetProjectFolderPath(EngineContext *eng, const char *fileName)
         EmergencyExit(eng, &(CGEditorContext){0}, &(InterpreterContext){0}, &(TextEditorContext){0});
     }
 
-    if(DirectoryExists("Projects")){
-        return strmac(NULL, MAX_FILE_PATH, "%s%cProjects%c%s", cwd, PATH_SEPARATOR, PATH_SEPARATOR, fileName);
+    if (!GetFileExtension(filePath))
+    {
+        return strmac(NULL, MAX_FILE_PATH, "%s%c%s", cwd, PATH_SEPARATOR, filePath);
     }
-    else{
-        return strmac(NULL, MAX_FILE_PATH, "%s", cwd);
-    }
+    else
+    {
+        char buff[MAX_FILE_PATH];
+        strmac(buff, MAX_FILE_PATH, "%s", filePath);
+        for (int i = strlen(buff) - 1; i >= 0; i--)
+        {
+            if (buff[i] == '/' || buff[i] == '\\')
+            {
+                buff[i] = '\0';
+                break;
+            }
+        }
 
-    
+        return strmac(NULL, MAX_FILE_PATH, "%s", buff);
+    }
 }
 
 FileType GetFileType(const char *folderPath, const char *fileName)
@@ -346,7 +351,7 @@ FileType GetFileType(const char *folderPath, const char *fileName)
     return FILE_TYPE_OTHER;
 }
 
-void PrepareCGFilePath(EngineContext *eng, const char *projectName)
+void PrepareCGFilePath(EngineContext *eng, const char *projectPath)
 {
     char cwd[MAX_FILE_PATH];
 
@@ -356,25 +361,20 @@ void PrepareCGFilePath(EngineContext *eng, const char *projectName)
         EmergencyExit(eng, &(CGEditorContext){0}, &(InterpreterContext){0}, &(TextEditorContext){0});
     }
 
-    if(DirectoryExists("Projects")){
-        strmac(eng->CGFilePath, MAX_FILE_PATH, "%s%cProjects%c%s%c%s.cg", cwd, PATH_SEPARATOR, PATH_SEPARATOR, projectName, PATH_SEPARATOR, projectName);
+    if(!GetFileExtension(projectPath)){
+        strmac(eng->CGFilePath, MAX_FILE_PATH, "%s%c%s%c%s.cg", cwd, PATH_SEPARATOR, projectPath, PATH_SEPARATOR, GetFileName(projectPath));
     }
     else{
-        strmac(eng->CGFilePath, MAX_FILE_PATH, "%s%c%s.cg", cwd, PATH_SEPARATOR, projectName);
+        strmac(eng->CGFilePath, MAX_FILE_PATH, "%s", projectPath);
     }
 
-    for (int i = 0; i < eng->files.count; i++)
+    if (!FileExists(eng->CGFilePath))
     {
-        if (strcmp(eng->CGFilePath, eng->files.paths[i]) == 0)
+        FILE *f = fopen(eng->CGFilePath, "w");
+        if (f)
         {
-            return;
+            fclose(f);
         }
-    }
-
-    FILE *f = fopen(eng->CGFilePath, "w");
-    if (f)
-    {
-        fclose(f);
     }
 }
 
@@ -1134,14 +1134,10 @@ void DrawUIElements(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                     FileType fileType = GetFileType(eng->currentPath, GetFileName(eng->uiElements[eng->hoveredUIElementIndex].name));
                     if (fileType == FILE_TYPE_CG)
                     {
-                        char openedFileName[MAX_FILE_NAME];
-                        strmac(openedFileName, MAX_FILE_NAME, "%s", eng->uiElements[eng->hoveredUIElementIndex].text.string);
-                        openedFileName[strlen(eng->uiElements[eng->hoveredUIElementIndex].text.string) - 3] = '\0';
-
                         *cgEd = InitEditorContext();
                         *graph = InitGraphContext();
 
-                        PrepareCGFilePath(eng, openedFileName);
+                        PrepareCGFilePath(eng, eng->uiElements[eng->hoveredUIElementIndex].name);
 
                         LoadGraphFromFile(eng->CGFilePath, graph);
 
@@ -2014,7 +2010,8 @@ bool HandleUICollisions(EngineContext *eng, GraphContext *graph, InterpreterCont
         {
             AddToLog(eng, "Project has not been built!{I103}", LOG_LEVEL_WARNING);
         }
-        else if(eng->isGameRunning){
+        else if (eng->isGameRunning)
+        {
             AddToLog(eng, "Project already running!{I107}", LOG_LEVEL_WARNING);
         }
         else
@@ -2040,7 +2037,8 @@ bool HandleUICollisions(EngineContext *eng, GraphContext *graph, InterpreterCont
     else if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_T))
     {
         eng->isKeyboardShortcutActivated = true;
-        if(txEd->isFileOpened){
+        if (txEd->isFileOpened)
+        {
             eng->viewportMode = VIEWPORT_TEXT_EDITOR;
             eng->delayFrames = true;
         }
@@ -2595,7 +2593,7 @@ void DisplayLoadingScreen(int step)
     EndDrawing();
 }
 
-int main()
+int main(int argc, char **argv)
 {
     SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_WINDOW_UNDECORATED);
     SetTraceLogLevel(DEVELOPER_MODE ? LOG_WARNING : LOG_NONE);
@@ -2605,8 +2603,8 @@ int main()
     Image icon = LoadImage("icon.png");
     SetWindowIcon(icon);
     UnloadImage(icon);
-    char fileName[MAX_FILE_NAME];
-    strmac(fileName, MAX_FILE_NAME, "%s", DEVELOPER_MODE ? "Tetris" : HandleProjectManager());
+    char filePath[MAX_FILE_PATH];
+    strmac(filePath, MAX_FILE_NAME, "%s", argc == 1 ? (DEVELOPER_MODE ? "Tetris" : HandleProjectManager()) : argv[1]);
 
     MaximizeWindow();
 
@@ -2628,7 +2626,7 @@ int main()
     RuntimeGraphContext runtimeGraph = {0};
     TextEditorContext txEd = InitTextEditorContext();
 
-    eng.currentPath = SetProjectFolderPath(&eng, fileName);
+    eng.currentPath = SetProjectFolderPath(&eng, filePath);
 
     DisplayLoadingScreen(7);
 
@@ -2639,10 +2637,10 @@ int main()
         EmergencyExit(&eng, &cgEd, &intp, &txEd);
     }
 
-    PrepareCGFilePath(&eng, fileName);
-
-    intp.projectPath = strmac(NULL, MAX_FILE_PATH, "%s", eng.currentPath);
     eng.projectPath = strmac(NULL, MAX_FILE_PATH, "%s", eng.currentPath);
+    intp.projectPath = eng.projectPath;
+
+    PrepareCGFilePath(&eng, filePath);
 
     DisplayLoadingScreen(8);
 
@@ -2699,7 +2697,7 @@ int main()
             eng.fps = FPS_DEFAULT;
             eng.delayFrames = false;
         }
-        
+
         eng.logs.hasNewLogMessage = false;
 
         SetEngineMouseCursor(&eng, &cgEd, &txEd);
@@ -2709,16 +2707,14 @@ int main()
         SetEngineZoom(&eng, &cgEd, &intp);
 
         Vector2 mouseInViewportTex = (Vector2){
-            (eng.mousePos.x - (eng.isViewportFullscreen ? 0 : eng.sideBarWidth)) / eng.zoom + (eng.viewportTex.texture.width - (eng.isViewportFullscreen ? eng.screenWidth : eng.viewportWidth / eng.zoom)) / 2.0f, 
-            eng.mousePos.y / eng.zoom + (eng.viewportTex.texture.height - (eng.isViewportFullscreen ? eng.screenHeight : eng.viewportHeight / eng.zoom)) / 2.0f
-        };
+            (eng.mousePos.x - (eng.isViewportFullscreen ? 0 : eng.sideBarWidth)) / eng.zoom + (eng.viewportTex.texture.width - (eng.isViewportFullscreen ? eng.screenWidth : eng.viewportWidth / eng.zoom)) / 2.0f,
+            eng.mousePos.y / eng.zoom + (eng.viewportTex.texture.height - (eng.isViewportFullscreen ? eng.screenHeight : eng.viewportHeight / eng.zoom)) / 2.0f};
 
         Rectangle viewportRecInViewportTex = (Rectangle){
             (eng.viewportTex.texture.width - (eng.isViewportFullscreen ? eng.screenWidth : eng.viewportWidth) / eng.zoom) / 2.0f,
             (eng.viewportTex.texture.height - (eng.isViewportFullscreen ? eng.screenHeight : eng.viewportHeight) / eng.zoom) / 2.0f,
             (eng.screenWidth - (eng.isViewportFullscreen ? 0 : eng.sideBarWidth)) / eng.zoom,
-            (eng.screenHeight - (eng.isViewportFullscreen ? 0 : eng.bottomBarHeight)) / eng.zoom
-        };
+            (eng.screenHeight - (eng.isViewportFullscreen ? 0 : eng.bottomBarHeight)) / eng.zoom};
 
         if (eng.showSaveWarning == 1 || eng.showSettingsMenu || eng.windowResizeButton != RESIZING_WINDOW_NONE)
         {
@@ -2997,8 +2993,6 @@ int main()
     FreeEditorContext(&cgEd);
     FreeInterpreterContext(&intp);
     FreeTextEditorContext(&txEd);
-
-    free(intp.projectPath);
 
     CloseAudioDevice();
 

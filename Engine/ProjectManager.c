@@ -199,7 +199,7 @@ int MainWindow(Font font, Font fontRE)
     return PROJECT_MANAGER_WINDOW_MODE_MAIN;
 }
 
-int WindowLoadProject(char *projectFileName, Font font)
+int WindowLoadProject(char *projectFilePath, Font font)
 {
     bool cursorChanged = false;
     Rectangle backButton = {1, 0, 65, 1600};
@@ -273,7 +273,7 @@ int WindowLoadProject(char *projectFileName, Font font)
             }
             if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
             {
-                strmac(projectFileName, MAX_FILE_NAME, "%s", fileName);
+                strmac(projectFilePath, MAX_FILE_PATH, "%s", files.paths[i]);
                 return PROJECT_MANAGER_WINDOW_MODE_EXIT;
             }
         }
@@ -322,7 +322,7 @@ int WindowLoadProject(char *projectFileName, Font font)
 
     if (IsKeyPressed(KEY_ENTER))
     {
-        strmac(projectFileName, MAX_FILE_NAME, "%s", GetFileName(files.paths[selectedProject]));
+        strmac(projectFilePath, MAX_FILE_PATH, "%s", files.paths[selectedProject]);
         return PROJECT_MANAGER_WINDOW_MODE_EXIT;
     }
 
@@ -417,7 +417,7 @@ bool CreateProject(ProjectOptions PO)
     return true;
 }
 
-int WindowCreateProject(char *projectFileName, Font font)
+int WindowCreateProject(char *projectFilePath, Font font)
 {
     static bool shouldDrawFailureScreen = false;
     if (shouldDrawFailureScreen)
@@ -602,7 +602,9 @@ int WindowCreateProject(char *projectFileName, Font font)
                     shouldDrawFailureScreen = true;
                     return PROJECT_MANAGER_WINDOW_MODE_CREATE;
                 }
-                strmac(projectFileName, MAX_FILE_NAME, "%s", inputText);
+                char cwd[MAX_FILE_PATH];
+                GetCWD(cwd, MAX_FILE_PATH);
+                strmac(projectFilePath, MAX_FILE_NAME, "Projects%c%s", PATH_SEPARATOR, inputText);
                 return PROJECT_MANAGER_WINDOW_MODE_EXIT;
             }
         }
@@ -636,8 +638,8 @@ char *HandleProjectManager()
     }
 
     ProjectManagerWindowMode windowMode = PROJECT_MANAGER_WINDOW_MODE_MAIN;
-    char *projectFileName = malloc(MAX_FILE_NAME * sizeof(char));
-    projectFileName[0] = '\0';
+    char *projectFilePath = malloc(MAX_FILE_PATH * sizeof(char));
+    projectFilePath[0] = '\0';
 
     while (1)
     {
@@ -647,16 +649,16 @@ char *HandleProjectManager()
             windowMode = MainWindow(font, fontRE);
             break;
         case PROJECT_MANAGER_WINDOW_MODE_LOAD:
-            windowMode = WindowLoadProject(projectFileName, font);
+            windowMode = WindowLoadProject(projectFilePath, font);
             break;
         case PROJECT_MANAGER_WINDOW_MODE_CREATE:
-            windowMode = WindowCreateProject(projectFileName, font);
+            windowMode = WindowCreateProject(projectFilePath, font);
             break;
         default:
             UnloadFont(font);
             UnloadFont(fontRE);
 
-            return projectFileName;
+            return projectFilePath;
         }
 
         EndDrawing();
