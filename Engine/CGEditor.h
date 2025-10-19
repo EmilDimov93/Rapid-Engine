@@ -98,4 +98,4 @@ CGEditorContext InitEditorContext(void);
 
 void FreeEditorContext(CGEditorContext *editor);
 
-void HandleEditor(CGEditorContext *editor, GraphContext *graph, RenderTexture2D *viewport, Vector2 mousePos, bool draggingDisabled, bool isSecondFrame);
+void HandleEditor(CGEditorContext *editor, GraphContext *graph, RenderTexture2D *viewport, Vector2 mousePos, bool draggingDisabled);

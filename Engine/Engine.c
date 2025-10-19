@@ -2604,7 +2604,7 @@ int main(int argc, char **argv)
     SetWindowIcon(icon);
     UnloadImage(icon);
     char filePath[MAX_FILE_PATH];
-    strmac(filePath, MAX_FILE_NAME, "%s", argc == 1 ? (DEVELOPER_MODE ? "Tetris" : HandleProjectManager()) : argv[1]);
+    strmac(filePath, MAX_FILE_NAME, "%s", argc == 1 ? (DEVELOPER_MODE ? "Projects\\Tetris\\Tetris.cg" : HandleProjectManager()) : argv[1]);
 
     MaximizeWindow();
 
@@ -2728,27 +2728,16 @@ int main(int argc, char **argv)
         {
         case VIEWPORT_CG_EDITOR:
         {
-            static bool isSecondFrame = false;
-            if (cgEd.isFirstFrame)
-            {
-                isSecondFrame = true;
-                cgEd.isFirstFrame = false;
-                break;
-            }
             if (eng.wasViewportFocusedLastFrame && !eng.isViewportFocused)
             {
                 cgEd.isDraggingScreen = false;
                 cgEd.isDraggingSelectedNodes = false;
                 cgEd.nodeGlareTime = 0;
             }
-            if (eng.CGFilePath[0] != '\0' && (eng.isViewportFocused || isSecondFrame || eng.wasViewportFocusedLastFrame))
+            if (eng.CGFilePath[0] != '\0' && (eng.isViewportFocused || cgEd.isFirstFrame || eng.wasViewportFocusedLastFrame || eng.menuResizeButton != RESIZING_MENU_NONE))
             {
                 cgEd.viewportBoundary = viewportRecInViewportTex;
-                HandleEditor(&cgEd, &graph, &eng.viewportTex, mouseInViewportTex, eng.menuResizeButton != RESIZING_MENU_NONE, isSecondFrame);
-            }
-            if (isSecondFrame)
-            {
-                isSecondFrame = false;
+                HandleEditor(&cgEd, &graph, &eng.viewportTex, mouseInViewportTex, eng.menuResizeButton != RESIZING_MENU_NONE);
             }
 
             if (eng.isAutoSaveON)

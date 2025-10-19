@@ -1557,12 +1557,14 @@ void SetCGEditorFPS(CGEditorContext *cgEd){
     }
 }
 
-void DrawFullTexture(CGEditorContext *cgEd, GraphContext *graph, RenderTexture2D view, RenderTexture2D dot)
+void DrawFullTexture(CGEditorContext *cgEd, GraphContext *graph, RenderTexture2D view, RenderTexture2D dot, bool draggingDisabled)
 {
     BeginTextureMode(view);
     ClearBackground(COLOR_CGED_BACKGROUND);
 
-    HandleDragging(cgEd, graph);
+    if(!draggingDisabled){
+        HandleDragging(cgEd, graph);
+    }
 
     DrawBackgroundGrid(cgEd, 40, dot);
 
@@ -1681,7 +1683,7 @@ bool CheckOpenMenus(CGEditorContext *cgEd)
     return cgEd->isDraggingSelectedNodes || cgEd->lastClickedPin.id != -1 || cgEd->isNodeCreateMenuOpen || cgEd->focusedDropdownPin != -1 || cgEd->focusedFieldPin != -1 || cgEd->editingNodeNameIndex != -1;
 }
 
-void HandleEditor(CGEditorContext *cgEd, GraphContext *graph, RenderTexture2D *viewport, Vector2 mousePos, bool draggingDisabled, bool isSecondFrame)
+void HandleEditor(CGEditorContext *cgEd, GraphContext *graph, RenderTexture2D *viewport, Vector2 mousePos, bool draggingDisabled)
 {
     cgEd->newLogMessage = false;
     cgEd->cursor = MOUSE_CURSOR_ARROW;
@@ -1694,7 +1696,7 @@ void HandleEditor(CGEditorContext *cgEd, GraphContext *graph, RenderTexture2D *v
 
     SetCGEditorFPS(cgEd);
 
-    if (isSecondFrame)
+    if (cgEd->isFirstFrame)
     {
         dot = LoadRenderTexture(15, 15);
         SetTextureFilter(dot.texture, TEXTURE_FILTER_BILINEAR);
@@ -1704,11 +1706,6 @@ void HandleEditor(CGEditorContext *cgEd, GraphContext *graph, RenderTexture2D *v
         EndTextureMode();
 
         cgEd->isFirstFrame = false;
-    }
-
-    if (draggingDisabled)
-    {
-        return;
     }
 
     static float deltaSinceRightClick = 0;
@@ -1802,12 +1799,12 @@ void HandleEditor(CGEditorContext *cgEd, GraphContext *graph, RenderTexture2D *v
 
     if (CheckNodeCollisions(cgEd, graph) || IsMouseButtonDown(MOUSE_LEFT_BUTTON) || IsKeyDown(KEY_LEFT_CONTROL) || CheckOpenMenus(cgEd))
     {
-        DrawFullTexture(cgEd, graph, *viewport, dot);
+        DrawFullTexture(cgEd, graph, *viewport, dot, draggingDisabled);
         cgEd->delayFrames = true;
     }
     else if (cgEd->delayFrames == true)
     {
-        DrawFullTexture(cgEd, graph, *viewport, dot);
+        DrawFullTexture(cgEd, graph, *viewport, dot, draggingDisabled);
         cgEd->delayFrames = false;
     }
 }
