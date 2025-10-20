@@ -287,7 +287,34 @@ void EmergencyExit(EngineContext *eng, CGEditorContext *cgEd, InterpreterContext
     exit(EXIT_FAILURE);
 }
 
-char *SetProjectFolderPath(EngineContext *eng, const char *filePath)
+void PrepareCGFilePath(EngineContext *eng, const char *projectPath)
+{
+    char cwd[MAX_FILE_PATH];
+
+    if (!GetCWD(cwd, sizeof(cwd)))
+    {
+        AddToLog(eng, "Failed to get working directory{E226}", LOG_LEVEL_ERROR);
+        EmergencyExit(eng, &(CGEditorContext){0}, &(InterpreterContext){0}, &(TextEditorContext){0});
+    }
+
+    if(!GetFileExtension(projectPath)){
+        strmac(eng->CGFilePath, MAX_FILE_PATH, "%s%c%s%c%s.cg", cwd, PATH_SEPARATOR, projectPath, PATH_SEPARATOR, GetFileName(projectPath));
+    }
+    else{
+        strmac(eng->CGFilePath, MAX_FILE_PATH, "%s", projectPath);
+    }
+
+    if (!FileExists(eng->CGFilePath))
+    {
+        FILE *f = fopen(eng->CGFilePath, "w");
+        if (f)
+        {
+            fclose(f);
+        }
+    }
+}
+
+void SetProjectFolderPath(EngineContext *eng, const char *filePath)
 {
     char cwd[MAX_FILE_PATH];
     if (!GetCWD(cwd, sizeof(cwd)))
@@ -298,7 +325,7 @@ char *SetProjectFolderPath(EngineContext *eng, const char *filePath)
 
     if (!GetFileExtension(filePath))
     {
-        return strmac(NULL, MAX_FILE_PATH, "%s%c%s", cwd, PATH_SEPARATOR, filePath);
+        eng->currentPath = strmac(NULL, MAX_FILE_PATH, "%s%c%s", cwd, PATH_SEPARATOR, filePath);
     }
     else
     {
@@ -313,8 +340,12 @@ char *SetProjectFolderPath(EngineContext *eng, const char *filePath)
             }
         }
 
-        return strmac(NULL, MAX_FILE_PATH, "%s", buff);
+        eng->currentPath = strmac(NULL, MAX_FILE_PATH, "%s", buff);
     }
+
+    eng->projectPath = strmac(NULL, MAX_FILE_PATH, "%s", eng->currentPath);
+
+    PrepareCGFilePath(eng, filePath);
 }
 
 FileType GetFileType(const char *folderPath, const char *fileName)
@@ -349,33 +380,6 @@ FileType GetFileType(const char *folderPath, const char *fileName)
     }
 
     return FILE_TYPE_OTHER;
-}
-
-void PrepareCGFilePath(EngineContext *eng, const char *projectPath)
-{
-    char cwd[MAX_FILE_PATH];
-
-    if (!GetCWD(cwd, sizeof(cwd)))
-    {
-        AddToLog(eng, "Failed to get working directory{E226}", LOG_LEVEL_ERROR);
-        EmergencyExit(eng, &(CGEditorContext){0}, &(InterpreterContext){0}, &(TextEditorContext){0});
-    }
-
-    if(!GetFileExtension(projectPath)){
-        strmac(eng->CGFilePath, MAX_FILE_PATH, "%s%c%s%c%s.cg", cwd, PATH_SEPARATOR, projectPath, PATH_SEPARATOR, GetFileName(projectPath));
-    }
-    else{
-        strmac(eng->CGFilePath, MAX_FILE_PATH, "%s", projectPath);
-    }
-
-    if (!FileExists(eng->CGFilePath))
-    {
-        FILE *f = fopen(eng->CGFilePath, "w");
-        if (f)
-        {
-            fclose(f);
-        }
-    }
 }
 
 int DrawSaveWarning(EngineContext *eng, GraphContext *graph, CGEditorContext *cgEd)
@@ -2626,7 +2630,9 @@ int main(int argc, char **argv)
     RuntimeGraphContext runtimeGraph = {0};
     TextEditorContext txEd = InitTextEditorContext();
 
-    eng.currentPath = SetProjectFolderPath(&eng, filePath);
+    SetProjectFolderPath(&eng, filePath);
+
+    intp.projectPath = eng.projectPath;
 
     DisplayLoadingScreen(7);
 
@@ -2636,11 +2642,6 @@ int main(int argc, char **argv)
         AddToLog(&eng, "Error loading files{E201}", LOG_LEVEL_ERROR);
         EmergencyExit(&eng, &cgEd, &intp, &txEd);
     }
-
-    eng.projectPath = strmac(NULL, MAX_FILE_PATH, "%s", eng.currentPath);
-    intp.projectPath = eng.projectPath;
-
-    PrepareCGFilePath(&eng, filePath);
 
     DisplayLoadingScreen(8);
 
