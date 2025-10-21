@@ -655,14 +655,7 @@ void HandleTextEditor(TextEditorContext *txEd, Vector2 mousePos, Rectangle viewp
     BeginTextureMode(*viewport);
     ClearBackground(GRAY_30);
 
-    if (!DEVELOPER_MODE)
-    {
-        DrawTextEx(fontArial, "IN DEVELOPMENT", (Vector2){viewportBoundary.x + 10, viewportBoundary.y + 15}, 40, 2.0f, ORANGE);
-    }
-    else
-    {
-        DrawTextEx(fontArial, fileName, (Vector2){viewportBoundary.x + 10, viewportBoundary.y + 15}, 32, 2.0f, GRAY_70);
-    }
+    DrawTextEx(fontArial, fileName, (Vector2){viewportBoundary.x + 10, viewportBoundary.y + 15}, 32, 2.0f, GRAY_70);
 
     DrawRectangleRounded((Rectangle){viewportBoundary.x + fileNameSize + 30, viewportBoundary.y + 15, 60, 30}, 0.4f, 4, GRAY_50);
     DrawTextEx(fontArial, "Open", (Vector2){viewportBoundary.x + fileNameSize + 35, viewportBoundary.y + 20}, 18, 2.0f, WHITE);
@@ -674,6 +667,11 @@ void HandleTextEditor(TextEditorContext *txEd, Vector2 mousePos, Rectangle viewp
         {
             OpenFile(txEd->openedFilePath);
         }
+    }
+
+    if (!DEVELOPER_MODE)
+    {
+        DrawTextEx(fontArial, "IN DEVELOPMENT", (Vector2){viewportBoundary.x + fileNameSize + 100, viewportBoundary.y + 10}, 40, 2.0f, ORANGE);
     }
 
     DrawLineEx((Vector2){x - 10, y}, (Vector2){x - 10, y + viewportBoundary.height}, 1.0f, GRAY_40);
