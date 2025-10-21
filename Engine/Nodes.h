@@ -40,7 +40,7 @@ typedef struct Pin
 
     union{
         int pickedOption;
-        char textFieldValue[128];
+        char textFieldValue[MAX_LITERAL_NODE_FIELD_SIZE];
         Polygon hitbox;
     };
 } Pin;

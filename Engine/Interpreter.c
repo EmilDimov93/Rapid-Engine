@@ -51,35 +51,17 @@ void FreeRuntimeGraphContext(RuntimeGraphContext *rg)
 
     if (rg->nodes)
     {
-        for (int i = 0; i < rg->nodeCount; i++)
-        {
-            RuntimeNode *node = &rg->nodes[i];
-
-            for (int j = 0; j < node->inputCount; j++)
-            {
-                if (node->inputPins[j])
-                {
-                    free(node->inputPins[j]);
-                    node->inputPins[j] = NULL;
-                }
-            }
-
-            for (int j = 0; j < node->outputCount; j++)
-            {
-                if (node->outputPins[j])
-                {
-                    free(node->outputPins[j]);
-                    node->outputPins[j] = NULL;
-                }
-            }
-        }
-
         free(rg->nodes);
         rg->nodes = NULL;
     }
 
     if (rg->pins)
     {
+        for(int i = 0; i < rg->pinCount; i++){
+            if(rg->pins[i].textFieldValue){
+                free(rg->pins[i].textFieldValue);
+            }
+        }
         free(rg->pins);
         rg->pins = NULL;
     }
@@ -128,14 +110,14 @@ void FreeInterpreterContext(InterpreterContext *intp)
         UnloadSound(intp->sounds[i].sound);
     }
 
-    char *projectPath = intp->projectPath;
-    *intp = InitInterpreterContext();
-    intp->projectPath = projectPath;
-
     if (intp->runtimeGraph)
     {
         FreeRuntimeGraphContext(intp->runtimeGraph);
     }
+
+    char *projectPath = intp->projectPath;
+    *intp = InitInterpreterContext();
+    intp->projectPath = projectPath;
 }
 
 char *ValueTypeToString(ValueType type)
@@ -252,7 +234,7 @@ RuntimeGraphContext ConvertToRuntimeGraph(GraphContext *graph, InterpreterContex
         dst->pickedOption = src->pickedOption;
         dst->nextNodeIndex = -1;
         dst->componentIndex = -1;
-        strmac(dst->textFieldValue, MAX_LITERAL_NODE_FIELD_SIZE, "%s", src->textFieldValue);
+        dst->textFieldValue = strmac(NULL, MAX_LITERAL_NODE_FIELD_SIZE - 1, "%s", src->textFieldValue);
     }
 
     for (int i = 0; i < graph->nodeCount; i++)
@@ -415,7 +397,7 @@ RuntimeGraphContext ConvertToRuntimeGraph(GraphContext *graph, InterpreterContex
                 AddToLogFromInterpreter(intp, (Value){.type = VAL_STRING, .string = "Missing input for literal node{I208}"}, LOG_LEVEL_ERROR);
                 return runtime;
             }
-            intp->values[intp->valueCount].string = strmac(NULL, MAX_LITERAL_NODE_FIELD_SIZE, node->inputPins[0]->textFieldValue);
+            intp->values[intp->valueCount].string = strmac(NULL, MAX_LITERAL_NODE_FIELD_SIZE - 1, node->inputPins[0]->textFieldValue);
             intp->values[intp->valueCount].type = VAL_STRING;
             intp->values[intp->valueCount].isVariable = false;
             intp->values[intp->valueCount].name = strmac(NULL, MAX_VARIABLE_NAME_SIZE, srcNode->name);

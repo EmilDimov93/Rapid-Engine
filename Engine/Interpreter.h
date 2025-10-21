@@ -26,7 +26,7 @@ typedef struct RuntimePin
 
     int nextNodeIndex;
     int pickedOption;
-    char textFieldValue[256];
+    char *textFieldValue;
     int componentIndex;
 } RuntimePin;
 
