@@ -185,8 +185,34 @@ void ArrowKeysInput(TextEditorContext *txEd, float frameTime)
     static bool leftHeld = false;
     static bool rightHeld = false;
 
+    int startRow = txEd->selectedStart.x;
+    int startCol = txEd->selectedStart.y;
+    int endRow = txEd->selectedEnd.x;
+    int endCol = txEd->selectedEnd.y;
+
+    if (startRow > endRow || (startCol > endCol && startRow == endRow))
+    {
+        int temp = startRow;
+        startRow = endRow;
+        endRow = temp;
+
+        temp = startCol;
+        startCol = endCol;
+        endCol = temp;
+    }
+
+    bool isSelecting = txEd->selectedStart.x != txEd->selectedEnd.x || txEd->selectedStart.y != txEd->selectedEnd.y;
+
     if (IsKeyDown(KEY_UP) && txEd->currRow != 0)
     {
+        if (isSelecting)
+        {
+            txEd->currRow = startRow;
+            txEd->currCol = startCol;
+
+            txEd->selectedStart = (Vector2){startRow, startCol};
+            txEd->selectedEnd = txEd->selectedStart;
+        }
         if (upHeld)
         {
             upTime -= frameTime;
@@ -214,6 +240,14 @@ void ArrowKeysInput(TextEditorContext *txEd, float frameTime)
 
     if (IsKeyDown(KEY_DOWN) && txEd->currRow != txEd->rowCount - 1)
     {
+        if (isSelecting)
+        {
+            txEd->currRow = endRow;
+            txEd->currCol = endCol;
+
+            txEd->selectedStart = (Vector2){endRow, endCol};
+            txEd->selectedEnd = txEd->selectedStart;
+        }
         if (downHeld)
         {
             downTime -= frameTime;
@@ -241,6 +275,14 @@ void ArrowKeysInput(TextEditorContext *txEd, float frameTime)
 
     if (IsKeyDown(KEY_LEFT) && txEd->currCol != 0)
     {
+        if (isSelecting)
+        {
+            txEd->currRow = startRow;
+            txEd->currCol = startCol;
+
+            txEd->selectedStart = (Vector2){startRow, startCol};
+            txEd->selectedEnd = txEd->selectedStart;
+        }
         if (leftHeld)
         {
             leftTime -= frameTime;
@@ -268,6 +310,14 @@ void ArrowKeysInput(TextEditorContext *txEd, float frameTime)
 
     if (IsKeyDown(KEY_RIGHT) && txEd->currCol != strlen(txEd->text[txEd->currRow]))
     {
+        if (isSelecting)
+        {
+            txEd->currRow = endRow;
+            txEd->currCol = endCol;
+
+            txEd->selectedStart = (Vector2){endRow, endCol};
+            txEd->selectedEnd = txEd->selectedStart;
+        }
         if (rightHeld)
         {
             rightTime -= frameTime;
@@ -455,6 +505,45 @@ void TextEditorCopy(TextEditorContext *txEd)
     }
 }
 
+void TextEditorPaste(TextEditorContext *txEd) {
+    if(strlen(GetClipboardText()) > MAX_CHARS_PER_ROW){
+        AddToLogFromTextEditor(txEd, "Character per line limit reached! Go to new line or open file in another text editor{T202}", LOG_LEVEL_ERROR);
+        return;
+    }
+    char *clip = strmac(NULL, MAX_CHARS_PER_ROW, "%s", GetClipboardText());
+    if (!clip || !clip[0]){
+        return;
+    }
+
+    if (txEd->selectedStart.x != txEd->selectedEnd.x || txEd->selectedStart.y != txEd->selectedEnd.y) {
+        TextEditorDeleteSelected(txEd);
+    }
+
+    char *buff = strmac(NULL, MAX_CHARS_PER_ROW, "%s", txEd->text[txEd->currRow]);
+    buff[txEd->currCol] = '\0';
+
+    for(int i = strlen(clip) - 1; i >= 0; i--){
+        if(clip[i] == '\n'){
+            for(int j = i; j < strlen(clip) - 1; j++){
+                clip[j] = clip[j + 1];
+            }
+            clip[strlen(clip) - 1] = '\0';
+        }
+    }
+
+    if(strlen(TextFormat("%s%s%s", buff, clip, txEd->text[txEd->currRow] + txEd->currCol)) > MAX_CHARS_PER_ROW){
+        AddToLogFromTextEditor(txEd, "Character per line limit reached! Go to new line or open file in another text editor{T202}", LOG_LEVEL_ERROR);
+        return;
+    }
+
+    txEd->text[txEd->currRow] = strmac(NULL, MAX_CHARS_PER_ROW, "%s%s%s", buff, clip, txEd->text[txEd->currRow] + txEd->currCol);
+
+    txEd->currCol += strlen(clip);
+
+    free(buff);
+    free(clip);
+}
+
 void DrawOptionsMenu(TextEditorContext *txEd, Vector2 mousePos)
 {
     if (IsMouseButtonPressed(MOUSE_RIGHT_BUTTON))
@@ -498,8 +587,7 @@ void DrawOptionsMenu(TextEditorContext *txEd, Vector2 mousePos)
         DrawRectangleRounded((Rectangle){txEd->optionsMenuPos.x - 58, txEd->optionsMenuPos.y - 30, 74, 26}, 0.4f, 4, COLOR_TE_OPTIONS_MENU_ITEM_HOVER);
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
         {
-            // Paste
-            AddToLogFromTextEditor(txEd, "Can't paste yet!{B200}", LOG_LEVEL_WARNING);
+            TextEditorPaste(txEd);
         }
     }
 
@@ -524,6 +612,34 @@ void SaveTextFile(TextEditorContext *txEd, char *filePath)
     fclose(file);
 
     AddToLogFromTextEditor(txEd, "File saved successfully{T300}", LOG_LEVEL_SUCCESS);
+}
+
+void KeyboardShortcuts(TextEditorContext *txEd)
+{
+    if (IsKeyDown(KEY_LEFT_CONTROL))
+    {
+        if (IsKeyPressed(KEY_X))
+        {
+            txEd->isOptionsMenuOpen = false;
+            TextEditorCopy(txEd);
+            TextEditorDeleteSelected(txEd);
+        }
+        else if (IsKeyPressed(KEY_C))
+        {
+            txEd->isOptionsMenuOpen = false;
+            TextEditorCopy(txEd);
+        }
+        else if (IsKeyPressed(KEY_V))
+        {
+            txEd->isOptionsMenuOpen = false;
+            TextEditorPaste(txEd);
+        }
+
+        if (IsKeyPressed(KEY_S))
+        {
+            SaveTextFile(txEd, txEd->openedFilePath);
+        }
+    }
 }
 
 void HandleTextEditor(TextEditorContext *txEd, Vector2 mousePos, Rectangle viewportBoundary, RenderTexture2D *viewport, bool isViewportFocused, Font fontArial)
@@ -660,11 +776,14 @@ void HandleTextEditor(TextEditorContext *txEd, Vector2 mousePos, Rectangle viewp
     }
     else
     {
-        if(txEd->justClosedMenu){
-            txEd->justClosedMenu = false;
+        if (txEd->justClosedMenu)
+        {
+            txEd->justClosedMenu = !IsMouseButtonReleased(MOUSE_LEFT_BUTTON);
         }
         txEd->cursor = MOUSE_CURSOR_ARROW;
     }
+
+    KeyboardShortcuts(txEd);
 
     const char *fileName = GetFileName(txEd->openedFilePath);
     int fileNameSize = MeasureTextEx(fontArial, fileName, 32, 2.0f).x;
