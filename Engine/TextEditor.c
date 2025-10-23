@@ -513,6 +513,19 @@ void DrawOptionsMenu(TextEditorContext *txEd, Vector2 mousePos)
     }
 }
 
+void SaveTextFile(TextEditorContext *txEd, char *filePath){
+    FILE *file = fopen(filePath, "w");
+    if (!file) return;
+
+    for (int i = 0; i < txEd->rowCount; i++) {
+        fprintf(file, "%s\n", txEd->text[i]);
+    }
+
+    fclose(file);
+
+    AddToLogFromTextEditor(txEd, "File saved successfully{T300}", LOG_LEVEL_SUCCESS);
+}
+
 void HandleTextEditor(TextEditorContext *txEd, Vector2 mousePos, Rectangle viewportBoundary, RenderTexture2D *viewport, bool isViewportFocused, Font fontArial)
 {
     txEd->cursor = MOUSE_CURSOR_IBEAM;
@@ -666,6 +679,18 @@ void HandleTextEditor(TextEditorContext *txEd, Vector2 mousePos, Rectangle viewp
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
         {
             OpenFile(txEd->openedFilePath);
+        }
+    }
+
+    DrawRectangleRounded((Rectangle){viewportBoundary.x + fileNameSize + 100, viewportBoundary.y + 15, 60, 30}, 0.4f, 4, GRAY_50);
+    DrawTextEx(fontArial, "Save", (Vector2){viewportBoundary.x + fileNameSize + 108, viewportBoundary.y + 20}, 18, 2.0f, WHITE);
+    if (CheckCollisionPointRec(mousePos, (Rectangle){viewportBoundary.x + fileNameSize + 100, viewportBoundary.y + 15, 60, 30}))
+    {
+        DrawRectangleRounded((Rectangle){viewportBoundary.x + fileNameSize + 100, viewportBoundary.y + 15, 60, 30}, 0.4f, 4, COlOR_TE_OPEN_BTN_HOVER);
+        txEd->cursor = MOUSE_CURSOR_POINTING_HAND;
+        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+        {
+            SaveTextFile(txEd, txEd->openedFilePath);
         }
     }
 
