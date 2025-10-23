@@ -31,6 +31,7 @@ typedef struct TextEditorContext{
 
     bool isOptionsMenuOpen;
     Vector2 optionsMenuPos;
+    bool justClosedMenu;
 
     Font font;
 }TextEditorContext;
