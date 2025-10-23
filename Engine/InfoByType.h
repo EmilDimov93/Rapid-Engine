@@ -28,6 +28,7 @@ typedef enum
     NODE_GET_SCREEN_HEIGHT = 302,
     NODE_GET_MOUSE_POSITION = 303,
     NODE_GET_RANDOM_NUMBER = 304,
+    NODE_GET_SPRITE_POSITION = 305,
 
     NODE_SET_VARIABLE = 400,
     NODE_SET_BACKGROUND = 401,
@@ -49,7 +50,6 @@ typedef enum
     NODE_SET_SPRITE_SIZE = 606,
     NODE_MOVE_TO_SPRITE = 607,
     NODE_FORCE_SPRITE = 608,
-    NODE_STOP_MOVEMENT_SPRITE = 609, //
 
     NODE_DRAW_PROP_TEXTURE = 700,
     NODE_DRAW_PROP_RECTANGLE = 701,
@@ -175,7 +175,8 @@ static InfoByType NodeInfoByType[] = {
     {NODE_GET_SCREEN_WIDTH, 0, 1, 250, 70, {60, 100, 159, 200}, false, {0}, {PIN_NUM}, {0}, {"Screen Width"}},
     {NODE_GET_SCREEN_HEIGHT, 0, 1, 265, 70, {60, 100, 159, 200}, false, {0}, {PIN_NUM}, {0}, {"Screen Height"}},
     {NODE_GET_MOUSE_POSITION, 0, 2, 220, 95, {60, 100, 159, 200}, false, {0}, {PIN_NUM, PIN_NUM}, {0}, {"Mouse X", "Mouse Y"}},
-    {NODE_GET_RANDOM_NUMBER, 0, 1, 260, 70, {60, 100, 159, 200}, false, {0}, {0}, {0}, {0}, true}, // not implemented
+    {NODE_GET_RANDOM_NUMBER, 3, 2, 240, 130, {60, 100, 159, 200}, false, {PIN_FLOW, PIN_NUM, PIN_NUM}, {PIN_FLOW, PIN_NUM}, {"Prev", "Min", "Max"}, {"Next", "Number"}},
+    {NODE_GET_SPRITE_POSITION, 2, 3, 220, 130, {60, 100, 159, 200}, false, {PIN_FLOW, PIN_SPRITE_VARIABLE}, {PIN_FLOW, PIN_NUM, PIN_NUM}, {"Prev", "Sprite"}, {"Next", "Sprite X", "Sprite Y"}},
 
     {NODE_SET_VARIABLE, 3, 2, 140, 130, {60, 100, 159, 200}, false, {PIN_FLOW, PIN_VARIABLE, PIN_UNKNOWN_VALUE}, {PIN_FLOW, PIN_NONE}, {"Prev", "Variable", "Set value"}, {"Next", ""}}, // shouldn't have PIN_NONE
     {NODE_SET_BACKGROUND, 2, 1, 240, 100, {60, 100, 159, 200}, false, {PIN_FLOW, PIN_COLOR}, {PIN_FLOW}, {"Prev", "Color"}, {"Next"}},
@@ -239,7 +240,7 @@ const char *menuItems[] = {"Variable", "Event", "Get", "Set", "Flow", "Sprite", 
 const char *subMenuItems[][subMenuItemCount] = {
     {"Create number", "Create string", "Create bool", "Create color"},
     {"Event Start", "Event Tick", "Event On Button", "Create Custom Event", "Call Custom Event"},
-    {"Get variable", "Get Screen Width", "Get Screen Height", "Get Mouse Positon", "Get Random Number"},
+    {"Get variable", "Get Screen Width", "Get Screen Height", "Get Mouse Positon", "Get Random Number", "Get Sprite Position"},
     {"Set variable", "Set Background", "Set FPS"},
     {"Branch", "Loop", "Delay", "Flip Flop", "Break", "Return"},
     {"Create sprite", "Spawn sprite", "Destroy sprite", "Set Sprite Position", "Set Sprite Rotation", "Set Sprite Texture", "Set Sprite Size", "Move To", "Force"},
@@ -252,7 +253,7 @@ const char *subMenuItems[][subMenuItemCount] = {
 
 #define menuItemCount sizeof(menuItems) / sizeof(menuItems[0])
 
-const int subMenuCounts[] = {4, 5, 5, 3, 6, 9, 3, 3, 2, 4, 3, 1};
+const int subMenuCounts[] = {4, 5, 6, 3, 6, 9, 3, 3, 2, 4, 3, 1};
 
 typedef struct DropdownOptionsByPinType
 {
@@ -447,6 +448,8 @@ static inline const char *NodeTypeToString(NodeType type)
         return "Get mouse pos";
     case NODE_GET_RANDOM_NUMBER:
         return "Get random num";
+    case NODE_GET_SPRITE_POSITION:
+        return "Get sprite pos";
 
     case NODE_SET_VARIABLE:
         return "Set var";
@@ -565,6 +568,8 @@ static inline NodeType StringToNodeType(const char strType[])
         return NODE_GET_MOUSE_POSITION;
     if (strcmp(strType, "Get Random Number") == 0)
         return NODE_GET_RANDOM_NUMBER;
+    if (strcmp(strType, "Get Sprite Position") == 0)
+        return NODE_GET_SPRITE_POSITION;
 
     if (strcmp(strType, "Set variable") == 0)
         return NODE_SET_VARIABLE;

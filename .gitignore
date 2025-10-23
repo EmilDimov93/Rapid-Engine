@@ -1,5 +1,6 @@
 .vscode/
 RE_resources/
+re_early_dev/
 RapidEngine.exe
 engine_log.txt
 error_codes.txt
@@ -7,3 +8,4 @@ Makefile
 lines.ps1
 push.ps1
 run.ps1
+desktop.ini

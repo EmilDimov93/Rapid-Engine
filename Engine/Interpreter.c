@@ -57,8 +57,10 @@ void FreeRuntimeGraphContext(RuntimeGraphContext *rg)
 
     if (rg->pins)
     {
-        for(int i = 0; i < rg->pinCount; i++){
-            if(rg->pins[i].textFieldValue){
+        for (int i = 0; i < rg->pinCount; i++)
+        {
+            if (rg->pins[i].textFieldValue)
+            {
                 free(rg->pins[i].textFieldValue);
             }
         }
@@ -734,14 +736,16 @@ RuntimeGraphContext ConvertToRuntimeGraph(GraphContext *graph, InterpreterContex
             {
                 for (int k = 0; k < runtime.nodes[j].inputCount; k++)
                 {
-                    if (!runtime.nodes[j].inputPins[k]){
+                    if (!runtime.nodes[j].inputPins[k])
+                    {
                         continue;
                     }
                     if (runtime.nodes[j].inputPins[k]->type == PIN_SPRITE_VARIABLE && runtime.nodes[j].inputPins[k]->pickedOption != 0)
                     {
                         const char *varPtr = graph->nodes[i].name;
                         int picked = runtime.nodes[j].inputPins[k]->pickedOption - 1;
-                        if (picked < 0 || picked >= intp->varCount){
+                        if (picked < 0 || picked >= intp->varCount)
+                        {
                             continue;
                         }
                         const char *valPtr = intp->values[intp->varIndexes[picked]].name;
@@ -926,6 +930,24 @@ void InterpretStringOfNodes(int lastNodeIndex, InterpreterContext *intp, Runtime
 
     case NODE_GET_RANDOM_NUMBER:
     {
+        if(node->inputPins[1]->valueIndex != -1 && node->inputPins[2]->valueIndex != -1){
+            if(node->outputPins[1]->valueIndex != -1){
+                intp->values[node->outputPins[1]->valueIndex].number = GetRandomValue((int)intp->values[node->inputPins[1]->valueIndex].number, (int)intp->values[node->inputPins[2]->valueIndex].number);
+            }
+        }
+        break;
+    }
+
+    case NODE_GET_SPRITE_POSITION:
+    {
+        if (intp->values[node->inputPins[1]->valueIndex].componentIndex != -1 && intp->values[node->inputPins[1]->valueIndex].componentIndex < intp->componentCount)
+        {
+            if (node->outputPins[1]->valueIndex != -1 && node->outputPins[2]->valueIndex != -1)
+            {
+                intp->values[node->outputPins[1]->valueIndex].number = intp->components[intp->values[node->inputPins[1]->valueIndex].componentIndex].sprite.position.x;
+                intp->values[node->outputPins[2]->valueIndex].number = intp->components[intp->values[node->inputPins[1]->valueIndex].componentIndex].sprite.position.y;
+            }
+        }
         break;
     }
 
