@@ -5,7 +5,7 @@
 ![GitHub commits](https://img.shields.io/github/commit-activity/m/EmilDimov93/Rapid-Engine?style=plastic)
 ![Total Commits](https://img.shields.io/github/commit-activity/t/EmilDimov93/Rapid-Engine?style=plastic)
 ![GitHub last commit](https://img.shields.io/github/last-commit/EmilDimov93/Rapid-Engine?style=plastic)
-![48 Nodes](https://img.shields.io/badge/Nodes-48-purple?style=plastic)
+![50 Nodes](https://img.shields.io/badge/Nodes-50-purple?style=plastic)
 ![C](https://img.shields.io/badge/language-C-555555?style=plastic)
 ![Raylib](https://img.shields.io/badge/Library-Raylib-ff69b4?style=plastic)
 
@@ -37,6 +37,7 @@ https://github.com/user-attachments/assets/b6dc9735-5eb8-498a-9802-c1eac80a9a4a
 - Real-time log for error and debug messages
 - Variables menu for viewing information about the current variables and their values
 - Different pin types: flow, dropdown menu, text box and more
+- Text editor for code and general text files
 - Custom window management top menu with settings
 
 
@@ -66,7 +67,6 @@ https://github.com/user-attachments/assets/b6dc9735-5eb8-498a-9802-c1eac80a9a4a
 | Flow       | Delay                   |
 | Flow       | Flip Flop               |
 | Flow       | Break                   |
-| Flow       | Return                  |
 | Sprite     | Create sprite           |
 | Sprite     | Set Sprite Position     |
 | Sprite     | Set Sprite Rotation     |
@@ -96,7 +96,6 @@ https://github.com/user-attachments/assets/b6dc9735-5eb8-498a-9802-c1eac80a9a4a
 
 ## 🧪 In Development
 
-- Text Editor
 - Sprite sheet editor
 - Sprite collision events
 - Exporting game

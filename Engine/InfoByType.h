@@ -39,7 +39,6 @@ typedef enum
     NODE_DELAY = 502,
     NODE_FLIP_FLOP = 503,
     NODE_BREAK = 504,
-    NODE_RETURN = 505,
 
     NODE_CREATE_SPRITE = 600,
     NODE_SPAWN_SPRITE = 601,
@@ -185,9 +184,8 @@ static InfoByType NodeInfoByType[] = {
     {NODE_BRANCH, 2, 2, 130, 100, {90, 90, 90, 200}, false, {PIN_FLOW, PIN_BOOL}, {PIN_FLOW, PIN_FLOW}, {"Prev", "Condition"}, {"True", "False"}},
     {NODE_LOOP, 2, 2, 130, 100, {90, 90, 90, 200}, false, {PIN_FLOW, PIN_BOOL}, {PIN_FLOW, PIN_FLOW}, {"Prev", "Condition"}, {"Next", "Loop body"}},
     {NODE_DELAY, 2, 1, 130, 100, {90, 90, 90, 200}, false, {PIN_FLOW, PIN_NUM}, {PIN_FLOW}, {"Prev", "Seconds"}, {"Next"}, true},     // not implemented
-    {NODE_FLIP_FLOP, 1, 2, 130, 100, {90, 90, 90, 200}, false, {PIN_FLOW}, {PIN_FLOW, PIN_FLOW}, {"Prev"}, {"Flip", "Flop"}, true},   // not implemented
-    {NODE_BREAK, 1, 0, 130, 100, {90, 90, 90, 200}, false, {PIN_FLOW}, {0}, {"Prev"}, {0}, true},                                     // not implemented
-    {NODE_RETURN, 2, 0, 130, 100, {90, 90, 90, 200}, false, {PIN_FLOW, PIN_UNKNOWN_VALUE}, {0}, {"Prev", "Return value"}, {0}, true}, // not implemented
+    {NODE_FLIP_FLOP, 1, 2, 130, 100, {90, 90, 90, 200}, false, {PIN_FLOW}, {PIN_FLOW, PIN_FLOW}, {"Prev"}, {"Flip", "Flop"}},
+    {NODE_BREAK, 1, 0, 130, 80, {90, 90, 90, 200}, false, {PIN_FLOW}, {0}, {"Prev"}, {0}},
 
     {NODE_CREATE_SPRITE, 6, 2, 220, 230, {70, 100, 70, 200}, true, {PIN_FLOW, PIN_STRING, PIN_NUM, PIN_NUM, PIN_DROPDOWN_LAYER, PIN_EDIT_HITBOX}, {PIN_FLOW, PIN_SPRITE}, {"Prev", "Texture file name", "Width", "Height", "Layer", "Hitbox"}, {"Next", "Sprite"}},
     {NODE_SPAWN_SPRITE, 5, 1, 120, 190, {40, 110, 70, 200}, false, {PIN_FLOW, PIN_SPRITE_VARIABLE, PIN_NUM, PIN_NUM, PIN_NUM}, {PIN_FLOW}, {"Prev", "Sprite", "Pos X", "Pos Y", "Rotation"}, {"Next"}},
@@ -468,8 +466,6 @@ static inline const char *NodeTypeToString(NodeType type)
         return "Flip Flop";
     case NODE_BREAK:
         return "Break";
-    case NODE_RETURN:
-        return "Return";
 
     case NODE_CREATE_SPRITE:
         return "Create sprite";
@@ -588,8 +584,6 @@ static inline NodeType StringToNodeType(const char strType[])
         return NODE_FLIP_FLOP;
     if (strcmp(strType, "Break") == 0)
         return NODE_BREAK;
-    if (strcmp(strType, "Return") == 0)
-        return NODE_RETURN;
 
     if (strcmp(strType, "Create sprite") == 0)
         return NODE_CREATE_SPRITE;

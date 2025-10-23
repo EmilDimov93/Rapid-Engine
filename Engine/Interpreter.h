@@ -40,6 +40,8 @@ typedef struct RuntimeNode
 
     RuntimePin *outputPins[MAX_NODE_PINS];
     int outputCount;
+
+    bool flipFlopState;
 } RuntimeNode;
 
 typedef struct RuntimeGraphContext
@@ -219,6 +221,8 @@ typedef struct
     bool hasSoundOnChanged;
 
     Vector2 cameraOffset;
+
+    bool shouldBreakFromLoop;
 
     RuntimeGraphContext *runtimeGraph;
 } InterpreterContext;

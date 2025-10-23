@@ -2613,7 +2613,7 @@ int main(int argc, char **argv)
     SetWindowIcon(icon);
     UnloadImage(icon);
     char filePath[MAX_FILE_PATH];
-    strmac(filePath, MAX_FILE_NAME, "%s", argc == 1 ? (DEVELOPER_MODE ? "Projects\\Example\\Example.cg" : HandleProjectManager()) : argv[1]);
+    strmac(filePath, MAX_FILE_NAME, "%s", argc == 1 ? (DEVELOPER_MODE ? "C:\\Users\\user\\Desktop\\RapidEngine\\Projects\\Example\\Example.cg" : HandleProjectManager()) : argv[1]);
 
     MaximizeWindow();
 

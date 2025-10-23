@@ -36,6 +36,8 @@ InterpreterContext InitInterpreterContext()
 
     intp.zoom = 1.0f;
 
+    intp.shouldBreakFromLoop = false;
+
     intp.isSoundOn = true;
     intp.hasSoundOnChanged = true;
 
@@ -248,6 +250,10 @@ RuntimeGraphContext ConvertToRuntimeGraph(GraphContext *graph, InterpreterContex
         dstNode->type = srcNode->type;
         dstNode->inputCount = srcNode->inputCount;
         dstNode->outputCount = srcNode->outputCount;
+
+        if(srcNode->type == NODE_FLIP_FLOP){
+            dstNode->flipFlopState = false;
+        }
 
         for (int j = 0; j < srcNode->inputCount; j++)
         {
@@ -1041,8 +1047,33 @@ void InterpretStringOfNodes(int lastNodeIndex, InterpreterContext *intp, Runtime
                     steps--;
                 }
                 InterpretStringOfNodes(currNodeIndex, intp, graph, 1);
+                if(intp->shouldBreakFromLoop){
+                    intp->shouldBreakFromLoop = false;
+                    break;
+                }
             }
         }
+        break;
+    }
+
+    case NODE_FLIP_FLOP:
+    {
+        if(node->flipFlopState){
+            InterpretStringOfNodes(currNodeIndex, intp, graph, 0);
+        }
+        else{
+            InterpretStringOfNodes(currNodeIndex, intp, graph, 1);
+        }
+
+        node->flipFlopState = !node->flipFlopState;
+        return;
+        break;
+    }
+
+    case NODE_BREAK:
+    {
+        intp->shouldBreakFromLoop = true;
+        return;
         break;
     }
 
