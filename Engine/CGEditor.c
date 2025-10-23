@@ -669,6 +669,8 @@ void HandleKeyNodeField(CGEditorContext *cgEd, GraphContext *graph, int currPinI
 
 void HandleDropdownMenu(GraphContext *graph, int currPinIndex, int hoveredNodeIndex, int currNodeIndex, CGEditorContext *cgEd)
 {
+    static bool menuJustOpened = false;
+
     DropdownOptionsByPinType options;
     if (graph->pins[currPinIndex].type == PIN_VARIABLE || graph->pins[currPinIndex].type == PIN_SPRITE_VARIABLE)
     {
@@ -756,16 +758,22 @@ void HandleDropdownMenu(GraphContext *graph, int currPinIndex, int hoveredNodeIn
 
     if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
     {
-        if (cgEd->focusedDropdownPin == currPinIndex)
+        if(cgEd->focusedDropdownPin == currPinIndex && menuJustOpened){
+            menuJustOpened = false;
+        }
+        else if (cgEd->focusedDropdownPin == currPinIndex && !menuJustOpened)
         {
-            if (mouseOnDropdown)
+            if (mouseOnDropdown){
                 cgEd->focusedDropdownPin = -1;
-            else if (!mouseOnOptions)
+            }
+            else if (!mouseOnOptions){
                 cgEd->focusedDropdownPin = -1;
+            }
         }
         else if (mouseOnDropdown)
         {
             cgEd->focusedDropdownPin = currPinIndex;
+            menuJustOpened = true;
         }
     }
 
@@ -1062,7 +1070,9 @@ void DrawNodes(CGEditorContext *cgEd, GraphContext *graph)
         }
         else if (graph->pins[i].type == PIN_DROPDOWN_COMPARISON_OPERATOR || graph->pins[i].type == PIN_DROPDOWN_GATE || graph->pins[i].type == PIN_DROPDOWN_ARITHMETIC || graph->pins[i].type == PIN_DROPDOWN_KEY_ACTION || graph->pins[i].type == PIN_DROPDOWN_LAYER || graph->pins[i].type == PIN_VARIABLE || graph->pins[i].type == PIN_SPRITE_VARIABLE)
         {
-            HandleDropdownMenu(graph, i, cgEd->hoveredNodeIndex, currNodeIndex, cgEd);
+            if(cgEd->focusedDropdownPin != i){
+                HandleDropdownMenu(graph, i, cgEd->hoveredNodeIndex, currNodeIndex, cgEd);
+            }
         }
         else if (graph->pins[i].type == PIN_FIELD_NUM || graph->pins[i].type == PIN_FIELD_STRING || graph->pins[i].type == PIN_FIELD_BOOL || graph->pins[i].type == PIN_FIELD_COLOR)
         {
@@ -1147,6 +1157,26 @@ void DrawNodes(CGEditorContext *cgEd, GraphContext *graph)
                 }
                 DrawCircle(nodePos.x + xOffset + 5, nodePos.y + yOffset, 7, WHITE);
                 cgEd->hoveredPinIndex = i;
+            }
+        }
+    }
+
+    for (int i = 0; i < cgEd->selectedNodesCount; i++)
+    {
+        Rectangle nodeRect = (Rectangle){graph->nodes[cgEd->selectedNodes[i]].position.x, graph->nodes[cgEd->selectedNodes[i]].position.y, getNodeInfoByType(graph->nodes[cgEd->selectedNodes[i]].type, INFO_NODE_WIDTH), getNodeInfoByType(graph->nodes[cgEd->selectedNodes[i]].type, INFO_NODE_HEIGHT)};
+        if(cgEd->focusedDropdownPin == -1 && cgEd->focusedFieldPin == -1){
+            DrawRectangleRounded(nodeRect, 0.2f, 8, COLOR_CGED_NODE_SELECTED);
+        }
+        DrawRectangleRoundedLinesEx(nodeRect, 0.2f, 8, 5.0f, WHITE);
+    }
+
+    if(cgEd->focusedDropdownPin != -1){
+        for (int j = 0; j < graph->nodeCount; j++)
+        {
+            if (graph->nodes[j].id == graph->pins[cgEd->focusedDropdownPin].nodeID)
+            {
+                HandleDropdownMenu(graph, cgEd->focusedDropdownPin, cgEd->hoveredNodeIndex, j, cgEd);
+                break;
             }
         }
     }
@@ -1587,14 +1617,6 @@ void DrawFullTexture(CGEditorContext *cgEd, GraphContext *graph, RenderTexture2D
                 cgEd->selectedNodesCount++;
             }
         }
-    }
-    for (int i = 0; i < cgEd->selectedNodesCount; i++)
-    {
-        Rectangle nodeRect = (Rectangle){graph->nodes[cgEd->selectedNodes[i]].position.x, graph->nodes[cgEd->selectedNodes[i]].position.y, getNodeInfoByType(graph->nodes[cgEd->selectedNodes[i]].type, INFO_NODE_WIDTH), getNodeInfoByType(graph->nodes[cgEd->selectedNodes[i]].type, INFO_NODE_HEIGHT)};
-        if(cgEd->focusedDropdownPin == -1 && cgEd->focusedFieldPin == -1){
-            DrawRectangleRounded(nodeRect, 0.2f, 8, COLOR_CGED_NODE_SELECTED);
-        }
-        DrawRectangleRoundedLinesEx(nodeRect, 0.2f, 8, 5.0f, WHITE);
     }
 
     if (cgEd->isNodeCreateMenuOpen)
