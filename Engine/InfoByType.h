@@ -60,6 +60,8 @@ typedef enum
     NODE_ARITHMETIC = 802,
     NODE_CLAMP = 803,
     NODE_LERP = 804,
+    NODE_SIN = 805,
+    NODE_COS = 806,
 
     NODE_PRINT_TO_LOG = 900,
     NODE_DRAW_DEBUG_LINE = 901,
@@ -209,8 +211,10 @@ static InfoByType NodeInfoByType[] = {
     {NODE_COMPARISON, 4, 2, 210, 160, {60, 100, 159, 200}, false, {PIN_FLOW, PIN_DROPDOWN_COMPARISON_OPERATOR, PIN_NUM, PIN_NUM}, {PIN_FLOW, PIN_BOOL}, {"Prev", "Operator", "Value A", "Value B"}, {"Next", "Result"}},
     {NODE_GATE, 4, 2, 180, 160, {60, 100, 159, 200}, false, {PIN_FLOW, PIN_DROPDOWN_GATE, PIN_BOOL, PIN_BOOL}, {PIN_FLOW, PIN_BOOL}, {"Prev", "Gate", "Condition A", "Condition B"}, {"Next", "Result"}},
     {NODE_ARITHMETIC, 4, 2, 180, 160, {60, 100, 159, 200}, false, {PIN_FLOW, PIN_DROPDOWN_ARITHMETIC, PIN_NUM, PIN_NUM}, {PIN_FLOW, PIN_NUM}, {"Prev", "Arithmetic", "Number A", "Number B"}, {"Next", "Result"}},
-    {NODE_CLAMP, 4, 2, 130, 160, {90, 90, 90, 200}, false, {PIN_FLOW, PIN_NUM, PIN_NUM, PIN_NUM}, {PIN_FLOW, PIN_NUM}, {"Prev", "Number", "Min", "Max"}, {"Next", "Result"}},
-    {NODE_LERP, 4, 2, 130, 160, {90, 90, 90, 200}, false, {PIN_FLOW, PIN_NUM, PIN_NUM, PIN_NUM}, {PIN_FLOW, PIN_NUM}, {"Prev", "Number A", "Number B", "Alpha"}, {"Next", "Result"}},
+    {NODE_CLAMP, 4, 2, 130, 160, {60, 100, 159, 200}, false, {PIN_FLOW, PIN_NUM, PIN_NUM, PIN_NUM}, {PIN_FLOW, PIN_NUM}, {"Prev", "Number", "Min", "Max"}, {"Next", "Result"}},
+    {NODE_LERP, 4, 2, 130, 160, {60, 100, 159, 200}, false, {PIN_FLOW, PIN_NUM, PIN_NUM, PIN_NUM}, {PIN_FLOW, PIN_NUM}, {"Prev", "Number A", "Number B", "Alpha"}, {"Next", "Result"}},
+    {NODE_SIN, 2, 2, 130, 100, {60, 100, 159, 200}, false, {PIN_FLOW, PIN_NUM}, {PIN_FLOW, PIN_NUM}, {"Prev", "Number"}, {"Next", "Result"}},
+    {NODE_COS, 2, 2, 130, 100, {60, 100, 159, 200}, false, {PIN_FLOW, PIN_NUM}, {PIN_FLOW, PIN_NUM}, {"Prev", "Number"}, {"Next", "Result"}},
 
     {NODE_PRINT_TO_LOG, 2, 1, 140, 100, {200, 170, 50, 200}, false, {PIN_FLOW, PIN_ANY_VALUE}, {PIN_FLOW}, {"Prev", "Print value"}, {"Next"}},
     {NODE_DRAW_DEBUG_LINE, 6, 1, 240, 220, {200, 170, 50, 200}, false, {PIN_FLOW, PIN_NUM, PIN_NUM, PIN_NUM, PIN_NUM, PIN_COLOR}, {PIN_FLOW}, {"Prev", "Start X", "Start Y", "End X", "End Y", "Color"}, {"Next"}},
@@ -245,12 +249,12 @@ const char *menuItems[] = {"Variable", "Event", "Get", "Set", "Flow", "Sprite", 
 const char *subMenuItems[][subMenuItemCount] = {
     {"Create number", "Create string", "Create bool", "Create color"},
     {"Event Start", "Event Tick", "Event On Button"},
-    {"Get variable", "Get Screen Width", "Get Screen Height", "Get Mouse Positon", "Get Random Number", "Get Sprite Position"},
+    {"Get variable", "Get Screen Width", "Get Screen Height", "Get Mouse Position", "Get Random Number", "Get Sprite Position"},
     {"Set variable", "Set Background", "Set FPS"},
     {"Branch", "Loop", "Flip Flop", "Break", "Sequence"},
     {"Create sprite", "Spawn sprite", "Destroy sprite", "Set Sprite Position", "Set Sprite Rotation", "Set Sprite Texture", "Set Sprite Size", "Force"},
     {"Draw Prop Rectangle", "Draw Prop Circle"},
-    {"Comparison", "Gate", "Arithmetic", "Clamp", "Lerp"},
+    {"Comparison", "Gate", "Arithmetic", "Clamp", "Lerp", "Sin", "Cos"},
     {"Print To Log", "Draw Debug Line", "Comment"},
     {"Literal number", "Literal string", "Literal bool", "Literal color"},
     {"Move Camera", "Zoom Camera", "Get Camera Center"},
@@ -258,7 +262,7 @@ const char *subMenuItems[][subMenuItemCount] = {
 
 #define menuItemCount sizeof(menuItems) / sizeof(menuItems[0])
 
-const int subMenuCounts[] = {4, 3, 6, 3, 5, 8, 2, 5, 3, 4, 3, 1};
+const int subMenuCounts[] = {4, 3, 6, 3, 5, 8, 2, 7, 3, 4, 3, 1};
 
 typedef struct DropdownOptionsByPinType
 {
@@ -511,6 +515,10 @@ static inline const char *NodeTypeToString(NodeType type)
         return "Clamp";
     case NODE_LERP:
         return "Lerp";
+    case NODE_SIN:
+        return "Sin";
+    case NODE_COS:
+        return "Cos";
 
     case NODE_PRINT_TO_LOG:
         return "Print";
@@ -546,123 +554,237 @@ static inline const char *NodeTypeToString(NodeType type)
 static inline NodeType StringToNodeType(const char strType[])
 {
     if (strcmp(strType, "unknown") == 0)
+    {
         return NODE_UNKNOWN;
+    }
 
     if (strcmp(strType, "Create number") == 0)
+    {
         return NODE_CREATE_NUMBER;
+    }
     if (strcmp(strType, "Create string") == 0)
+    {
         return NODE_CREATE_STRING;
+    }
     if (strcmp(strType, "Create bool") == 0)
+    {
         return NODE_CREATE_BOOL;
+    }
     if (strcmp(strType, "Create color") == 0)
+    {
         return NODE_CREATE_COLOR;
+    }
 
     if (strcmp(strType, "Event Start") == 0)
+    {
         return NODE_EVENT_START;
+    }
     if (strcmp(strType, "Event Tick") == 0)
+    {
         return NODE_EVENT_TICK;
+    }
     if (strcmp(strType, "Event On Button") == 0)
+    {
         return NODE_EVENT_ON_BUTTON;
+    }
     if (strcmp(strType, "Create Custom Event") == 0)
+    {
         return NODE_CREATE_CUSTOM_EVENT;
+    }
     if (strcmp(strType, "Call Custom Event") == 0)
+    {
         return NODE_CALL_CUSTOM_EVENT;
+    }
 
     if (strcmp(strType, "Get variable") == 0)
+    {
         return NODE_GET_VARIABLE;
+    }
     if (strcmp(strType, "Get Screen Width") == 0)
+    {
         return NODE_GET_SCREEN_WIDTH;
+    }
     if (strcmp(strType, "Get Screen Height") == 0)
+    {
         return NODE_GET_SCREEN_HEIGHT;
-    if (strcmp(strType, "Get Mouse Positon") == 0)
+    }
+    if (strcmp(strType, "Get Mouse Position") == 0)
+    {
         return NODE_GET_MOUSE_POSITION;
+    }
     if (strcmp(strType, "Get Random Number") == 0)
+    {
         return NODE_GET_RANDOM_NUMBER;
+    }
     if (strcmp(strType, "Get Sprite Position") == 0)
+    {
         return NODE_GET_SPRITE_POSITION;
+    }
 
     if (strcmp(strType, "Set variable") == 0)
+    {
         return NODE_SET_VARIABLE;
+    }
     if (strcmp(strType, "Set Background") == 0)
+    {
         return NODE_SET_BACKGROUND;
+    }
     if (strcmp(strType, "Set FPS") == 0)
+    {
         return NODE_SET_FPS;
+    }
 
     if (strcmp(strType, "Branch") == 0)
+    {
         return NODE_BRANCH;
+    }
     if (strcmp(strType, "Loop") == 0)
+    {
         return NODE_LOOP;
+    }
     if (strcmp(strType, "Delay") == 0)
+    {
         return NODE_DELAY;
+    }
     if (strcmp(strType, "Flip Flop") == 0)
+    {
         return NODE_FLIP_FLOP;
+    }
     if (strcmp(strType, "Break") == 0)
+    {
         return NODE_BREAK;
+    }
     if (strcmp(strType, "Sequence") == 0)
+    {
         return NODE_SEQUENCE;
+    }
 
     if (strcmp(strType, "Create sprite") == 0)
+    {
         return NODE_CREATE_SPRITE;
+    }
     if (strcmp(strType, "Set Sprite Position") == 0)
+    {
         return NODE_SET_SPRITE_POSITION;
+    }
     if (strcmp(strType, "Set Sprite Rotation") == 0)
+    {
         return NODE_SET_SPRITE_ROTATION;
+    }
     if (strcmp(strType, "Set Sprite Texture") == 0)
+    {
         return NODE_SET_SPRITE_TEXTURE;
+    }
     if (strcmp(strType, "Set Sprite Size") == 0)
+    {
         return NODE_SET_SPRITE_SIZE;
+    }
     if (strcmp(strType, "Spawn sprite") == 0)
+    {
         return NODE_SPAWN_SPRITE;
+    }
     if (strcmp(strType, "Destroy sprite") == 0)
+    {
         return NODE_DESTROY_SPRITE;
+    }
     if (strcmp(strType, "Move To") == 0)
+    {
         return NODE_MOVE_TO_SPRITE;
+    }
     if (strcmp(strType, "Force") == 0)
+    {
         return NODE_FORCE_SPRITE;
+    }
 
     if (strcmp(strType, "Draw Prop Texture") == 0)
+    {
         return NODE_DRAW_PROP_TEXTURE;
+    }
     if (strcmp(strType, "Draw Prop Rectangle") == 0)
+    {
         return NODE_DRAW_PROP_RECTANGLE;
+    }
     if (strcmp(strType, "Draw Prop Circle") == 0)
+    {
         return NODE_DRAW_PROP_CIRCLE;
+    }
 
     if (strcmp(strType, "Comparison") == 0)
+    {
         return NODE_COMPARISON;
+    }
     if (strcmp(strType, "Gate") == 0)
+    {
         return NODE_GATE;
+    }
     if (strcmp(strType, "Arithmetic") == 0)
+    {
         return NODE_ARITHMETIC;
+    }
+    if (strcmp(strType, "Clamp") == 0)
+    {
+        return NODE_CLAMP;
+    }
     if (strcmp(strType, "Lerp") == 0)
+    {
         return NODE_LERP;
+    }
+    if (strcmp(strType, "Sin") == 0)
+    {
+        return NODE_SIN;
+    }
+    if (strcmp(strType, "Cos") == 0)
+    {
+        return NODE_COS;
+    }
 
     if (strcmp(strType, "Print To Log") == 0)
+    {
         return NODE_PRINT_TO_LOG;
+    }
     if (strcmp(strType, "Draw Debug Line") == 0)
+    {
         return NODE_DRAW_DEBUG_LINE;
+    }
     if (strcmp(strType, "Comment") == 0)
     {
         return NODE_COMMENT;
     }
 
     if (strcmp(strType, "Literal number") == 0)
+    {
         return NODE_LITERAL_NUMBER;
+    }
     if (strcmp(strType, "Literal string") == 0)
+    {
         return NODE_LITERAL_STRING;
+    }
     if (strcmp(strType, "Literal bool") == 0)
+    {
         return NODE_LITERAL_BOOL;
+    }
     if (strcmp(strType, "Literal color") == 0)
+    {
         return NODE_LITERAL_COLOR;
+    }
 
     if (strcmp(strType, "Move Camera") == 0)
+    {
         return NODE_MOVE_CAMERA;
+    }
     if (strcmp(strType, "Zoom Camera") == 0)
+    {
         return NODE_ZOOM_CAMERA;
+    }
     if (strcmp(strType, "Get Camera Center") == 0)
+    {
         return NODE_GET_CAMERA_CENTER;
+    }
 
     if (strcmp(strType, "Play Sound") == 0)
+    {
         return NODE_PLAY_SOUND;
+    }
 
     return NODE_UNKNOWN;
 }

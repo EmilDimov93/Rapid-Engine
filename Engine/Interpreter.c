@@ -1390,6 +1390,28 @@ void InterpretStringOfNodes(int lastNodeIndex, InterpreterContext *intp, Runtime
         break;
     }
 
+    case NODE_SIN:
+    {
+        if(node->inputPins[1]->valueIndex == -1 || node->outputPins[1]->valueIndex == -1){
+            break;
+        }
+
+        intp->values[node->outputPins[1]->valueIndex].number = sin(intp->values[node->inputPins[1]->valueIndex].number);
+
+        break;
+    }
+
+    case NODE_COS:
+    {
+        if(node->inputPins[1]->valueIndex == -1 || node->outputPins[1]->valueIndex == -1){
+            break;
+        }
+
+        intp->values[node->outputPins[1]->valueIndex].number = cos(intp->values[node->inputPins[1]->valueIndex].number);
+
+        break;
+    }
+
     case NODE_PRINT_TO_LOG:
     {
         if (node->inputPins[1]->valueIndex != -1)
