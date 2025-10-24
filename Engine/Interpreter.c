@@ -251,7 +251,8 @@ RuntimeGraphContext ConvertToRuntimeGraph(GraphContext *graph, InterpreterContex
         dstNode->inputCount = srcNode->inputCount;
         dstNode->outputCount = srcNode->outputCount;
 
-        if(srcNode->type == NODE_FLIP_FLOP){
+        if (srcNode->type == NODE_FLIP_FLOP)
+        {
             dstNode->flipFlopState = false;
         }
 
@@ -936,8 +937,10 @@ void InterpretStringOfNodes(int lastNodeIndex, InterpreterContext *intp, Runtime
 
     case NODE_GET_RANDOM_NUMBER:
     {
-        if(node->inputPins[1]->valueIndex != -1 && node->inputPins[2]->valueIndex != -1){
-            if(node->outputPins[1]->valueIndex != -1){
+        if (node->inputPins[1]->valueIndex != -1 && node->inputPins[2]->valueIndex != -1)
+        {
+            if (node->outputPins[1]->valueIndex != -1)
+            {
                 intp->values[node->outputPins[1]->valueIndex].number = GetRandomValue((int)intp->values[node->inputPins[1]->valueIndex].number, (int)intp->values[node->inputPins[2]->valueIndex].number);
             }
         }
@@ -1047,7 +1050,8 @@ void InterpretStringOfNodes(int lastNodeIndex, InterpreterContext *intp, Runtime
                     steps--;
                 }
                 InterpretStringOfNodes(currNodeIndex, intp, graph, 1);
-                if(intp->shouldBreakFromLoop){
+                if (intp->shouldBreakFromLoop)
+                {
                     intp->shouldBreakFromLoop = false;
                     break;
                 }
@@ -1058,10 +1062,12 @@ void InterpretStringOfNodes(int lastNodeIndex, InterpreterContext *intp, Runtime
 
     case NODE_FLIP_FLOP:
     {
-        if(node->flipFlopState){
+        if (node->flipFlopState)
+        {
             InterpretStringOfNodes(currNodeIndex, intp, graph, 0);
         }
-        else{
+        else
+        {
             InterpretStringOfNodes(currNodeIndex, intp, graph, 1);
         }
 
@@ -1330,6 +1336,29 @@ void InterpretStringOfNodes(int lastNodeIndex, InterpreterContext *intp, Runtime
         default:
             break;
         }
+        break;
+    }
+
+    case NODE_CLAMP:
+    {
+        if (node->inputPins[1]->valueIndex == -1 || node->inputPins[2]->valueIndex == -1 || node->inputPins[3]->valueIndex == -1 || node->outputPins[1]->valueIndex == -1)
+        {
+            break;
+        }
+
+        float num = intp->values[node->inputPins[1]->valueIndex].number;
+        float min = intp->values[node->inputPins[2]->valueIndex].number;
+        float max = intp->values[node->inputPins[3]->valueIndex].number;
+        if (num < min)
+        {
+            num = min;
+        }
+        else if (num > max)
+        {
+            num = max;
+        }
+
+        intp->values[node->outputPins[1]->valueIndex].number = num;
         break;
     }
 

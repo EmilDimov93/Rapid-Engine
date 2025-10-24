@@ -68,17 +68,20 @@ typedef enum
 
 #endif
 
-typedef enum {
+typedef enum
+{
     HITBOX_NONE,
     HITBOX_RECT,
     HITBOX_CIRCLE,
     HITBOX_POLY
 } HitboxType;
 
-typedef struct {
+typedef struct
+{
     HitboxType type;
     Vector2 offset;
-    union{
+    union
+    {
         Vector2 rectHitboxSize;
         float circleHitboxRadius;
         Polygon polygonHitbox;
@@ -160,13 +163,13 @@ typedef struct
     int pixelsPerSecond;
     int angle;
     float duration;
-}Force;
+} Force;
 
 typedef struct
 {
     Sound sound;
     float timeLeft;
-}ActiveSound;
+} ActiveSound;
 
 typedef struct
 {
@@ -175,7 +178,7 @@ typedef struct
 
     int *varIndexes;
     int varCount;
-    
+
     Force *forces;
     int forceCount;
 
@@ -227,7 +230,8 @@ typedef struct
     RuntimeGraphContext *runtimeGraph;
 } InterpreterContext;
 
-typedef enum{
+typedef enum
+{
     SPECIAL_VALUE_ERROR,
     SPECIAL_VALUE_MOUSE_X,
     SPECIAL_VALUE_MOUSE_Y,
@@ -236,23 +240,25 @@ typedef enum{
     SPECIAL_VALUE_CAMERA_CENTER_X,
     SPECIAL_VALUE_CAMERA_CENTER_Y,
     SPECIAL_VALUES_COUNT
-}SpecialValuesInList;
+} SpecialValuesInList;
 
-typedef enum{
+typedef enum
+{
     COMPONENT_LAYER_NO_COLLISION,
     COMPONENT_LAYER_COLLISION_EVENTS,
     COMPONENT_LAYER_BLOCKING,
     COMPONENT_LAYER_COLLISION_EVENTS_AND_BLOCKING,
     COMPONENT_LAYER_COUNT
-}ComponentLayers;
+} ComponentLayers;
 
-typedef enum{
+typedef enum
+{
     COLLISION_RESULT_NONE,
     COLLISION_RESULT_EVENT,
     COLLISION_RESULT_BLOCKING,
     COLLISION_RESULT_EVENT_AND_BLOCKING,
     COLLISION_RESULT_COUNT
-}CollisionResult;
+} CollisionResult;
 
 InterpreterContext InitInterpreterContext();
 

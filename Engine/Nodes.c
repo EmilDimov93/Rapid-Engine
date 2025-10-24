@@ -169,16 +169,20 @@ Pin CreatePin(GraphContext *graph, int nodeID, bool isInput, PinType type, int i
     return pin;
 }
 
-char *AssignAvailableVarName(GraphContext *graph, const char *baseName) {
+char *AssignAvailableVarName(GraphContext *graph, const char *baseName)
+{
     char temp[MAX_VARIABLE_NAME_SIZE];
     int suffix = 1;
     bool exists;
 
-    do {
+    do
+    {
         strmac(temp, MAX_VARIABLE_NAME_SIZE, "%s %d", baseName, suffix);
         exists = false;
-        for (int i = 0; i < graph->nodeCount; i++) {
-            if (strcmp(temp, graph->nodes[i].name) == 0) {
+        for (int i = 0; i < graph->nodeCount; i++)
+        {
+            if (strcmp(temp, graph->nodes[i].name) == 0)
+            {
                 exists = true;
                 suffix++;
                 break;
@@ -222,7 +226,7 @@ bool CreateNode(GraphContext *graph, NodeType type, Vector2 pos)
         strmac(node.name, MAX_VARIABLE_NAME_SIZE, "");
         break;
     default:
-        strmac(node.name, MAX_VARIABLE_NAME_SIZE,  "Node %d", node.id);
+        strmac(node.name, MAX_VARIABLE_NAME_SIZE, "Node %d", node.id);
     }
 
     if (type == NODE_UNKNOWN)
@@ -292,7 +296,7 @@ bool DuplicateNode(GraphContext *graph, const Node *src, Vector2 pos, int nodeY)
     node.position.y = pos.y + nodeY;
     strmac(node.name, MAX_VARIABLE_NAME_SIZE, "%s", src->name);
 
-    int inputCount  = src->inputCount;
+    int inputCount = src->inputCount;
     int outputCount = src->outputCount;
 
     int newPinCapacity = graph->pinCount + inputCount + outputCount;
@@ -307,21 +311,27 @@ bool DuplicateNode(GraphContext *graph, const Node *src, Vector2 pos, int nodeY)
     {
         int srcPinID = src->inputPins[i];
         int srcIdx = GetPinIndexByID(srcPinID, graph);
-        if (srcIdx < 0) { return false; }
+        if (srcIdx < 0)
+        {
+            return false;
+        }
 
         Pin *srcPin = &graph->pins[srcIdx];
-        Vector2 offset = { srcPin->position.x - src->position.x, srcPin->position.y - src->position.y };
-        Vector2 newPinPos = { pos.x + offset.x, pos.y + offset.y };
+        Vector2 offset = {srcPin->position.x - src->position.x, srcPin->position.y - src->position.y};
+        Vector2 newPinPos = {pos.x + offset.x, pos.y + offset.y};
 
         Pin pin = CreatePin(graph, node.id, true, srcPin->type, srcPin->posInNode, newPinPos);
 
-        if(srcPin->type == PIN_FIELD_NUM || srcPin->type == PIN_FIELD_STRING || srcPin->type == PIN_FIELD_BOOL || srcPin->type == PIN_FIELD_COLOR){
+        if (srcPin->type == PIN_FIELD_NUM || srcPin->type == PIN_FIELD_STRING || srcPin->type == PIN_FIELD_BOOL || srcPin->type == PIN_FIELD_COLOR)
+        {
             strmac(pin.textFieldValue, MAX_LITERAL_NODE_FIELD_SIZE, "%s", srcPin->textFieldValue);
         }
-        else if(srcPin->type == PIN_DROPDOWN_COMPARISON_OPERATOR || srcPin->type == PIN_DROPDOWN_GATE || srcPin->type == PIN_DROPDOWN_ARITHMETIC || srcPin->type == PIN_SPRITE_VARIABLE || srcPin->type == PIN_DROPDOWN_LAYER || srcPin->type == PIN_FIELD_KEY || srcPin->type == PIN_DROPDOWN_KEY_ACTION || srcPin->type == PIN_VARIABLE){
+        else if (srcPin->type == PIN_DROPDOWN_COMPARISON_OPERATOR || srcPin->type == PIN_DROPDOWN_GATE || srcPin->type == PIN_DROPDOWN_ARITHMETIC || srcPin->type == PIN_SPRITE_VARIABLE || srcPin->type == PIN_DROPDOWN_LAYER || srcPin->type == PIN_FIELD_KEY || srcPin->type == PIN_DROPDOWN_KEY_ACTION || srcPin->type == PIN_VARIABLE)
+        {
             pin.pickedOption = srcPin->pickedOption;
         }
-        else if(srcPin->type == PIN_EDIT_HITBOX){
+        else if (srcPin->type == PIN_EDIT_HITBOX)
+        {
             pin.hitbox = srcPin->hitbox;
         }
 
@@ -334,11 +344,14 @@ bool DuplicateNode(GraphContext *graph, const Node *src, Vector2 pos, int nodeY)
     {
         int srcPinID = src->outputPins[i];
         int srcIdx = GetPinIndexByID(srcPinID, graph);
-        if (srcIdx < 0) { return false; }
+        if (srcIdx < 0)
+        {
+            return false;
+        }
 
         Pin *srcPin = &graph->pins[srcIdx];
-        Vector2 offset = { srcPin->position.x - src->position.x, srcPin->position.y - src->position.y };
-        Vector2 newPinPos = { pos.x + offset.x, pos.y + offset.y };
+        Vector2 offset = {srcPin->position.x - src->position.x, srcPin->position.y - src->position.y};
+        Vector2 newPinPos = {pos.x + offset.x, pos.y + offset.y};
 
         Pin pin = CreatePin(graph, node.id, false, srcPin->type, srcPin->posInNode, newPinPos);
 
@@ -428,7 +441,8 @@ void DeleteNode(GraphContext *graph, int nodeID)
             break;
         }
     }
-    if (nodeIndex == -1){
+    if (nodeIndex == -1)
+    {
         return;
     }
 
@@ -463,7 +477,8 @@ void DeleteNode(GraphContext *graph, int nodeID)
                         {
                             graph->pins[j].pickedOption--;
                         }
-                        else if(graph->pins[j].pickedOption == variableToDeleteIndex){
+                        else if (graph->pins[j].pickedOption == variableToDeleteIndex)
+                        {
                             graph->pins[j].pickedOption = 0;
                         }
                     }
@@ -487,7 +502,8 @@ void DeleteNode(GraphContext *graph, int nodeID)
         else
         {
             char **resized = realloc(graph->variables, graph->variablesCount * sizeof(char *));
-            if (resized){
+            if (resized)
+            {
                 graph->variables = resized;
             }
         }

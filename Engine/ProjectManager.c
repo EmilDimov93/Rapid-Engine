@@ -548,7 +548,8 @@ int WindowCreateProject(char *projectFilePath, Font font)
     DrawRectangleLinesEx((Rectangle){750, 330, 30, 30}, 3, BLACK);
     if (CheckCollisionPointRec(mousePos, (Rectangle){750, 330, 30, 30}))
     {
-        if(!PO.is3D){
+        if (!PO.is3D)
+        {
             isHovered = true;
         }
         SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
@@ -565,7 +566,8 @@ int WindowCreateProject(char *projectFilePath, Font font)
     DrawRectangleLinesEx((Rectangle){890, 330, 30, 30}, 3, BLACK);
     if (CheckCollisionPointRec(mousePos, (Rectangle){890, 330, 30, 30}))
     {
-        if(PO.is3D){
+        if (PO.is3D)
+        {
             isHovered = true;
         }
         SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);

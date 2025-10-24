@@ -505,33 +505,41 @@ void TextEditorCopy(TextEditorContext *txEd)
     }
 }
 
-void TextEditorPaste(TextEditorContext *txEd) {
-    if(strlen(GetClipboardText()) > MAX_CHARS_PER_ROW){
+void TextEditorPaste(TextEditorContext *txEd)
+{
+    if (strlen(GetClipboardText()) > MAX_CHARS_PER_ROW)
+    {
         AddToLogFromTextEditor(txEd, "Character per line limit reached! Go to new line or open file in another text editor{T202}", LOG_LEVEL_ERROR);
         return;
     }
     char *clip = strmac(NULL, MAX_CHARS_PER_ROW, "%s", GetClipboardText());
-    if (!clip || !clip[0]){
+    if (!clip || !clip[0])
+    {
         return;
     }
 
-    if (txEd->selectedStart.x != txEd->selectedEnd.x || txEd->selectedStart.y != txEd->selectedEnd.y) {
+    if (txEd->selectedStart.x != txEd->selectedEnd.x || txEd->selectedStart.y != txEd->selectedEnd.y)
+    {
         TextEditorDeleteSelected(txEd);
     }
 
     char *buff = strmac(NULL, MAX_CHARS_PER_ROW, "%s", txEd->text[txEd->currRow]);
     buff[txEd->currCol] = '\0';
 
-    for(int i = strlen(clip) - 1; i >= 0; i--){
-        if(clip[i] == '\n'){
-            for(int j = i; j < strlen(clip) - 1; j++){
+    for (int i = strlen(clip) - 1; i >= 0; i--)
+    {
+        if (clip[i] == '\n')
+        {
+            for (int j = i; j < strlen(clip) - 1; j++)
+            {
                 clip[j] = clip[j + 1];
             }
             clip[strlen(clip) - 1] = '\0';
         }
     }
 
-    if(strlen(TextFormat("%s%s%s", buff, clip, txEd->text[txEd->currRow] + txEd->currCol)) > MAX_CHARS_PER_ROW){
+    if (strlen(TextFormat("%s%s%s", buff, clip, txEd->text[txEd->currRow] + txEd->currCol)) > MAX_CHARS_PER_ROW)
+    {
         AddToLogFromTextEditor(txEd, "Character per line limit reached! Go to new line or open file in another text editor{T202}", LOG_LEVEL_ERROR);
         return;
     }

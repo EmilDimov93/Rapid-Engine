@@ -297,10 +297,12 @@ void PrepareCGFilePath(EngineContext *eng, const char *projectPath)
         EmergencyExit(eng, &(CGEditorContext){0}, &(InterpreterContext){0}, &(TextEditorContext){0});
     }
 
-    if(!GetFileExtension(projectPath)){
+    if (!GetFileExtension(projectPath))
+    {
         strmac(eng->CGFilePath, MAX_FILE_PATH, "%s%c%s%c%s.cg", cwd, PATH_SEPARATOR, projectPath, PATH_SEPARATOR, GetFileName(projectPath));
     }
-    else{
+    else
+    {
         strmac(eng->CGFilePath, MAX_FILE_PATH, "%s", projectPath);
     }
 
@@ -1251,10 +1253,12 @@ void DrawUIElements(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
                                   .layer = 1,
                                   .text = {.string = "", .textPos = (Vector2){eng->mousePos.x + 5, eng->mousePos.y - 22}, .textSize = 20, .textSpacing = 0, .textColor = RAPID_PURPLE}});
 
-            if(eng->uiElements[eng->hoveredUIElementIndex].name[strlen(eng->uiElements[eng->hoveredUIElementIndex].name) - 1] == '}'){
+            if (eng->uiElements[eng->hoveredUIElementIndex].name[strlen(eng->uiElements[eng->hoveredUIElementIndex].name) - 1] == '}')
+            {
                 strmac(eng->uiElements[eng->uiElementCount - 1].text.string, 5, "%s", eng->uiElements[eng->hoveredUIElementIndex].name + strlen(eng->uiElements[eng->hoveredUIElementIndex].name) - 5);
             }
-            else{
+            else
+            {
                 strmac(eng->uiElements[eng->uiElementCount - 1].text.string, 5, "%s", "D400");
             }
             break;

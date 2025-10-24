@@ -5,14 +5,16 @@
 #include "Nodes.h"
 #include "definitions.h"
 
-typedef enum{
+typedef enum
+{
     HBED_LAST_ACTION_TYPE_NONE,
     HBED_LAST_ACTION_TYPE_ADD,
     HBED_LAST_ACTION_TYPE_DELETE,
     HBED_LAST_ACTION_TYPE_MOVE
-}HitboxEditorLastActionType;
+} HitboxEditorLastActionType;
 
-typedef struct {
+typedef struct
+{
     Texture2D texture;
     Vector2 position;
     Polygon poly;

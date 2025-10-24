@@ -22,9 +22,10 @@
 #define MAKE_DIR(path) _mkdir(path)
 #define GetCWD _getcwd
 
-void* __stdcall ShellExecuteA(void* hwnd, const char* lpOperation, const char* lpFile, const char* lpParameters, const char* lpDirectory, int nShowCmd);
+void *__stdcall ShellExecuteA(void *hwnd, const char *lpOperation, const char *lpFile, const char *lpParameters, const char *lpDirectory, int nShowCmd);
 
-static inline void OpenFile(const char* filePath) {
+static inline void OpenFile(const char *filePath)
+{
     ShellExecuteA(NULL, "open", filePath, NULL, NULL, 1);
 }
 
@@ -35,7 +36,8 @@ static inline void OpenFile(const char* filePath) {
 #define MAKE_DIR(path) mkdir(path, 0755)
 #define GetCWD getcwd
 
-static inline void OpenFile(const char* filePath) {
+static inline void OpenFile(const char *filePath)
+{
     char command[1024];
     snprintf(command, sizeof(command), "open \"%s\"", filePath);
     system(command);
@@ -49,7 +51,8 @@ static inline void OpenFile(const char* filePath) {
 #define MAKE_DIR(path) mkdir(path, 0755)
 #define GetCWD getcwd
 
-static inline void OpenFile(const char* filePath) {
+static inline void OpenFile(const char *filePath)
+{
     char command[1024];
     snprintf(command, sizeof(command), "xdg-open \"%s\"", filePath);
     system(command);
@@ -64,7 +67,8 @@ static inline void OpenFile(const char* filePath) {
 
 #define MAX_POLYGON_VERTICES 64
 
-typedef struct {
+typedef struct
+{
     Vector2 vertices[MAX_POLYGON_VERTICES];
     int count;
     bool isClosed;
@@ -79,22 +83,26 @@ typedef enum
     LOG_LEVEL_ERROR,
     LOG_LEVEL_SUCCESS,
     LOG_LEVEL_DEBUG
-}LogLevel;
+} LogLevel;
 
 extern bool STRING_ALLOCATION_FAILURE;
 
-char* strmac(char* buf, size_t max_size, const char* format, ...) {
-    if (!format || max_size == 0){
+char *strmac(char *buf, size_t max_size, const char *format, ...)
+{
+    if (!format || max_size == 0)
+    {
         STRING_ALLOCATION_FAILURE = true;
         return (buf) ? buf : strdup("");
     }
 
-    char* temp = buf;
+    char *temp = buf;
     bool needs_free = false;
 
-    if (!buf) {
+    if (!buf)
+    {
         temp = malloc(max_size);
-        if (!temp){
+        if (!temp)
+        {
             STRING_ALLOCATION_FAILURE = true;
             return strdup("");
         }
@@ -106,8 +114,10 @@ char* strmac(char* buf, size_t max_size, const char* format, ...) {
     int written = vsnprintf(temp, max_size, format, args);
     va_end(args);
 
-    if (written < 0) {
-        if (needs_free) {
+    if (written < 0)
+    {
+        if (needs_free)
+        {
             STRING_ALLOCATION_FAILURE = true;
             free(temp);
             return strdup("");
@@ -116,12 +126,14 @@ char* strmac(char* buf, size_t max_size, const char* format, ...) {
         return temp;
     }
 
-    if ((size_t)written >= max_size) {
+    if ((size_t)written >= max_size)
+    {
         temp[max_size - 1] = '\0';
     }
 
-    if (needs_free) {
-        char* result = strdup(temp);
+    if (needs_free)
+    {
+        char *result = strdup(temp);
         free(temp);
         return result;
     }
@@ -131,7 +143,8 @@ char* strmac(char* buf, size_t max_size, const char* format, ...) {
 
 const char *AddEllipsis(Font font, const char *text, float fontSize, float maxWidth, bool showEnd)
 {
-    if (MeasureTextEx(font, text, fontSize, 0).x <= maxWidth){
+    if (MeasureTextEx(font, text, fontSize, 0).x <= maxWidth)
+    {
         return text;
     }
 
@@ -143,14 +156,17 @@ const char *AddEllipsis(Font font, const char *text, float fontSize, float maxWi
 
     for (int i = 1; i <= len; i++)
     {
-        if (showEnd){
+        if (showEnd)
+        {
             strmac(temp, i, "%s", text + len - i);
         }
-        else{
+        else
+        {
             strmac(temp, i, "%.*s", i, text);
         }
 
-        if (MeasureTextEx(font, temp, fontSize, 0).x + ellipsisWidth > maxWidth){
+        if (MeasureTextEx(font, temp, fontSize, 0).x + ellipsisWidth > maxWidth)
+        {
             break;
         }
 
@@ -255,4 +271,3 @@ const char *AddEllipsis(Font font, const char *text, float fontSize, float maxWi
 #define COLOR_CGED_SELECTOR_OUTLINE (Color){53, 179, 252, 255}
 #define COLOR_CGED_NODE_BORDER (Color){220, 220, 220, 255}
 #define COLOR_CGED_NODE_OPTIONS_MENU_HOVER (Color){255, 255, 255, 40}
-

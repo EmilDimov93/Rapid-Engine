@@ -38,7 +38,8 @@ typedef struct Pin
 
     bool isNumFloat;
 
-    union{
+    union
+    {
         int pickedOption;
         char textFieldValue[MAX_LITERAL_NODE_FIELD_SIZE];
         Polygon hitbox;
@@ -51,7 +52,7 @@ typedef struct Link
     int outputPinID;
 } Link;
 
-#define INVALID_PIN (Pin) {-1}
+#define INVALID_PIN (Pin){-1}
 
 typedef struct GraphContext
 {

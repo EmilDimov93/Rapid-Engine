@@ -9,7 +9,8 @@
 
 #define TEXT_EDITOR_TEXT_SPACING 3.0f
 
-typedef struct TextEditorContext{
+typedef struct TextEditorContext
+{
     bool isFileOpened;
 
     char **text;
@@ -34,7 +35,7 @@ typedef struct TextEditorContext{
     bool justClosedMenu;
 
     Font font;
-}TextEditorContext;
+} TextEditorContext;
 
 TextEditorContext InitTextEditorContext();
 
