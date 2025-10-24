@@ -1096,7 +1096,6 @@ void DrawNodes(CGEditorContext *cgEd, GraphContext *graph)
                 DrawRectangleRounded((Rectangle){graph->pins[i].position.x - 6, graph->pins[i].position.y - 10, 96, 24}, 0.4f, 4, COLOR_CGED_EDIT_HITBOX_BTN_HOVER);
                 if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
                 {
-                    // TODO: find texture file name from linked literal node(shouldn't only work with literal nodes)
                     for (int b = 0; b < graph->nodeCount; b++)
                     {
                         if (graph->nodes[b].id == graph->pins[i].nodeID)
@@ -1113,14 +1112,17 @@ void DrawNodes(CGEditorContext *cgEd, GraphContext *graph)
                                             {
                                                 if (graph->nodes[d].outputPins[0] == graph->links[k].outputPinID)
                                                 {
-                                                    for (int e = 0; e < graph->pinCount; e++)
+                                                    if (graph->nodes[d].type == NODE_LITERAL_STRING)
                                                     {
-                                                        if (graph->pins[e].id == graph->nodes[d].inputPins[0])
+                                                        for (int e = 0; e < graph->pinCount; e++)
                                                         {
-                                                            cgEd->shouldOpenHitboxEditor = true;
-                                                            strmac(cgEd->hitboxEditorFileName, MAX_FILE_NAME, "%s", graph->pins[e].textFieldValue);
-                                                            cgEd->hitboxEditingPinID = graph->pins[i].id;
-                                                            return;
+                                                            if (graph->pins[e].id == graph->nodes[d].inputPins[0])
+                                                            {
+                                                                cgEd->shouldOpenHitboxEditor = true;
+                                                                strmac(cgEd->hitboxEditorFileName, MAX_FILE_NAME, "%s", graph->pins[e].textFieldValue);
+                                                                cgEd->hitboxEditingPinID = graph->pins[i].id;
+                                                                return;
+                                                            }
                                                         }
                                                     }
                                                     break;
@@ -1135,6 +1137,7 @@ void DrawNodes(CGEditorContext *cgEd, GraphContext *graph)
                             break;
                         }
                     }
+                    AddToLogFromCGEditor(cgEd, "Couldn't find sprite texture{H100}", LOG_LEVEL_WARNING);
                 }
             }
             DrawTextEx(cgEd->font, "Edit Hitbox", (Vector2){graph->pins[i].position.x - 2, graph->pins[i].position.y - 6}, 18, 0.2f, WHITE);
