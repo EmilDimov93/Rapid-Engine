@@ -1077,6 +1077,15 @@ void InterpretStringOfNodes(int lastNodeIndex, InterpreterContext *intp, Runtime
         break;
     }
 
+    case NODE_SEQUENCE:
+    {
+        InterpretStringOfNodes(currNodeIndex, intp, graph, 0);
+        InterpretStringOfNodes(currNodeIndex, intp, graph, 1);
+        InterpretStringOfNodes(currNodeIndex, intp, graph, 2);
+        return;
+        break;
+    }
+
     case NODE_CREATE_SPRITE:
     {
         if (node->outputPins[1]->valueIndex == -1)
@@ -1345,6 +1354,11 @@ void InterpretStringOfNodes(int lastNodeIndex, InterpreterContext *intp, Runtime
             intp->values[node->inputPins[3]->valueIndex].number,
             intp->values[node->inputPins[4]->valueIndex].number,
             intp->values[node->inputPins[5]->valueIndex].color);
+        break;
+    }
+
+    case NODE_COMMENT:
+    {
         break;
     }
 

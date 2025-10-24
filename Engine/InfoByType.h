@@ -39,6 +39,7 @@ typedef enum
     NODE_DELAY = 502,
     NODE_FLIP_FLOP = 503,
     NODE_BREAK = 504,
+    NODE_SEQUENCE = 505,
 
     NODE_CREATE_SPRITE = 600,
     NODE_SPAWN_SPRITE = 601,
@@ -60,6 +61,7 @@ typedef enum
 
     NODE_PRINT_TO_LOG = 900,
     NODE_DRAW_DEBUG_LINE = 901,
+    NODE_COMMENT = 902,
 
     NODE_LITERAL_NUMBER = 1000,
     NODE_LITERAL_STRING = 1001,
@@ -183,9 +185,10 @@ static InfoByType NodeInfoByType[] = {
 
     {NODE_BRANCH, 2, 2, 130, 100, {90, 90, 90, 200}, false, {PIN_FLOW, PIN_BOOL}, {PIN_FLOW, PIN_FLOW}, {"Prev", "Condition"}, {"True", "False"}},
     {NODE_LOOP, 2, 2, 130, 100, {90, 90, 90, 200}, false, {PIN_FLOW, PIN_BOOL}, {PIN_FLOW, PIN_FLOW}, {"Prev", "Condition"}, {"Next", "Loop body"}},
-    {NODE_DELAY, 2, 1, 130, 100, {90, 90, 90, 200}, false, {PIN_FLOW, PIN_NUM}, {PIN_FLOW}, {"Prev", "Seconds"}, {"Next"}, true},     // not implemented
+    {NODE_DELAY, 2, 1, 130, 100, {90, 90, 90, 200}, false, {PIN_FLOW, PIN_NUM}, {PIN_FLOW}, {"Prev", "Seconds"}, {"Next"}, true}, // not implemented
     {NODE_FLIP_FLOP, 1, 2, 130, 100, {90, 90, 90, 200}, false, {PIN_FLOW}, {PIN_FLOW, PIN_FLOW}, {"Prev"}, {"Flip", "Flop"}},
     {NODE_BREAK, 1, 0, 130, 80, {90, 90, 90, 200}, false, {PIN_FLOW}, {0}, {"Prev"}, {0}},
+    {NODE_SEQUENCE, 1, 3, 140, 130, {90, 90, 90, 200}, false, {PIN_FLOW}, {PIN_FLOW, PIN_FLOW, PIN_FLOW}, {"Prev"}, {"First", "Second", "Third"}},
 
     {NODE_CREATE_SPRITE, 6, 2, 220, 230, {70, 100, 70, 200}, true, {PIN_FLOW, PIN_STRING, PIN_NUM, PIN_NUM, PIN_DROPDOWN_LAYER, PIN_EDIT_HITBOX}, {PIN_FLOW, PIN_SPRITE}, {"Prev", "Texture file name", "Width", "Height", "Layer", "Hitbox"}, {"Next", "Sprite"}},
     {NODE_SPAWN_SPRITE, 5, 1, 120, 190, {40, 110, 70, 200}, false, {PIN_FLOW, PIN_SPRITE_VARIABLE, PIN_NUM, PIN_NUM, PIN_NUM}, {PIN_FLOW}, {"Prev", "Sprite", "Pos X", "Pos Y", "Rotation"}, {"Next"}},
@@ -197,7 +200,7 @@ static InfoByType NodeInfoByType[] = {
     {NODE_MOVE_TO_SPRITE, 0, 0, 260, 36, {0, 0, 0, 255}, false, {0}, {0}, {0}, {0}, true}, // not implemented
     {NODE_FORCE_SPRITE, 5, 1, 160, 190, {40, 110, 70, 200}, false, {PIN_FLOW, PIN_SPRITE_VARIABLE, PIN_NUM, PIN_NUM, PIN_NUM}, {PIN_FLOW}, {"Prev", "Sprite", "Pixels / second", "Angle", "Time"}, {"Next"}},
 
-    {NODE_DRAW_PROP_TEXTURE, 0, 0, 260, 36, {0, 0, 0, 255}, false, {0}, {0}, {0}, {0}, true},                                                                                                                                                   // not implemented
+    {NODE_DRAW_PROP_TEXTURE, 0, 0, 260, 36, {0, 0, 0, 255}, false, {0}, {0}, {0}, {0}, true},                                                                                                                                                              // not implemented
     {NODE_DRAW_PROP_RECTANGLE, 7, 2, 230, 260, {40, 110, 70, 200}, false, {PIN_FLOW, PIN_NUM, PIN_NUM, PIN_NUM, PIN_NUM, PIN_COLOR, PIN_DROPDOWN_LAYER}, {PIN_FLOW, PIN_NONE}, {"Prev", "Pos X", "Pos Y", "Width", "Height", "Color", "Layer"}, {"Next"}}, // shouldn't have PIN_NONE
     {NODE_DRAW_PROP_CIRCLE, 6, 2, 230, 240, {40, 110, 70, 200}, false, {PIN_FLOW, PIN_NUM, PIN_NUM, PIN_NUM, PIN_COLOR, PIN_DROPDOWN_LAYER}, {PIN_FLOW, PIN_NONE}, {"Prev", "Pos X", "Pos Y", "Radius", "Color", "Layer"}, {"Next"}},                      // shouldn't have PIN_NONE
 
@@ -207,6 +210,7 @@ static InfoByType NodeInfoByType[] = {
 
     {NODE_PRINT_TO_LOG, 2, 1, 140, 100, {200, 170, 50, 200}, false, {PIN_FLOW, PIN_ANY_VALUE}, {PIN_FLOW}, {"Prev", "Print value"}, {"Next"}},
     {NODE_DRAW_DEBUG_LINE, 6, 1, 240, 220, {200, 170, 50, 200}, false, {PIN_FLOW, PIN_NUM, PIN_NUM, PIN_NUM, PIN_NUM, PIN_COLOR}, {PIN_FLOW}, {"Prev", "Start X", "Start Y", "End X", "End Y", "Color"}, {"Next"}},
+    {NODE_COMMENT, 2, 1, 140, 110, {200, 170, 50, 200}, false, {PIN_FLOW, PIN_FIELD_STRING}, {PIN_FLOW}, {"Prev", "Comment"}, {"Next"}},
 
     {NODE_LITERAL_NUMBER, 1, 1, 200, 70, {110, 85, 40, 200}, false, {PIN_FIELD_NUM}, {PIN_NUM}, {""}, {"number"}},
     {NODE_LITERAL_STRING, 1, 1, 200, 70, {110, 85, 40, 200}, false, {PIN_FIELD_STRING}, {PIN_STRING}, {""}, {"string"}},
@@ -217,8 +221,7 @@ static InfoByType NodeInfoByType[] = {
     {NODE_ZOOM_CAMERA, 2, 1, 190, 100, {200, 130, 60, 200}, false, {PIN_FLOW, PIN_NUM}, {PIN_FLOW}, {"Prev", "Zoom Delta"}, {"Next"}},
     {NODE_GET_CAMERA_CENTER, 0, 2, 160, 100, {200, 130, 60, 200}, false, {0}, {PIN_NUM, PIN_NUM}, {0}, {"Center X", "Center Y"}},
 
-    {NODE_PLAY_SOUND, 2, 1, 190, 100, {150, 255, 80, 200}, false, {PIN_FLOW, PIN_STRING}, {PIN_FLOW}, {"Prev", "Sound file name"}, {"Next"}}
-};
+    {NODE_PLAY_SOUND, 2, 1, 190, 100, {150, 255, 80, 200}, false, {PIN_FLOW, PIN_STRING}, {PIN_FLOW}, {"Prev", "Sound file name"}, {"Next"}}};
 
 static inline int NodeTypeToIndex(NodeType type)
 {
@@ -237,21 +240,21 @@ static inline int NodeTypeToIndex(NodeType type)
 const char *menuItems[] = {"Variable", "Event", "Get", "Set", "Flow", "Sprite", "Draw Prop", "Logical", "Debug", "Literal", "Camera", "Sound"};
 const char *subMenuItems[][subMenuItemCount] = {
     {"Create number", "Create string", "Create bool", "Create color"},
-    {"Event Start", "Event Tick", "Event On Button", "Create Custom Event", "Call Custom Event"},
+    {"Event Start", "Event Tick", "Event On Button"},
     {"Get variable", "Get Screen Width", "Get Screen Height", "Get Mouse Positon", "Get Random Number", "Get Sprite Position"},
     {"Set variable", "Set Background", "Set FPS"},
-    {"Branch", "Loop", "Delay", "Flip Flop", "Break", "Return"},
-    {"Create sprite", "Spawn sprite", "Destroy sprite", "Set Sprite Position", "Set Sprite Rotation", "Set Sprite Texture", "Set Sprite Size", "Move To", "Force"},
-    {"Draw Prop Texture", "Draw Prop Rectangle", "Draw Prop Circle"},
+    {"Branch", "Loop", "Flip Flop", "Break", "Sequence"},
+    {"Create sprite", "Spawn sprite", "Destroy sprite", "Set Sprite Position", "Set Sprite Rotation", "Set Sprite Texture", "Set Sprite Size", "Force"},
+    {"Draw Prop Rectangle", "Draw Prop Circle"},
     {"Comparison", "Gate", "Arithmetic"},
-    {"Print To Log", "Draw Debug Line"},
+    {"Print To Log", "Draw Debug Line", "Comment"},
     {"Literal number", "Literal string", "Literal bool", "Literal color"},
     {"Move Camera", "Zoom Camera", "Get Camera Center"},
     {"Play Sound"}};
 
 #define menuItemCount sizeof(menuItems) / sizeof(menuItems[0])
 
-const int subMenuCounts[] = {4, 5, 6, 3, 6, 9, 3, 3, 2, 4, 3, 1};
+const int subMenuCounts[] = {4, 3, 6, 3, 5, 8, 2, 3, 3, 4, 3, 1};
 
 typedef struct DropdownOptionsByPinType
 {
@@ -272,8 +275,7 @@ static DropdownOptionsByPinType PinDropdownOptionsByType[] = {
     {PIN_DROPDOWN_GATE, 6, gateOps, 70},
     {PIN_DROPDOWN_ARITHMETIC, 5, arithmeticOps, 115},
     {PIN_DROPDOWN_KEY_ACTION, 4, keyActionOps, 110},
-    {PIN_DROPDOWN_LAYER, 4, layerOps, 150}
-};
+    {PIN_DROPDOWN_LAYER, 4, layerOps, 150}};
 
 static inline DropdownOptionsByPinType getPinDropdownOptionsByType(PinType type)
 {
@@ -466,6 +468,8 @@ static inline const char *NodeTypeToString(NodeType type)
         return "Flip Flop";
     case NODE_BREAK:
         return "Break";
+    case NODE_SEQUENCE:
+        return "Sequence";
 
     case NODE_CREATE_SPRITE:
         return "Create sprite";
@@ -504,6 +508,8 @@ static inline const char *NodeTypeToString(NodeType type)
         return "Print";
     case NODE_DRAW_DEBUG_LINE:
         return "Debug Line";
+    case NODE_COMMENT:
+        return "Comment";
 
     case NODE_LITERAL_NUMBER:
         return "Literal num";
@@ -584,6 +590,8 @@ static inline NodeType StringToNodeType(const char strType[])
         return NODE_FLIP_FLOP;
     if (strcmp(strType, "Break") == 0)
         return NODE_BREAK;
+    if (strcmp(strType, "Sequence") == 0)
+        return NODE_SEQUENCE;
 
     if (strcmp(strType, "Create sprite") == 0)
         return NODE_CREATE_SPRITE;
@@ -622,6 +630,10 @@ static inline NodeType StringToNodeType(const char strType[])
         return NODE_PRINT_TO_LOG;
     if (strcmp(strType, "Draw Debug Line") == 0)
         return NODE_DRAW_DEBUG_LINE;
+    if (strcmp(strType, "Comment") == 0)
+    {
+        return NODE_COMMENT;
+    }
 
     if (strcmp(strType, "Literal number") == 0)
         return NODE_LITERAL_NUMBER;
