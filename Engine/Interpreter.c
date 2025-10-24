@@ -1362,6 +1362,34 @@ void InterpretStringOfNodes(int lastNodeIndex, InterpreterContext *intp, Runtime
         break;
     }
 
+    case NODE_LERP:
+    {
+        if (node->inputPins[1]->valueIndex == -1 || node->inputPins[2]->valueIndex == -1 || node->inputPins[3]->valueIndex == -1 || node->outputPins[1]->valueIndex == -1)
+        {
+            break;
+        }
+
+        float numA = intp->values[node->inputPins[1]->valueIndex].number;
+        float numB = intp->values[node->inputPins[2]->valueIndex].number;
+        float alpha = intp->values[node->inputPins[3]->valueIndex].number;
+        if(numB < numA){
+            float temp = numA;
+            numA = numB;
+            numB = numA;
+        }
+        if (alpha < 0)
+        {
+            alpha = 0;
+        }
+        else if (alpha > 1.0f)
+        {
+            alpha = 1.0f;
+        }
+
+        intp->values[node->outputPins[1]->valueIndex].number = numA + (numB - numA) * alpha;
+        break;
+    }
+
     case NODE_PRINT_TO_LOG:
     {
         if (node->inputPins[1]->valueIndex != -1)

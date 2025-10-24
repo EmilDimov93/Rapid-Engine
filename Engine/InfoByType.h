@@ -59,6 +59,7 @@ typedef enum
     NODE_GATE = 801,
     NODE_ARITHMETIC = 802,
     NODE_CLAMP = 803,
+    NODE_LERP = 804,
 
     NODE_PRINT_TO_LOG = 900,
     NODE_DRAW_DEBUG_LINE = 901,
@@ -209,6 +210,7 @@ static InfoByType NodeInfoByType[] = {
     {NODE_GATE, 4, 2, 180, 160, {60, 100, 159, 200}, false, {PIN_FLOW, PIN_DROPDOWN_GATE, PIN_BOOL, PIN_BOOL}, {PIN_FLOW, PIN_BOOL}, {"Prev", "Gate", "Condition A", "Condition B"}, {"Next", "Result"}},
     {NODE_ARITHMETIC, 4, 2, 180, 160, {60, 100, 159, 200}, false, {PIN_FLOW, PIN_DROPDOWN_ARITHMETIC, PIN_NUM, PIN_NUM}, {PIN_FLOW, PIN_NUM}, {"Prev", "Arithmetic", "Number A", "Number B"}, {"Next", "Result"}},
     {NODE_CLAMP, 4, 2, 130, 160, {90, 90, 90, 200}, false, {PIN_FLOW, PIN_NUM, PIN_NUM, PIN_NUM}, {PIN_FLOW, PIN_NUM}, {"Prev", "Number", "Min", "Max"}, {"Next", "Result"}},
+    {NODE_LERP, 4, 2, 130, 160, {90, 90, 90, 200}, false, {PIN_FLOW, PIN_NUM, PIN_NUM, PIN_NUM}, {PIN_FLOW, PIN_NUM}, {"Prev", "Number A", "Number B", "Alpha"}, {"Next", "Result"}},
 
     {NODE_PRINT_TO_LOG, 2, 1, 140, 100, {200, 170, 50, 200}, false, {PIN_FLOW, PIN_ANY_VALUE}, {PIN_FLOW}, {"Prev", "Print value"}, {"Next"}},
     {NODE_DRAW_DEBUG_LINE, 6, 1, 240, 220, {200, 170, 50, 200}, false, {PIN_FLOW, PIN_NUM, PIN_NUM, PIN_NUM, PIN_NUM, PIN_COLOR}, {PIN_FLOW}, {"Prev", "Start X", "Start Y", "End X", "End Y", "Color"}, {"Next"}},
@@ -248,7 +250,7 @@ const char *subMenuItems[][subMenuItemCount] = {
     {"Branch", "Loop", "Flip Flop", "Break", "Sequence"},
     {"Create sprite", "Spawn sprite", "Destroy sprite", "Set Sprite Position", "Set Sprite Rotation", "Set Sprite Texture", "Set Sprite Size", "Force"},
     {"Draw Prop Rectangle", "Draw Prop Circle"},
-    {"Comparison", "Gate", "Arithmetic", "Clamp"},
+    {"Comparison", "Gate", "Arithmetic", "Clamp", "Lerp"},
     {"Print To Log", "Draw Debug Line", "Comment"},
     {"Literal number", "Literal string", "Literal bool", "Literal color"},
     {"Move Camera", "Zoom Camera", "Get Camera Center"},
@@ -256,7 +258,7 @@ const char *subMenuItems[][subMenuItemCount] = {
 
 #define menuItemCount sizeof(menuItems) / sizeof(menuItems[0])
 
-const int subMenuCounts[] = {4, 3, 6, 3, 5, 8, 2, 4, 3, 4, 3, 1};
+const int subMenuCounts[] = {4, 3, 6, 3, 5, 8, 2, 5, 3, 4, 3, 1};
 
 typedef struct DropdownOptionsByPinType
 {
@@ -507,6 +509,8 @@ static inline const char *NodeTypeToString(NodeType type)
         return "Arithmetic";
     case NODE_CLAMP:
         return "Clamp";
+    case NODE_LERP:
+        return "Lerp";
 
     case NODE_PRINT_TO_LOG:
         return "Print";
@@ -629,8 +633,8 @@ static inline NodeType StringToNodeType(const char strType[])
         return NODE_GATE;
     if (strcmp(strType, "Arithmetic") == 0)
         return NODE_ARITHMETIC;
-    if (strcmp(strType, "Clamp") == 0)
-        return NODE_CLAMP;
+    if (strcmp(strType, "Lerp") == 0)
+        return NODE_LERP;
 
     if (strcmp(strType, "Print To Log") == 0)
         return NODE_PRINT_TO_LOG;
