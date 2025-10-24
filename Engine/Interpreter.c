@@ -1,7 +1,7 @@
 #include "Interpreter.h"
 #include "raymath.h"
 
-#define MAX_FORCES 99
+#define MAX_FORCES 100
 
 InterpreterContext InitInterpreterContext()
 {
@@ -33,6 +33,8 @@ InterpreterContext InitInterpreterContext()
     intp.isPaused = false;
 
     intp.cameraOffset = (Vector2){0, 0};
+    intp.shakeCameraTimeRemaining = 0.0f;
+    intp.shakeCameraIntensity = 0;
 
     intp.zoom = 1.0f;
 
@@ -1372,7 +1374,8 @@ void InterpretStringOfNodes(int lastNodeIndex, InterpreterContext *intp, Runtime
         float numA = intp->values[node->inputPins[1]->valueIndex].number;
         float numB = intp->values[node->inputPins[2]->valueIndex].number;
         float alpha = intp->values[node->inputPins[3]->valueIndex].number;
-        if(numB < numA){
+        if (numB < numA)
+        {
             float temp = numA;
             numA = numB;
             numB = numA;
@@ -1392,7 +1395,8 @@ void InterpretStringOfNodes(int lastNodeIndex, InterpreterContext *intp, Runtime
 
     case NODE_SIN:
     {
-        if(node->inputPins[1]->valueIndex == -1 || node->outputPins[1]->valueIndex == -1){
+        if (node->inputPins[1]->valueIndex == -1 || node->outputPins[1]->valueIndex == -1)
+        {
             break;
         }
 
@@ -1403,7 +1407,8 @@ void InterpretStringOfNodes(int lastNodeIndex, InterpreterContext *intp, Runtime
 
     case NODE_COS:
     {
-        if(node->inputPins[1]->valueIndex == -1 || node->outputPins[1]->valueIndex == -1){
+        if (node->inputPins[1]->valueIndex == -1 || node->outputPins[1]->valueIndex == -1)
+        {
             break;
         }
 
@@ -1466,6 +1471,17 @@ void InterpretStringOfNodes(int lastNodeIndex, InterpreterContext *intp, Runtime
                 intp->zoom = MIN_ZOOM;
             }
         }
+        break;
+    }
+    case NODE_SHAKE_CAMERA:
+    {
+        if (node->inputPins[1]->valueIndex == -1 || node->inputPins[2]->valueIndex == -1)
+        {
+            break;
+        }
+
+        intp->shakeCameraIntensity = Clamp(intp->values[node->inputPins[1]->valueIndex].number, 0, 20);
+        intp->shakeCameraTimeRemaining = intp->values[node->inputPins[2]->valueIndex].number;
         break;
     }
     case NODE_PLAY_SOUND:
@@ -2033,6 +2049,28 @@ bool HandleGameScreen(InterpreterContext *intp, RuntimeGraphContext *graph, Vect
             intp->components[intp->values[i].componentIndex].sprite.isVisible = intp->components[intp->values[i].componentIndex].isVisible;
             intp->values[i].sprite = intp->components[intp->values[i].componentIndex].sprite;
         }
+    }
+
+    static Vector2 lastShake = {0, 0};
+    if (intp->shakeCameraTimeRemaining > 0.0f)
+    {
+        intp->shakeCameraTimeRemaining -= GetFrameTime();
+
+        intp->cameraOffset.x -= lastShake.x;
+        intp->cameraOffset.y -= lastShake.y;
+
+        lastShake.x = GetRandomValue(-intp->shakeCameraIntensity, intp->shakeCameraIntensity);
+        lastShake.y = GetRandomValue(-intp->shakeCameraIntensity, intp->shakeCameraIntensity);
+
+        intp->cameraOffset.x += lastShake.x;
+        intp->cameraOffset.y += lastShake.y;
+    }
+    else if(lastShake.x != 0 || lastShake.y != 0){
+        intp->cameraOffset.x -= lastShake.x;
+        intp->cameraOffset.y -= lastShake.y;
+
+        lastShake.x = 0;
+        lastShake.y = 0;
     }
 
     return true;

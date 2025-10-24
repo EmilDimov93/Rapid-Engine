@@ -224,6 +224,8 @@ typedef struct
     bool hasSoundOnChanged;
 
     Vector2 cameraOffset;
+    float shakeCameraTimeRemaining;
+    int shakeCameraIntensity;
 
     bool shouldBreakFromLoop;
 

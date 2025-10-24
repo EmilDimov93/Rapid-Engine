@@ -380,7 +380,7 @@ void HandleLiteralNodeField(CGEditorContext *cgEd, GraphContext *graph, int curr
             cgEd->hasChangedInLastFrame = true;
             if (cgEd->droppedFilePath[0] != '\0')
             {
-                strmac(graph->pins[currPinIndex].textFieldValue, MAX_FILE_PATH, "%s", cgEd->droppedFilePath);
+                strmac(graph->pins[currPinIndex].textFieldValue, MAX_LITERAL_NODE_FIELD_SIZE, "%s", cgEd->droppedFilePath);
             }
         }
     }
@@ -1252,7 +1252,7 @@ void DrawNodes(CGEditorContext *cgEd, GraphContext *graph)
         {
             cgEd->hasChangedInLastFrame = true;
             cgEd->delayFrames = true;
-            strmac(graph->pins[FindPinIndexByID(graph, graph->nodes[graph->nodeCount - 1].inputPins[0])].textFieldValue, MAX_FILE_PATH, "%s", cgEd->droppedFilePath);
+            strmac(graph->pins[FindPinIndexByID(graph, graph->nodes[graph->nodeCount - 1].inputPins[0])].textFieldValue, MAX_LITERAL_NODE_FIELD_SIZE, "%s", cgEd->droppedFilePath);
         }
     }
 }

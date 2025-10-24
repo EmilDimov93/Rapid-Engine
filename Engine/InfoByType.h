@@ -75,6 +75,7 @@ typedef enum
     NODE_MOVE_CAMERA = 1100,
     NODE_ZOOM_CAMERA = 1101,
     NODE_GET_CAMERA_CENTER = 1102,
+    NODE_SHAKE_CAMERA = 1103,
 
     NODE_PLAY_SOUND = 1200
 } NodeType;
@@ -213,8 +214,8 @@ static InfoByType NodeInfoByType[] = {
     {NODE_ARITHMETIC, 4, 2, 180, 160, {60, 100, 159, 200}, false, {PIN_FLOW, PIN_DROPDOWN_ARITHMETIC, PIN_NUM, PIN_NUM}, {PIN_FLOW, PIN_NUM}, {"Prev", "Arithmetic", "Number A", "Number B"}, {"Next", "Result"}},
     {NODE_CLAMP, 4, 2, 130, 160, {60, 100, 159, 200}, false, {PIN_FLOW, PIN_NUM, PIN_NUM, PIN_NUM}, {PIN_FLOW, PIN_NUM}, {"Prev", "Number", "Min", "Max"}, {"Next", "Result"}},
     {NODE_LERP, 4, 2, 130, 160, {60, 100, 159, 200}, false, {PIN_FLOW, PIN_NUM, PIN_NUM, PIN_NUM}, {PIN_FLOW, PIN_NUM}, {"Prev", "Number A", "Number B", "Alpha"}, {"Next", "Result"}},
-    {NODE_SIN, 2, 2, 130, 100, {60, 100, 159, 200}, false, {PIN_FLOW, PIN_NUM}, {PIN_FLOW, PIN_NUM}, {"Prev", "Number"}, {"Next", "Result"}},
-    {NODE_COS, 2, 2, 130, 100, {60, 100, 159, 200}, false, {PIN_FLOW, PIN_NUM}, {PIN_FLOW, PIN_NUM}, {"Prev", "Number"}, {"Next", "Result"}},
+    {NODE_SIN, 2, 2, 130, 100, {60, 100, 159, 200}, false, {PIN_FLOW, PIN_NUM}, {PIN_FLOW, PIN_NUM}, {"Prev", "Radians"}, {"Next", "Result"}},
+    {NODE_COS, 2, 2, 130, 100, {60, 100, 159, 200}, false, {PIN_FLOW, PIN_NUM}, {PIN_FLOW, PIN_NUM}, {"Prev", "Radians"}, {"Next", "Result"}},
 
     {NODE_PRINT_TO_LOG, 2, 1, 140, 100, {200, 170, 50, 200}, false, {PIN_FLOW, PIN_ANY_VALUE}, {PIN_FLOW}, {"Prev", "Print value"}, {"Next"}},
     {NODE_DRAW_DEBUG_LINE, 6, 1, 240, 220, {200, 170, 50, 200}, false, {PIN_FLOW, PIN_NUM, PIN_NUM, PIN_NUM, PIN_NUM, PIN_COLOR}, {PIN_FLOW}, {"Prev", "Start X", "Start Y", "End X", "End Y", "Color"}, {"Next"}},
@@ -228,6 +229,7 @@ static InfoByType NodeInfoByType[] = {
     {NODE_MOVE_CAMERA, 3, 1, 190, 130, {200, 130, 60, 200}, false, {PIN_FLOW, PIN_NUM, PIN_NUM}, {PIN_FLOW}, {"Prev", "Camera Delta X", "Camera Delta Y"}, {"Next"}},
     {NODE_ZOOM_CAMERA, 2, 1, 190, 100, {200, 130, 60, 200}, false, {PIN_FLOW, PIN_NUM}, {PIN_FLOW}, {"Prev", "Zoom Delta"}, {"Next"}},
     {NODE_GET_CAMERA_CENTER, 0, 2, 160, 100, {200, 130, 60, 200}, false, {0}, {PIN_NUM, PIN_NUM}, {0}, {"Center X", "Center Y"}},
+    {NODE_SHAKE_CAMERA, 3, 1, 200, 130, {200, 130, 60, 200}, false, {PIN_FLOW, PIN_NUM, PIN_NUM}, {PIN_FLOW}, {"Prev", "Intensity", "Time"}, {"Next"}},
 
     {NODE_PLAY_SOUND, 2, 1, 190, 100, {150, 255, 80, 200}, false, {PIN_FLOW, PIN_STRING}, {PIN_FLOW}, {"Prev", "Sound file name"}, {"Next"}}};
 
@@ -257,12 +259,12 @@ const char *subMenuItems[][subMenuItemCount] = {
     {"Comparison", "Gate", "Arithmetic", "Clamp", "Lerp", "Sin", "Cos"},
     {"Print To Log", "Draw Debug Line", "Comment"},
     {"Literal number", "Literal string", "Literal bool", "Literal color"},
-    {"Move Camera", "Zoom Camera", "Get Camera Center"},
+    {"Move Camera", "Zoom Camera", "Get Camera Center", "Shake Camera"},
     {"Play Sound"}};
 
 #define menuItemCount sizeof(menuItems) / sizeof(menuItems[0])
 
-const int subMenuCounts[] = {4, 3, 6, 3, 5, 8, 2, 7, 3, 4, 3, 1};
+const int subMenuCounts[] = {4, 3, 6, 3, 5, 8, 2, 7, 3, 4, 4, 1};
 
 typedef struct DropdownOptionsByPinType
 {
@@ -542,6 +544,8 @@ static inline const char *NodeTypeToString(NodeType type)
         return "Zoom Camera";
     case NODE_GET_CAMERA_CENTER:
         return "Get center";
+    case NODE_SHAKE_CAMERA:
+        return "Shake Camera";
 
     case NODE_PLAY_SOUND:
         return "Play Sound";
@@ -779,6 +783,10 @@ static inline NodeType StringToNodeType(const char strType[])
     if (strcmp(strType, "Get Camera Center") == 0)
     {
         return NODE_GET_CAMERA_CENTER;
+    }
+    if (strcmp(strType, "Shake Camera") == 0)
+    {
+        return NODE_SHAKE_CAMERA;
     }
 
     if (strcmp(strType, "Play Sound") == 0)
