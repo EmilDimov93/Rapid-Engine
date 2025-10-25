@@ -16,6 +16,10 @@ typedef enum
     NODE_CREATE_STRING = 101,
     NODE_CREATE_BOOL = 102,
     NODE_CREATE_COLOR = 103,
+    NODE_CAST_TO_NUMBER = 104,
+    NODE_CAST_TO_STRING = 105,
+    NODE_CAST_TO_BOOL = 106,
+    NODE_CAST_TO_COLOR = 107,
 
     NODE_EVENT_START = 200,
     NODE_EVENT_TICK = 201,
@@ -159,8 +163,6 @@ typedef struct InfoByType
 
     char *inputNames[16];
     char *outputNames[16];
-
-    bool isNotImplemented;
 } InfoByType;
 
 static InfoByType NodeInfoByType[] = {
@@ -170,12 +172,16 @@ static InfoByType NodeInfoByType[] = {
     {NODE_CREATE_STRING, 2, 2, 120, 100, {100, 60, 120, 200}, true, {PIN_FLOW, PIN_STRING}, {PIN_FLOW, PIN_STRING}, {"Prev", "Set value"}, {"Next", "Get value"}},
     {NODE_CREATE_BOOL, 2, 2, 120, 100, {100, 60, 120, 200}, true, {PIN_FLOW, PIN_BOOL}, {PIN_FLOW, PIN_BOOL}, {"Prev", "Set value"}, {"Next", "Get value"}},
     {NODE_CREATE_COLOR, 2, 2, 120, 100, {100, 60, 120, 200}, true, {PIN_FLOW, PIN_COLOR}, {PIN_FLOW, PIN_COLOR}, {"Prev", "Set value"}, {"Next", "Get value"}},
+    {NODE_CAST_TO_NUMBER, 2, 2, 120, 100, {100, 60, 120, 200}, false, {PIN_FLOW, PIN_ANY_VALUE}, {PIN_FLOW, PIN_NUM}, {"Prev", "Value"}, {"Next", "Number"}},
+    {NODE_CAST_TO_STRING, 2, 2, 140, 100, {100, 60, 120, 200}, false, {PIN_FLOW, PIN_ANY_VALUE}, {PIN_FLOW, PIN_STRING}, {"Prev", "Value"}, {"Next", "String"}},
+    {NODE_CAST_TO_BOOL, 2, 2, 120, 100, {100, 60, 120, 200}, false, {PIN_FLOW, PIN_ANY_VALUE}, {PIN_FLOW, PIN_BOOL}, {"Prev", "Value"}, {"Next", "Bool"}},
+    {NODE_CAST_TO_COLOR, 2, 2, 130, 100, {100, 60, 120, 200}, false, {PIN_FLOW, PIN_ANY_VALUE}, {PIN_FLOW, PIN_COLOR}, {"Prev", "Value"}, {"Next", "Color"}},
 
     {NODE_EVENT_START, 0, 1, 150, 120, {148, 0, 0, 200}, false, {0}, {PIN_FLOW}, {0}, {"Next"}},
     {NODE_EVENT_TICK, 0, 1, 150, 120, {148, 0, 0, 200}, false, {0}, {PIN_FLOW}, {0}, {"Next"}},
     {NODE_EVENT_ON_BUTTON, 2, 1, 160, 120, {148, 0, 0, 200}, false, {PIN_FIELD_KEY, PIN_DROPDOWN_KEY_ACTION}, {PIN_FLOW}, {"Key", "Action"}, {"Next"}},
-    {NODE_CREATE_CUSTOM_EVENT, 0, 1, 240, 200, {148, 0, 0, 200}, false, {0}, {PIN_FLOW}, {"Prev"}, {"Next"}, true},      // not implemented
-    {NODE_CALL_CUSTOM_EVENT, 0, 1, 240, 200, {148, 0, 0, 200}, false, {PIN_FLOW}, {PIN_FLOW}, {"Prev"}, {"Next"}, true}, // not implemented
+    {NODE_CREATE_CUSTOM_EVENT, 0, 1, 240, 200, {148, 0, 0, 200}, false, {0}, {PIN_FLOW}, {"Prev"}, {"Next"}},      // not implemented
+    {NODE_CALL_CUSTOM_EVENT, 0, 1, 240, 200, {148, 0, 0, 200}, false, {PIN_FLOW}, {PIN_FLOW}, {"Prev"}, {"Next"}}, // not implemented
 
     {NODE_GET_VARIABLE, 1, 1, 140, 70, {60, 100, 159, 200}, false, {PIN_VARIABLE}, {PIN_UNKNOWN_VALUE}, {"Variable"}, {"Get value"}},
     {NODE_GET_SCREEN_WIDTH, 0, 1, 250, 70, {60, 100, 159, 200}, false, {0}, {PIN_NUM}, {0}, {"Screen Width"}},
@@ -190,7 +196,7 @@ static InfoByType NodeInfoByType[] = {
 
     {NODE_BRANCH, 2, 2, 130, 100, {90, 90, 90, 200}, false, {PIN_FLOW, PIN_BOOL}, {PIN_FLOW, PIN_FLOW}, {"Prev", "Condition"}, {"True", "False"}},
     {NODE_LOOP, 2, 2, 130, 100, {90, 90, 90, 200}, false, {PIN_FLOW, PIN_BOOL}, {PIN_FLOW, PIN_FLOW}, {"Prev", "Condition"}, {"Next", "Loop body"}},
-    {NODE_DELAY, 2, 1, 130, 100, {90, 90, 90, 200}, false, {PIN_FLOW, PIN_NUM}, {PIN_FLOW}, {"Prev", "Seconds"}, {"Next"}, true}, // not implemented
+    {NODE_DELAY, 2, 1, 130, 100, {90, 90, 90, 200}, false, {PIN_FLOW, PIN_NUM}, {PIN_FLOW}, {"Prev", "Seconds"}, {"Next"}}, // not implemented
     {NODE_FLIP_FLOP, 1, 2, 130, 100, {90, 90, 90, 200}, false, {PIN_FLOW}, {PIN_FLOW, PIN_FLOW}, {"Prev"}, {"Flip", "Flop"}},
     {NODE_BREAK, 1, 0, 130, 80, {90, 90, 90, 200}, false, {PIN_FLOW}, {0}, {"Prev"}, {0}},
     {NODE_SEQUENCE, 1, 3, 140, 130, {90, 90, 90, 200}, false, {PIN_FLOW}, {PIN_FLOW, PIN_FLOW, PIN_FLOW}, {"Prev"}, {"First", "Second", "Third"}},
@@ -202,10 +208,10 @@ static InfoByType NodeInfoByType[] = {
     {NODE_SET_SPRITE_ROTATION, 3, 1, 180, 130, {40, 110, 70, 200}, false, {PIN_FLOW, PIN_SPRITE_VARIABLE, PIN_NUM}, {PIN_FLOW}, {"Prev", "Sprite", "Rotation"}, {"Next"}},
     {NODE_SET_SPRITE_TEXTURE, 3, 1, 180, 130, {0, 0, 0, 255}, false, {PIN_FLOW, PIN_SPRITE_VARIABLE, PIN_STRING}, {PIN_FLOW}, {"Prev", "Sprite", "Texture name"}, {"Next"}},
     {NODE_SET_SPRITE_SIZE, 4, 1, 170, 160, {40, 110, 70, 200}, false, {PIN_FLOW, PIN_SPRITE_VARIABLE, PIN_NUM, PIN_NUM}, {PIN_FLOW}, {"Prev", "Sprite", "Width", "Height"}, {"Next"}},
-    {NODE_MOVE_TO_SPRITE, 0, 0, 260, 36, {0, 0, 0, 255}, false, {0}, {0}, {0}, {0}, true}, // not implemented
+    {NODE_MOVE_TO_SPRITE, 0, 0, 260, 36, {0, 0, 0, 255}, false, {0}, {0}, {0}, {0}}, // not implemented
     {NODE_FORCE_SPRITE, 5, 1, 160, 190, {40, 110, 70, 200}, false, {PIN_FLOW, PIN_SPRITE_VARIABLE, PIN_NUM, PIN_NUM, PIN_NUM}, {PIN_FLOW}, {"Prev", "Sprite", "Pixels / second", "Angle", "Time"}, {"Next"}},
 
-    {NODE_DRAW_PROP_TEXTURE, 0, 0, 260, 36, {0, 0, 0, 255}, false, {0}, {0}, {0}, {0}, true},                                                                                                                                                              // not implemented
+    {NODE_DRAW_PROP_TEXTURE, 0, 0, 260, 36, {0, 0, 0, 255}, false, {0}, {0}, {0}, {0}},                                                                                                                                                              // not implemented
     {NODE_DRAW_PROP_RECTANGLE, 7, 2, 230, 260, {40, 110, 70, 200}, false, {PIN_FLOW, PIN_NUM, PIN_NUM, PIN_NUM, PIN_NUM, PIN_COLOR, PIN_DROPDOWN_LAYER}, {PIN_FLOW, PIN_NONE}, {"Prev", "Pos X", "Pos Y", "Width", "Height", "Color", "Layer"}, {"Next"}}, // shouldn't have PIN_NONE
     {NODE_DRAW_PROP_CIRCLE, 6, 2, 230, 240, {40, 110, 70, 200}, false, {PIN_FLOW, PIN_NUM, PIN_NUM, PIN_NUM, PIN_COLOR, PIN_DROPDOWN_LAYER}, {PIN_FLOW, PIN_NONE}, {"Prev", "Pos X", "Pos Y", "Radius", "Color", "Layer"}, {"Next"}},                      // shouldn't have PIN_NONE
 
@@ -249,7 +255,7 @@ static inline int NodeTypeToIndex(NodeType type)
 
 const char *menuItems[] = {"Variable", "Event", "Get", "Set", "Flow", "Sprite", "Draw Prop", "Logical", "Debug", "Literal", "Camera", "Sound"};
 const char *subMenuItems[][subMenuItemCount] = {
-    {"Create number", "Create string", "Create bool", "Create color"},
+    {"Create number", "Create string", "Create bool", "Create color", "Cast to number", "Cast to string", "Cast to bool", "Cast to color"},
     {"Event Start", "Event Tick", "Event On Button"},
     {"Get variable", "Get Screen Width", "Get Screen Height", "Get Mouse Position", "Get Random Number", "Get Sprite Position"},
     {"Set variable", "Set Background", "Set FPS"},
@@ -264,7 +270,7 @@ const char *subMenuItems[][subMenuItemCount] = {
 
 #define menuItemCount sizeof(menuItems) / sizeof(menuItems[0])
 
-const int subMenuCounts[] = {4, 3, 6, 3, 5, 8, 2, 7, 3, 4, 4, 1};
+const int subMenuCounts[] = {8, 3, 6, 3, 5, 8, 2, 7, 3, 4, 4, 1};
 
 typedef struct DropdownOptionsByPinType
 {
@@ -418,11 +424,6 @@ static inline PinType *getOutputsByType(NodeType type)
 
 static inline const char *NodeTypeToString(NodeType type)
 {
-    if (NodeInfoByType[NodeTypeToIndex(type)].isNotImplemented)
-    {
-        return "Not implemented";
-    }
-
     switch (type)
     {
     case NODE_UNKNOWN:
@@ -436,6 +437,14 @@ static inline const char *NodeTypeToString(NodeType type)
         return "bool";
     case NODE_CREATE_COLOR:
         return "color";
+    case NODE_CAST_TO_NUMBER:
+        return "To num";
+    case NODE_CAST_TO_STRING:
+        return "To string";
+    case NODE_CAST_TO_BOOL:
+        return "To bool";
+    case NODE_CAST_TO_COLOR:
+        return "To color";
 
     case NODE_EVENT_START:
         return "Start";
@@ -577,6 +586,22 @@ static inline NodeType StringToNodeType(const char strType[])
     if (strcmp(strType, "Create color") == 0)
     {
         return NODE_CREATE_COLOR;
+    }
+    if (strcmp(strType, "Cast to number") == 0)
+    {
+        return NODE_CAST_TO_NUMBER;
+    }
+    if (strcmp(strType, "Cast to string") == 0)
+    {
+        return NODE_CAST_TO_STRING;
+    }
+    if (strcmp(strType, "Cast to bool") == 0)
+    {
+        return NODE_CAST_TO_BOOL;
+    }
+    if (strcmp(strType, "Cast to color") == 0)
+    {
+        return NODE_CAST_TO_COLOR;
     }
 
     if (strcmp(strType, "Event Start") == 0)

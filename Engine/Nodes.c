@@ -373,14 +373,18 @@ bool DuplicateNode(GraphContext *graph, const Node *src, Vector2 pos, int nodeY)
 
 void CreateLink(GraphContext *graph, Pin Pin1, Pin Pin2)
 {
-    if (Pin1.isInput == Pin2.isInput)
+    if (Pin1.isInput == Pin2.isInput){
         return;
-    if ((Pin1.type == PIN_FLOW && Pin2.type != PIN_FLOW) || (Pin1.type != PIN_FLOW && Pin2.type == PIN_FLOW))
+    }
+    if ((Pin1.type == PIN_FLOW && Pin2.type != PIN_FLOW) || (Pin1.type != PIN_FLOW && Pin2.type == PIN_FLOW)){
         return;
-    if (Pin1.nodeID == Pin2.nodeID)
+    }
+    if (Pin1.nodeID == Pin2.nodeID){
         return;
-    if (Pin1.type != Pin2.type && Pin1.type != PIN_ANY_VALUE && Pin2.type != PIN_ANY_VALUE)
+    }
+    if (Pin1.type != Pin2.type && Pin1.type != PIN_ANY_VALUE && Pin2.type != PIN_ANY_VALUE){
         return;
+    }
 
     Link link = {0};
 

@@ -927,6 +927,165 @@ void InterpretStringOfNodes(int lastNodeIndex, InterpreterContext *intp, Runtime
         break;
     }
 
+    case NODE_CAST_TO_NUMBER:
+    {
+        if (node->inputPins[1]->valueIndex == -1 || node->outputPins[1]->valueIndex == -1)
+        {
+            break;
+        }
+
+        Value val = intp->values[node->inputPins[1]->valueIndex];
+        Value *newVal = &intp->values[node->outputPins[1]->valueIndex];
+
+        switch (val.type)
+        {
+        case VAL_NUMBER:
+            newVal->number = val.number;
+            break;
+        case VAL_STRING:
+            newVal->number = strlen(val.string);
+            break;
+        case VAL_BOOL:
+            newVal->number = val.boolean;
+            break;
+        case VAL_COLOR:
+            newVal->number = 0;
+            AddToLogFromInterpreter(intp, (Value){.type = VAL_STRING, .string = "Can't cast Color to Number{I108}"}, LOG_LEVEL_WARNING);
+            break;
+        case VAL_SPRITE:
+            newVal->number = 0;
+            AddToLogFromInterpreter(intp, (Value){.type = VAL_STRING, .string = "Can't cast Sprite to Number{I109}"}, LOG_LEVEL_WARNING);
+            break;
+        default:
+            AddToLogFromInterpreter(intp, (Value){.type = VAL_STRING, .string = "Unknown pin type{I113}"}, LOG_LEVEL_WARNING);
+            break;
+        }
+
+        break;
+    }
+
+    case NODE_CAST_TO_STRING:
+    {
+        if (node->inputPins[1]->valueIndex == -1 || node->outputPins[1]->valueIndex == -1)
+        {
+            break;
+        }
+
+        Value val = intp->values[node->inputPins[1]->valueIndex];
+        Value *newVal = &intp->values[node->outputPins[1]->valueIndex];
+
+        switch (val.type)
+        {
+        case VAL_NUMBER:
+            strmac(newVal->string, MAX_LITERAL_NODE_FIELD_SIZE, "%.2f", val.number);
+            break;
+        case VAL_STRING:
+            strmac(newVal->string, MAX_LITERAL_NODE_FIELD_SIZE, "%s", val.string);
+            break;
+        case VAL_BOOL:
+            strmac(newVal->string, MAX_LITERAL_NODE_FIELD_SIZE, "%s", val.boolean ? "true" : "false");
+            break;
+        case VAL_COLOR:
+            strmac(newVal->string, MAX_LITERAL_NODE_FIELD_SIZE, "R:%d G:%d B:%d A:%d", val.color.r, val.color.g, val.color.b, val.color.a);
+            break;
+        case VAL_SPRITE:
+            strmac(newVal->string, MAX_LOG_MESSAGE_SIZE, "%s, PosX: %.0f, PosY: %.0f, Rotation: %.2f", val.sprite.isVisible ? "Visible" : "Not visible", val.sprite.position.x, val.sprite.position.y, val.sprite.rotation);
+            break;
+        default:
+            AddToLogFromInterpreter(intp, (Value){.type = VAL_STRING, .string = "Unknown pin type{I113}"}, LOG_LEVEL_WARNING);
+            break;
+        }
+
+        break;
+    }
+
+    case NODE_CAST_TO_BOOL:
+    {
+        if (node->inputPins[1]->valueIndex == -1 || node->outputPins[1]->valueIndex == -1)
+        {
+            break;
+        }
+
+        Value val = intp->values[node->inputPins[1]->valueIndex];
+        Value *newVal = &intp->values[node->outputPins[1]->valueIndex];
+
+        switch (val.type)
+        {
+        case VAL_NUMBER:
+            newVal->boolean = val.number > 0;
+            break;
+        case VAL_STRING:
+            newVal->boolean = strlen(val.string) > 0;
+            break;
+        case VAL_BOOL:
+            newVal->boolean = val.boolean;
+            break;
+        case VAL_COLOR:
+            newVal->boolean = val.color.a != 0;
+            break;
+        case VAL_SPRITE:
+            newVal->boolean = val.sprite.isVisible;
+            break;
+        default:
+            AddToLogFromInterpreter(intp, (Value){.type = VAL_STRING, .string = "Unknown pin type{I113}"}, LOG_LEVEL_WARNING);
+            break;
+        }
+
+        break;
+    }
+
+    case NODE_CAST_TO_COLOR:
+    {
+        if (node->inputPins[1]->valueIndex == -1 || node->outputPins[1]->valueIndex == -1)
+        {
+            break;
+        }
+
+        Value val = intp->values[node->inputPins[1]->valueIndex];
+        Value *newVal = &intp->values[node->outputPins[1]->valueIndex];
+
+        switch (val.type)
+        {
+        case VAL_NUMBER:
+            newVal->color = BLACK;
+            AddToLogFromInterpreter(intp, (Value){.type = VAL_STRING, .string = "Can't cast Number to Color{I110}"}, LOG_LEVEL_WARNING);
+            break;
+        case VAL_STRING:
+            unsigned int hexValue;
+            if (sscanf(val.string, "%x", &hexValue) == 1)
+            {
+                newVal->color = (Color){
+                    (hexValue >> 24) & 0xFF,
+                    (hexValue >> 16) & 0xFF,
+                    (hexValue >> 8) & 0xFF,
+                    hexValue & 0xFF
+                };
+            }
+            else
+            {
+                newVal->color = BLACK;
+                AddToLogFromInterpreter(intp, (Value){.type = VAL_STRING, .string = "Error: Invalid color{I209}"}, LOG_LEVEL_ERROR);
+            }
+            break;
+        case VAL_BOOL:
+            newVal->color = BLACK;
+            AddToLogFromInterpreter(intp, (Value){.type = VAL_STRING, .string = "Can't cast Bool to Color{I111}"}, LOG_LEVEL_WARNING);
+            break;
+        case VAL_COLOR:
+            newVal->color = val.color;
+            break;
+        case VAL_SPRITE:
+            newVal->color = BLACK;
+            AddToLogFromInterpreter(intp, (Value){.type = VAL_STRING, .string = "Can't cast Sprite to Color{I112}"}, LOG_LEVEL_WARNING);
+            break;
+        default:
+            AddToLogFromInterpreter(intp, (Value){.type = VAL_STRING, .string = "Unknown pin type{I113}"}, LOG_LEVEL_WARNING);
+            break;
+        }
+
+        break;
+    }
+
     case NODE_CREATE_CUSTOM_EVENT:
     {
         break;
@@ -2065,7 +2224,8 @@ bool HandleGameScreen(InterpreterContext *intp, RuntimeGraphContext *graph, Vect
         intp->cameraOffset.x += lastShake.x;
         intp->cameraOffset.y += lastShake.y;
     }
-    else if(lastShake.x != 0 || lastShake.y != 0){
+    else if (lastShake.x != 0 || lastShake.y != 0)
+    {
         intp->cameraOffset.x -= lastShake.x;
         intp->cameraOffset.y -= lastShake.y;
 
