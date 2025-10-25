@@ -825,11 +825,6 @@ void HandleTextEditor(TextEditorContext *txEd, Vector2 mousePos, Rectangle viewp
         }
     }
 
-    if (!DEVELOPER_MODE)
-    {
-        DrawTextEx(fontArial, "IN DEVELOPMENT", (Vector2){viewportBoundary.x + fileNameSize + 100, viewportBoundary.y + 10}, 40, 2.0f, ORANGE);
-    }
-
     DrawLineEx((Vector2){x - 10, y}, (Vector2){x - 10, y + viewportBoundary.height}, 1.0f, GRAY_40);
 
     for (int i = 0; i < txEd->rowCount; i++)

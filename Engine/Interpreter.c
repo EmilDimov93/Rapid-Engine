@@ -728,7 +728,7 @@ RuntimeGraphContext ConvertToRuntimeGraph(GraphContext *graph, InterpreterContex
                 intp->components[intp->componentCount].sprite.layer = node->inputPins[4]->pickedOption;
             }
 
-            intp->components[intp->componentCount].sprite.hitbox.type = HITBOX_POLY; // TODO: enable support for all types
+            intp->components[intp->componentCount].sprite.hitbox.type = HITBOX_POLY;
 
             for (int j = 0; j < graph->pinCount; j++)
             {

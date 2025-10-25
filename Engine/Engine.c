@@ -131,7 +131,7 @@ EngineContext InitEngineContext()
 
     eng.draggedFileIndex = -1;
 
-    eng.openFilesWithRapidEditor = DEVELOPER_MODE ? true : false;
+    eng.openFilesWithRapidEditor = true;
 
     eng.isLogMessageHovered = false;
 
@@ -798,7 +798,7 @@ bool DrawSettingsMenu(EngineContext *eng, InterpreterContext *intp, CGEditorCont
 
         DrawLine(eng->screenWidth / 4 + 182, 540, eng->screenWidth * 3 / 4, 540, GRAY_50);
 
-        DrawTextEx(eng->font, "Open files with Rapid Editor(Beta)", (Vector2){eng->screenWidth / 4 + 200, 550}, 28, 1, WHITE);
+        DrawTextEx(eng->font, "Open files with Rapid Editor", (Vector2){eng->screenWidth / 4 + 200, 550}, 28, 1, WHITE);
         DrawSlider((Vector2){eng->screenWidth * 3 / 4 - 70, 553}, &eng->openFilesWithRapidEditor, eng->mousePos, &hasChanged);
         break;
     case SETTINGS_MODE_GAME:
