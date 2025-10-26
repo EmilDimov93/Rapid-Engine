@@ -2747,7 +2747,7 @@ int main(int argc, char **argv)
             if (eng.CGFilePath[0] != '\0' && (eng.isViewportFocused || cgEd.isFirstFrame || eng.wasViewportFocusedLastFrame || eng.menuResizeButton != RESIZING_MENU_NONE))
             {
                 cgEd.viewportBoundary = viewportRecInViewportTex;
-                HandleEditor(&cgEd, &graph, &eng.viewportTex, mouseInViewportTex, eng.menuResizeButton != RESIZING_MENU_NONE);
+                HandleEditor(&cgEd, &graph, &eng.viewportTex, mouseInViewportTex, !eng.isViewportFocused);
             }
 
             if (eng.isAutoSaveON)

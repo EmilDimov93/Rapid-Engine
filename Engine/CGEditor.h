@@ -19,6 +19,8 @@ typedef struct
     bool isFirstFrame;
     bool engineDelayFrames;
 
+    bool isLMBPressed;
+
     Vector2 mousePos;
     Vector2 rightClickPos;
 
