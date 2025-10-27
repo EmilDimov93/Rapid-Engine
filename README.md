@@ -2,9 +2,7 @@
 
 
 ![RapidEngine stars](https://img.shields.io/github/stars/EmilDimov93/Rapid-Engine?style=plastic&label=⭐&color=FFD700)
-![GitHub commits](https://img.shields.io/github/commit-activity/m/EmilDimov93/Rapid-Engine?style=plastic)
 ![Total Commits](https://img.shields.io/github/commit-activity/t/EmilDimov93/Rapid-Engine?style=plastic)
-![GitHub last commit](https://img.shields.io/github/last-commit/EmilDimov93/Rapid-Engine?style=plastic)
 ![54 Nodes](https://img.shields.io/badge/Nodes-54-purple?style=plastic)
 ![C](https://img.shields.io/badge/language-C-555555?style=plastic)
 ![Raylib](https://img.shields.io/badge/Library-Raylib-ff69b4?style=plastic)
@@ -15,112 +13,78 @@
   <img width="610" height="368" alt="my-image" src="https://github.com/user-attachments/assets/a0e63453-6cea-45d2-8531-56069eba1c72" />
 </p>
 
-
 ## ⚡ Core Features
 
-- 💡 **CoreGraph**: Node-based scripting language
-- 🖼️ Custom UI with the Raylib library
-- 🎯 Real-time interaction and graph editing
-- ⚙️ Basic language constructs such as variables, arithmetic, logic, conditionals, and loops
-- 🎮 Spawning and moving sprites
-- ✂️ Hitbox editor: Visual polygon hitbox creation
-- 💾 Save, build and run systems
+#### 💡 **CoreGraph**: Node-based scripting language
 
-https://github.com/user-attachments/assets/b6dc9735-5eb8-498a-9802-c1eac80a9a4a
+- Real-time interaction and graph editing
+- ***54*** node types covering variables, arithmetic, logic, conditionals, loops, and sprite manipulation
+- ***22*** pin types: flow, dropdown menu, text box and more
+- Select, delete, copy, and paste nodes
 
+#### 💻 Interpreter
 
-## 🔍 In-Depth Capabilities
+- Build and Run CoreGraph projects instantly
+- Optimized for smooth performance at high FPS
 
-- Interpreter for the CoreGraph language
-- Viewport that shows either the CoreGraph Editor or the Game Screen
-- File management system in bottom menu
-- Real-time log for error and debug messages
-- Variables menu for viewing information about the current variables and their values
-- Different pin types: flow, dropdown menu, text box and more
-- Text editor for code and general text files
-- Custom window management top menu with settings
+#### 🖼️ Custom UI with the Raylib library
 
+- File management in bottom menu
+- Real-time log for errors and debug messages
+- Variables panel showing live values
+- Top bar for window managment
+- Settings menu with an option to save preferences
+
+#### ✂️ Hitbox editor
+
+- Visual polygon hitbox creation for sprites
+- Add vertices easily with a click
+
+#### 🧷 Text editor
+
+- Edit any text or code file
+- Cut, Copy & Paste functions
+- Save or open files in your default editor
+
+#### 📚 Project Manager
+
+- Create & load projects
+
+---
 
 ## 🧩 All node types:
 
-| Category   | Type                    |
-|------------|-------------------------|
-| Variable   | Create number           |
-| Variable   | Create string           |
-| Variable   | Create bool             |
-| Variable   | Create color            |
-| Variable   | Cast to number          |
-| Variable   | Cast to string          |
-| Variable   | Cast to bool            |
-| Variable   | Cast to color           |
-| Event      | Event Start             |
-| Event      | Event Tick              |
-| Event      | Event On Button         |
-| Get        | Get variable            |
-| Get        | Get Screen Width        |
-| Get        | Get Screen Height       |
-| Get        | Get Mouse Position      |
-| Get        | Get Random Number       |
-| Get        | Get Sprite Position     |
-| Set        | Set variable            |
-| Set        | Set Background          |
-| Set        | Set FPS                 |
-| Flow       | Branch                  |
-| Flow       | Loop                    |
-| Flow       | Delay                   |
-| Flow       | Flip Flop               |
-| Flow       | Break                   |
-| Flow       | Sequence                |
-| Sprite     | Create sprite           |
-| Sprite     | Set Sprite Position     |
-| Sprite     | Set Sprite Rotation     |
-| Sprite     | Set Sprite Texture      |
-| Sprite     | Set Sprite Size         |
-| Sprite     | Spawn sprite            |
-| Sprite     | Destroy sprite          |
-| Sprite     | Force                   |
-| Prop       | Draw Prop Rectangle     |
-| Prop       | Draw Prop Circle        |
-| Logical    | Comparison              |
-| Logical    | Gate                    |
-| Logical    | Arithmetic              |
-| Logical    | Clamp                   |
-| Logical    | Lerp                    |
-| Logical    | Sin                     |
-| Logical    | Cos                     |
-| Debug      | Print To Log            |
-| Debug      | Draw Debug Line         |
-| Debug      | Comment                 |
-| Literal    | Literal number          |
-| Literal    | Literal string          |
-| Literal    | Literal bool            |
-| Literal    | Literal color           |
-| Camera     | Move Camera             |
-| Camera     | Zoom Camera             |
-| Camera     | Get Camera Center       |
-| Camera     | Shake Camera            |
-| Sound      | Play Sound              |
+| Category   | Node Type                 |
+|------------|--------------------------|
+| Variable   | Create number, string, bool, color |
+| Variable   | Cast to number, string, bool, color |
+| Event      | Event Start, Tick, On Button |
+| Get        | Variable, Screen Width, Screen Height, Mouse Position, Random Number, Sprite Position |
+| Set        | Variable, Background, FPS |
+| Flow       | Branch, Loop, Flip Flop, Break, Sequence |
+| Sprite     | Create, Set Position, Set Rotation, Set Texture, Set Size, Spawn, Destroy, Force |
+| Prop       | Draw Rectangle, Draw Circle |
+| Logical    | Comparison, Gate, Arithmetic, Clamp, Lerp, Sin, Cos |
+| Debug      | Print to Log, Draw Line, Comment |
+| Literal    | Number, String, Bool, Color |
+| Camera     | Move, Zoom, Get Center, Shake |
+| Sound      | Play |
 
 
-## 🧪 In Development
+## ⚠️ Build Instructions
 
-- Sprite sheet editor
-- Sprite collision events
-- Exporting game
-- Cross platform support
-- New CoreGraph nodes
+Note: Rapid Engine is not packaged for public release yet
 
-
-## ⚠️ Note: Rapid Engine is not packaged for public release yet, but you can build and run it manually:
-
+**Windows (MinGW)**
 ```
 mkdir build && cd build
-
-# Windows (MinGW)
 cmake -G "MinGW Makefiles" -DCMAKE_C_COMPILER=gcc ..
 cmake --build .
+```
 
-# Linux / macOS (GCC)
+### Linux / macOS (GCC)
+```
+mkdir build && cd build
 cmake -DCMAKE_C_COMPILER=gcc ..
 make
 ```
