@@ -49,16 +49,19 @@ https://github.com/user-attachments/assets/b6dc9735-5eb8-498a-9802-c1eac80a9a4a
 | Variable   | Create string           |
 | Variable   | Create bool             |
 | Variable   | Create color            |
+| Variable   | Cast to number          |
+| Variable   | Cast to string          |
+| Variable   | Cast to bool            |
+| Variable   | Cast to color           |
 | Event      | Event Start             |
 | Event      | Event Tick              |
 | Event      | Event On Button         |
-| Event      | Create Custom Event     |
-| Event      | Call Custom Event       |
 | Get        | Get variable            |
 | Get        | Get Screen Width        |
 | Get        | Get Screen Height       |
 | Get        | Get Mouse Position      |
 | Get        | Get Random Number       |
+| Get        | Get Sprite Position     |
 | Set        | Set variable            |
 | Set        | Set Background          |
 | Set        | Set FPS                 |
@@ -67,6 +70,7 @@ https://github.com/user-attachments/assets/b6dc9735-5eb8-498a-9802-c1eac80a9a4a
 | Flow       | Delay                   |
 | Flow       | Flip Flop               |
 | Flow       | Break                   |
+| Flow       | Sequence                |
 | Sprite     | Create sprite           |
 | Sprite     | Set Sprite Position     |
 | Sprite     | Set Sprite Rotation     |
@@ -74,16 +78,19 @@ https://github.com/user-attachments/assets/b6dc9735-5eb8-498a-9802-c1eac80a9a4a
 | Sprite     | Set Sprite Size         |
 | Sprite     | Spawn sprite            |
 | Sprite     | Destroy sprite          |
-| Sprite     | Move To                 |
 | Sprite     | Force                   |
-| Prop       | Draw Prop Texture       |
 | Prop       | Draw Prop Rectangle     |
 | Prop       | Draw Prop Circle        |
 | Logical    | Comparison              |
 | Logical    | Gate                    |
 | Logical    | Arithmetic              |
+| Logical    | Clamp                   |
+| Logical    | Lerp                    |
+| Logical    | Sin                     |
+| Logical    | Cos                     |
 | Debug      | Print To Log            |
 | Debug      | Draw Debug Line         |
+| Debug      | Comment                 |
 | Literal    | Literal number          |
 | Literal    | Literal string          |
 | Literal    | Literal bool            |
@@ -91,6 +98,7 @@ https://github.com/user-attachments/assets/b6dc9735-5eb8-498a-9802-c1eac80a9a4a
 | Camera     | Move Camera             |
 | Camera     | Zoom Camera             |
 | Camera     | Get Camera Center       |
+| Camera     | Shake Camera            |
 | Sound      | Play Sound              |
 
 
@@ -105,12 +113,16 @@ https://github.com/user-attachments/assets/b6dc9735-5eb8-498a-9802-c1eac80a9a4a
 
 ## ⚠️ Note: Rapid Engine is not packaged for public release yet, but you can build and run it manually:
 
-```bash
-gcc Engine/unity.c Engine/raylib/lib/libraylib.a -o ./RapidEngine -Iraylib/include -lopengl32 -lgdi32 -lwinmm -mwindows
 ```
+mkdir build && cd build
 
-```bash
-./RapidEngine
+# Windows (MinGW)
+cmake -G "MinGW Makefiles" -DCMAKE_C_COMPILER=gcc ..
+cmake --build .
+
+# Linux / macOS (GCC)
+cmake -DCMAKE_C_COMPILER=gcc ..
+make
 ```
 
 ## 📧 Support

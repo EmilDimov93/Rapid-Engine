@@ -1,10 +1,10 @@
 .vscode/
 RE_resources/
 re_early_dev/
+build/
 RapidEngine.exe
 engine_log.txt
 error_codes.txt
-Makefile
 lines.ps1
 push.ps1
 run.ps1

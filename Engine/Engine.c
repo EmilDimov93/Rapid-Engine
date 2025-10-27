@@ -2499,7 +2499,7 @@ void SetEngineMouseCursor(EngineContext *eng, CGEditorContext *cgEd, TextEditorC
     return;
 }
 
-int SetEngineFPS(EngineContext *eng, CGEditorContext *cgEd, InterpreterContext *intp)
+void SetEngineFPS(EngineContext *eng, CGEditorContext *cgEd, InterpreterContext *intp)
 {
     int fps;
 
@@ -2613,7 +2613,7 @@ int main(int argc, char **argv)
     InitWindow(PM_WINDOW_WIDTH, PM_WINDOW_HEIGHT, "RapidEngine");
     SetTargetFPS(FPS_HIGH);
     SetExitKey(KEY_NULL);
-    Image icon = LoadImage("icon.png");
+    Image icon = LoadImageFromMemory(".png", icon_png, icon_png_len);
     SetWindowIcon(icon);
     UnloadImage(icon);
     char filePath[MAX_FILE_PATH];

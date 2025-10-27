@@ -13,6 +13,9 @@ extern unsigned int settings_gear_png_len;
 extern unsigned char viewport_fullscreen_png[];
 extern unsigned int viewport_fullscreen_png_len;
 
+extern unsigned char icon_png[];
+extern unsigned int icon_png_len;
+
 // Sounds
 extern unsigned char save_wav[];
 extern unsigned int save_wav_len;

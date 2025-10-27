@@ -335,6 +335,8 @@ static inline int getNodeInfoByType(NodeType type, RequestedInfo info)
     default:
         return -1;
     }
+
+    return -1;
 }
 
 static inline bool getIsEditableByType(NodeType type)
@@ -349,6 +351,8 @@ static inline bool getIsEditableByType(NodeType type)
     {
         return NodeInfoByType[index].isEditable;
     }
+
+    return false;
 }
 
 static inline char **getNodeInputNamesByType(NodeType type)
@@ -363,6 +367,8 @@ static inline char **getNodeInputNamesByType(NodeType type)
     {
         return NodeInfoByType[index].inputNames;
     }
+
+    return NULL;
 }
 
 static inline char **getNodeOutputNamesByType(NodeType type)
@@ -377,6 +383,8 @@ static inline char **getNodeOutputNamesByType(NodeType type)
     {
         return NodeInfoByType[index].outputNames;
     }
+
+    return NULL;
 }
 
 static inline Color getNodeColorByType(NodeType type)
@@ -391,6 +399,8 @@ static inline Color getNodeColorByType(NodeType type)
     {
         return NodeInfoByType[index].color;
     }
+
+    return BLACK;
 }
 
 static inline PinType *getInputsByType(NodeType type)
@@ -405,6 +415,7 @@ static inline PinType *getInputsByType(NodeType type)
     {
         return NodeInfoByType[index].inputs ? NodeInfoByType[index].inputs : NULL;
     }
+
     return NULL;
 }
 
@@ -420,6 +431,8 @@ static inline PinType *getOutputsByType(NodeType type)
     {
         return NodeInfoByType[index].outputs ? NodeInfoByType[index].outputs : NULL;
     }
+
+    return NULL;
 }
 
 static inline const char *NodeTypeToString(NodeType type)
@@ -562,6 +575,8 @@ static inline const char *NodeTypeToString(NodeType type)
     default:
         return "invalid";
     }
+
+    return "invalid";
 }
 
 static inline NodeType StringToNodeType(const char strType[])
@@ -1049,4 +1064,6 @@ static inline char *GetKeyboardKeyName(KeyboardKey key)
     default:
         return "Unknown";
     }
+
+    return "NONE";
 }
