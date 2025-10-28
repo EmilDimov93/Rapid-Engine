@@ -73,20 +73,22 @@
 
 ## ⚠️ Build Instructions
 
-Note: Rapid Engine is not packaged for public release yet
-
-**Windows (MinGW)**
 ```
-mkdir build && cd build
+git clone --recurse-submodules https://github.com/EmilDimov93/Rapid-Engine.git
+cd Rapid-Engine
+mkdir build; cd build
+```
+
+**Windows**
+```
 cmake -G "MinGW Makefiles" -DCMAKE_C_COMPILER=gcc ..
 cmake --build .
 ```
 
-### Linux / macOS (GCC)
+### Linux / macOS
 ```
-mkdir build && cd build
 cmake -DCMAKE_C_COMPILER=gcc ..
-make
+cmake --build .
 ```
 
 ## 📧 Support
