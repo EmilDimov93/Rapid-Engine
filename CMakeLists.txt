@@ -15,10 +15,7 @@ add_subdirectory(Engine/raylib)
 
 add_executable(RapidEngine
     Engine/unity.c
-    RE_resources/textures/icon.o
 )
-
-target_include_directories(RapidEngine PRIVATE Engine/raylib/include)
 
 target_link_libraries(RapidEngine raylib)
 
