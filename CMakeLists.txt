@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.10)
 project(RapidEngine C)
 
+if(NOT CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    message(FATAL_ERROR "This project requires GCC/MinGW! Detected: ${CMAKE_C_COMPILER_ID}")
+endif()
+
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
