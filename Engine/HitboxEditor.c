@@ -19,7 +19,7 @@ HitboxEditorContext InitHitboxEditor(Texture2D tex, Vector2 pos, Vector2 scale)
     return hbEd;
 }
 
-static bool IsNear(Vector2 a, Vector2 b, float dist)
+bool IsNear(Vector2 a, Vector2 b, float dist)
 {
     float dx = a.x - b.x;
     float dy = a.y - b.y;

@@ -258,7 +258,7 @@ int WindowLoadProject(char *projectFilePath, Font font)
     static float blinkTimer = 0;
     blinkTimer += GetFrameTime();
 
-    for (int i = 0; i < files.count; i++)
+    for (size_t i = 0; i < files.count; i++)
     {
         const char *fileName = GetFileName(files.paths[i]);
         int fileNameLength = MeasureTextEx(font, fileName, 35, 1).x;
@@ -437,7 +437,7 @@ int WindowCreateProject(char *projectFilePath, Font font)
     bool cursorChanged = false;
 
     Rectangle backButton = {1, 0, 65, 1600};
-    static Rectangle textBox = {700, 230, 250, 40};
+    Rectangle textBox = {700, 230, 250, 40};
     static char inputText[MAX_FILE_NAME] = "";
     static int letterCount = 0;
     static bool isFocused = true;

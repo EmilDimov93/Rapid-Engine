@@ -15,7 +15,18 @@ endif()
 add_subdirectory(Engine/raylib)
 
 add_executable(RapidEngine
-    Engine/unity.c
+    Engine/Engine.c
+    Engine/CGEditor.c
+    Engine/Interpreter.c
+    Engine/HitboxEditor.c
+    Engine/ProjectManager.c
+    Engine/TextEditor.c
+    Engine/Nodes.c
+    Engine/InfoByType.c
+    Engine/definitions.c
+    Engine/resources/fonts.c
+    Engine/resources/sound.c
+    Engine/resources/textures.c
 )
 
 target_link_libraries(RapidEngine raylib)

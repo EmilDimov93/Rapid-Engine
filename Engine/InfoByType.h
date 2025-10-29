@@ -253,24 +253,12 @@ static inline int NodeTypeToIndex(NodeType type)
 
 #define subMenuItemCount 10
 
-const char *menuItems[] = {"Variable", "Event", "Get", "Set", "Flow", "Sprite", "Draw Prop", "Logical", "Debug", "Literal", "Camera", "Sound"};
-const char *subMenuItems[][subMenuItemCount] = {
-    {"Create number", "Create string", "Create bool", "Create color", "Cast to number", "Cast to string", "Cast to bool", "Cast to color"},
-    {"Event Start", "Event Tick", "Event On Button"},
-    {"Get variable", "Get Screen Width", "Get Screen Height", "Get Mouse Position", "Get Random Number", "Get Sprite Position"},
-    {"Set variable", "Set Background", "Set FPS"},
-    {"Branch", "Loop", "Flip Flop", "Break", "Sequence"},
-    {"Create sprite", "Spawn sprite", "Destroy sprite", "Set Sprite Position", "Set Sprite Rotation", "Set Sprite Texture", "Set Sprite Size", "Force"},
-    {"Draw Prop Rectangle", "Draw Prop Circle"},
-    {"Comparison", "Gate", "Arithmetic", "Clamp", "Lerp", "Sin", "Cos"},
-    {"Print To Log", "Draw Debug Line", "Comment"},
-    {"Literal number", "Literal string", "Literal bool", "Literal color"},
-    {"Move Camera", "Zoom Camera", "Get Camera Center", "Shake Camera"},
-    {"Play Sound"}};
+extern const char *menuItems[];
+extern const char *subMenuItems[][subMenuItemCount];;
 
-#define menuItemCount sizeof(menuItems) / sizeof(menuItems[0])
+#define menuItemCount 12
 
-const int subMenuCounts[] = {8, 3, 6, 3, 5, 8, 2, 7, 3, 4, 4, 1};
+extern const int subMenuCounts[];
 
 typedef struct DropdownOptionsByPinType
 {
@@ -286,7 +274,7 @@ static char *arithmeticOps[] = {"ADD", "SUBTRACT", "MULTIPLY", "DIVIDE", "MODULO
 static char *keyActionOps[] = {"Pressed", "Released", "Down", "Not down"};
 static char *layerOps[] = {"No Collision", "Events only", "Block only", "Events & Block"};
 
-static DropdownOptionsByPinType PinDropdownOptionsByType[] = {
+static const DropdownOptionsByPinType PinDropdownOptionsByType[] = {
     {PIN_DROPDOWN_COMPARISON_OPERATOR, 3, comparisonOps, 130},
     {PIN_DROPDOWN_GATE, 6, gateOps, 70},
     {PIN_DROPDOWN_ARITHMETIC, 5, arithmeticOps, 115},
