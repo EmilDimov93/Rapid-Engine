@@ -401,7 +401,7 @@ static inline PinType *getInputsByType(NodeType type)
 
     if (NodeInfoByType[index].type == type)
     {
-        return NodeInfoByType[index].inputs ? NodeInfoByType[index].inputs : NULL;
+        return NodeInfoByType[index].inputs;
     }
 
     return NULL;
@@ -417,7 +417,7 @@ static inline PinType *getOutputsByType(NodeType type)
 
     if (NodeInfoByType[index].type == type)
     {
-        return NodeInfoByType[index].outputs ? NodeInfoByType[index].outputs : NULL;
+        return NodeInfoByType[index].outputs;
     }
 
     return NULL;

@@ -81,6 +81,8 @@ bool UpdateHitboxEditor(HitboxEditorContext *hbEd, Vector2 mouseLocal, GraphCont
             hbEd->poly.vertices[hbEd->lastActionVerticeIndex].y -= hbEd->lastActionVertice.y;
             hbEd->hasChanged = true;
             break;
+        default:
+            break;
         }
 
         hbEd->lastActionType = HBED_LAST_ACTION_TYPE_NONE;

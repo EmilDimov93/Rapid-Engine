@@ -41,7 +41,7 @@ static inline void OpenFile(const char *filePath)
 {
     char command[1024];
     snprintf(command, sizeof(command), "open \"%s\"", filePath);
-    system(command);
+    (void)system(command);
 }
 
 #elif __unix__
@@ -56,7 +56,7 @@ static inline void OpenFile(const char *filePath)
 {
     char command[1024];
     snprintf(command, sizeof(command), "xdg-open \"%s\"", filePath);
-    system(command);
+    (void)system(command);
 }
 
 #else

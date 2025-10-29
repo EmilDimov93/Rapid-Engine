@@ -1051,6 +1051,7 @@ void InterpretStringOfNodes(int lastNodeIndex, InterpreterContext *intp, Runtime
             AddToLogFromInterpreter(intp, (Value){.type = VAL_STRING, .string = "Can't cast Number to Color{I110}"}, LOG_LEVEL_WARNING);
             break;
         case VAL_STRING:
+        {
             unsigned int hexValue;
             if (sscanf(val.string, "%x", &hexValue) == 1)
             {
@@ -1058,8 +1059,7 @@ void InterpretStringOfNodes(int lastNodeIndex, InterpreterContext *intp, Runtime
                     (hexValue >> 24) & 0xFF,
                     (hexValue >> 16) & 0xFF,
                     (hexValue >> 8) & 0xFF,
-                    hexValue & 0xFF
-                };
+                    hexValue & 0xFF};
             }
             else
             {
@@ -1067,6 +1067,7 @@ void InterpretStringOfNodes(int lastNodeIndex, InterpreterContext *intp, Runtime
                 AddToLogFromInterpreter(intp, (Value){.type = VAL_STRING, .string = "Error: Invalid color{I209}"}, LOG_LEVEL_ERROR);
             }
             break;
+        }
         case VAL_BOOL:
             newVal->color = BLACK;
             AddToLogFromInterpreter(intp, (Value){.type = VAL_STRING, .string = "Can't cast Bool to Color{I111}"}, LOG_LEVEL_WARNING);
@@ -1668,6 +1669,10 @@ void InterpretStringOfNodes(int lastNodeIndex, InterpreterContext *intp, Runtime
         }
         break;
     }
+    default:
+    {
+        break;
+    }
     }
 
     if (currNodeIndex != lastNodeIndex)
@@ -1990,6 +1995,7 @@ CollisionResult CheckCollisions(InterpreterContext *intp, int index)
             collided = CheckCollisionPolyPoly(&hitA->polygonHitbox, posA, sizeA, texA, &hitB->polygonHitbox, posB, sizeB, texB);
             break;
         case HITBOX_CIRCLE:
+        {
             float scaleX = texB.x != 0 ? sizeB.x / texB.x : 1.0f;
             float scaleY = texB.y != 0 ? sizeB.y / texB.y : 1.0f;
 
@@ -1999,6 +2005,7 @@ CollisionResult CheckCollisions(InterpreterContext *intp, int index)
 
             collided = CheckCollisionPolyCircle(hitA, posA, sizeA, texA, posB, hitB->circleHitboxRadius * ((scaleX + scaleY) / 2));
             break;
+        }
         case HITBOX_RECT:
             collided = CheckCollisionPolyRect(&hitA->polygonHitbox, posA, sizeA, texA, posB, hitB->rectHitboxSize);
             break;
@@ -2136,6 +2143,8 @@ bool HandleGameScreen(InterpreterContext *intp, RuntimeGraphContext *graph, Vect
                 break;
             case NODE_EVENT_ON_BUTTON:
                 intp->onButtonNodeIndexes[intp->onButtonNodeIndexesCount++] = i;
+                break;
+            default:
                 break;
             }
         }

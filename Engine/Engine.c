@@ -1312,6 +1312,9 @@ void DrawUIElements(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
         case UILine:
             DrawLineEx(el->line.startPos, el->line.endPos, el->line.thickness, el->color);
             break;
+        case UIText:
+        default:
+            break;
         }
 
         if (el->text.string[0] != '\0')

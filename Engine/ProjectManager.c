@@ -605,7 +605,7 @@ int WindowCreateProject(char *projectFilePath, Font font)
                     return PROJECT_MANAGER_WINDOW_MODE_CREATE;
                 }
                 char cwd[MAX_FILE_PATH];
-                GetCWD(cwd, MAX_FILE_PATH);
+                (void)GetCWD(cwd, MAX_FILE_PATH);
                 strmac(projectFilePath, MAX_FILE_NAME, "Projects%c%s", PATH_SEPARATOR, inputText);
                 return PROJECT_MANAGER_WINDOW_MODE_EXIT;
             }

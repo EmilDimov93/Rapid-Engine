@@ -96,21 +96,21 @@ bool LoadGraphFromFile(const char *filename, GraphContext *graph)
         return false;
     }
 
-    fread(&graph->nextNodeID, sizeof(int), 1, file);
-    fread(&graph->nextPinID, sizeof(int), 1, file);
-    fread(&graph->nextLinkID, sizeof(int), 1, file);
+    (void)fread(&graph->nextNodeID, sizeof(int), 1, file);
+    (void)fread(&graph->nextPinID, sizeof(int), 1, file);
+    (void)fread(&graph->nextLinkID, sizeof(int), 1, file);
 
-    fread(&graph->nodeCount, sizeof(int), 1, file);
+    (void)fread(&graph->nodeCount, sizeof(int), 1, file);
     graph->nodes = malloc(sizeof(Node) * graph->nodeCount);
-    fread(graph->nodes, sizeof(Node), graph->nodeCount, file);
+    (void)fread(graph->nodes, sizeof(Node), graph->nodeCount, file);
 
-    fread(&graph->pinCount, sizeof(int), 1, file);
+    (void)fread(&graph->pinCount, sizeof(int), 1, file);
     graph->pins = malloc(sizeof(Pin) * graph->pinCount);
-    fread(graph->pins, sizeof(Pin), graph->pinCount, file);
+    (void)fread(graph->pins, sizeof(Pin), graph->pinCount, file);
 
-    fread(&graph->linkCount, sizeof(int), 1, file);
+    (void)fread(&graph->linkCount, sizeof(int), 1, file);
     graph->links = malloc(sizeof(Link) * graph->linkCount);
-    fread(graph->links, sizeof(Link), graph->linkCount, file);
+    (void)fread(graph->links, sizeof(Link), graph->linkCount, file);
 
     fclose(file);
 
