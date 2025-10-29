@@ -1196,7 +1196,7 @@ void DrawUIElements(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
             Vector2 mouseDelta = GetMouseDelta();
             if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
             {
-                holdDelta += abs(mouseDelta.x) + abs(mouseDelta.y);
+                holdDelta += fabs(mouseDelta.x) + fabs(mouseDelta.y);
                 if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
                 {
                     holdDelta = 0;

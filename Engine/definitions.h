@@ -31,6 +31,7 @@ static inline void OpenFile(const char *filePath)
 
 #elif __APPLE__
 #define PATH_SEPARATOR '/'
+#include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #define MAKE_DIR(path) mkdir(path, 0755)
