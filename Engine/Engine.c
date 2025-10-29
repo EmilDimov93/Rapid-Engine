@@ -1116,6 +1116,9 @@ void DrawUIElements(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
             }
             break;
         case UI_ACTION_OPEN_FILE:
+            if(eng->isGameRunning){
+                break;
+            }
             char tooltipText[MAX_FILE_TOOLTIP_SIZE];
             strmac(tooltipText, MAX_FILE_TOOLTIP_SIZE, "File: %s\nSize: %d bytes", GetFileName(eng->uiElements[eng->hoveredUIElementIndex].name), GetFileLength(eng->uiElements[eng->hoveredUIElementIndex].name));
             Rectangle tooltipRect = {eng->uiElements[eng->hoveredUIElementIndex].rect.pos.x + 10, eng->uiElements[eng->hoveredUIElementIndex].rect.pos.y - 61, MeasureTextEx(eng->font, tooltipText, 20, 0).x + 20, 60};

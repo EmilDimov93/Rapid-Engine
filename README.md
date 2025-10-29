@@ -78,8 +78,11 @@ git clone --recurse-submodules https://github.com/EmilDimov93/Rapid-Engine.git
 cd Rapid-Engine
 mkdir build; cd build
 ```
+Recommended compiler: GCC/MinGW
 
-**Windows**
+**Recommended compiler**: GCC/MinGW
+
+### Windows
 ```
 cmake -G "MinGW Makefiles" -DCMAKE_C_COMPILER=gcc ..
 cmake --build .
