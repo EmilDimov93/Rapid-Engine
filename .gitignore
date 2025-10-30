@@ -2,6 +2,7 @@
 RE_resources/
 re_early_dev/
 build/
+v1.0.0/
 RapidEngine.exe
 engine_log.txt
 error_codes.txt
