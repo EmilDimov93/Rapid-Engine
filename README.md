@@ -52,6 +52,10 @@
 
 ---
 
+## 🎥 Preview
+
+https://github.com/user-attachments/assets/ea9a729b-d601-4f08-a35c-57e30c2a5e62
+
 ## 🧩 All node types:
 
 | Category   | Node Type                 |
