@@ -1768,7 +1768,7 @@ void DrawComponents(InterpreterContext *intp)
             switch (component.prop.propType)
             {
             case PROP_TEXTURE:
-                break; //
+                break;
             case PROP_RECTANGLE:
                 DrawRectangle(component.prop.position.x - intp->cameraOffset.x, component.prop.position.y - intp->cameraOffset.y, component.prop.width, component.prop.height, component.prop.color);
                 break;

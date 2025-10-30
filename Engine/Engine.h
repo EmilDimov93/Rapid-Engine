@@ -211,6 +211,8 @@ typedef struct EngineContext
 
     bool isSettingsButtonHovered;
 
+    bool isVarHovered;
+
     Logs logs;
 
     int draggedFileIndex;

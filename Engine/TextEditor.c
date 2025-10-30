@@ -96,7 +96,7 @@ bool LoadFileInTextEditor(const char *fileName, TextEditorContext *txEd)
 int MeasureTextUntilEx(Font font, const char *text, int index, float fontSize, float spacing)
 {
     char temp[1024];
-    strncpy(temp, text, index);
+    strmac(temp, index + 1, "%.*s", (int)index, text);
     temp[index] = '\0';
     return (int)MeasureTextEx(font, temp, fontSize, spacing).x;
 }
@@ -428,7 +428,7 @@ void TextEditorDeleteSelected(TextEditorContext *txEd)
         int numRowsToMove = txEd->rowCount - (endRow + 1);
         for (int i = 0; i < numRowsToMove; i++)
         {
-            strcpy(txEd->text[startRow + 1 + i], txEd->text[endRow + 1 + i]);
+            strmac(txEd->text[startRow + 1 + i], MAX_CHARS_PER_ROW, "%s", txEd->text[endRow + 1 + i]);
         }
 
         int rowsDeleted = endRow - startRow;

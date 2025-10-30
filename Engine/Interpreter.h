@@ -117,8 +117,6 @@ typedef struct
     int width;
     int height;
 
-    float rotation; // not implemented rotation for props
-
     Color color;
     int layer;
 

@@ -66,8 +66,6 @@ CGEditorContext InitEditorContext()
 
     cgEd.newLogMessage = false;
 
-    cgEd.cameraOffset = (Vector2){0, 0};
-
     cgEd.editingNodeNameIndex = -1;
 
     cgEd.hasChanged = false;
@@ -1577,8 +1575,6 @@ void HandleDragging(CGEditorContext *cgEd, GraphContext *graph)
     {
         cgEd->cursor = MOUSE_CURSOR_RESIZE_ALL;
         Vector2 delta = Vector2Scale(GetMouseDelta(), 1.0f / cgEd->zoom);
-        cgEd->cameraOffset.x += Vector2Scale(GetMouseDelta(), 1.0f / cgEd->zoom).x;
-        cgEd->cameraOffset.y += Vector2Scale(GetMouseDelta(), 1.0f / cgEd->zoom).y;
         for (int i = 0; i < graph->nodeCount; i++)
         {
 

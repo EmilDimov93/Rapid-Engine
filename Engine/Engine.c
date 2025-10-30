@@ -129,6 +129,8 @@ EngineContext InitEngineContext()
 
     eng.isSettingsButtonHovered = false;
 
+    eng.isVarHovered = false;
+
     eng.draggedFileIndex = -1;
 
     eng.openFilesWithRapidEditor = true;
@@ -243,7 +245,7 @@ void EmergencyExit(EngineContext *eng, CGEditorContext *cgEd, InterpreterContext
     FILE *logFile = fopen("engine_log.txt", "w");
     if (logFile)
     {
-        fprintf(logFile, "Crash Report - Date: %02d-%02d-%04d - Version: Beta(%d)\n\n", tm_info->tm_mday, tm_info->tm_mon + 1, tm_info->tm_year + 1900, RAPID_ENGINE_VERSION);
+        fprintf(logFile, "Crash Report - Date: %02d-%02d-%04d - Version: v1.0.0(%d)\n\n", tm_info->tm_mday, tm_info->tm_mon + 1, tm_info->tm_year + 1900, RAPID_ENGINE_VERSION);
 
         for (int i = 0; i < eng->logs.count; i++)
         {
@@ -559,9 +561,6 @@ bool SaveSettings(EngineContext *eng, InterpreterContext *intp, CGEditorContext 
     fprintf(fptr, "InfiniteLoopProtection=%s\n", intp->isInfiniteLoopProtectionOn ? "true" : "false");
     fprintf(fptr, "ShowHitboxes=%s\n", intp->shouldShowHitboxes ? "true" : "false");
 
-    // fprintf(fptr, "\nKeybinds:\n\n");
-    // fprintf(fptr, "\nExport:\n\n");
-
     fclose(fptr);
     return true;
 }
@@ -822,7 +821,8 @@ bool DrawSettingsMenu(EngineContext *eng, InterpreterContext *intp, CGEditorCont
         DrawTextEx(eng->font, "No Export settings yet!", (Vector2){eng->screenWidth / 4 + 200, 300}, 28, 1, RED);
         break;
     case SETTINGS_MODE_ABOUT:
-        DrawTextEx(eng->font, TextFormat("Version: Beta(%d)", RAPID_ENGINE_VERSION), (Vector2){eng->screenWidth / 4 + 200, 300}, 28, 1, WHITE);
+        DrawTextEx(eng->font, "Release version: v1.0.0", (Vector2){eng->screenWidth / 4 + 200, 300}, 28, 1, WHITE);
+        DrawTextEx(eng->font, TextFormat("Debug version: %d", RAPID_ENGINE_VERSION), (Vector2){eng->screenWidth / 4 + 200, 350}, 28, 1, WHITE);
         break;
     default:
         settingsMode = SETTINGS_MODE_ENGINE;
@@ -917,6 +917,7 @@ void DrawUIElements(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
     eng->isSettingsButtonHovered = false;
     eng->isLogMessageHovered = false;
     eng->isTopBarHovered = false;
+    eng->isVarHovered = false;
     if (eng->hoveredUIElementIndex != -1 && !eng->isAnyMenuOpen && eng->draggedFileIndex == -1)
     {
         switch (eng->uiElements[eng->hoveredUIElementIndex].action)
@@ -1216,6 +1217,7 @@ void DrawUIElements(EngineContext *eng, GraphContext *graph, CGEditorContext *cg
             break;
 
         case UI_ACTION_SHOW_VAR_TOOLTIP:
+            eng->isVarHovered = true;
             AddUIElement(eng, (UIElement){
                                   .name = "VarTooltip",
                                   .shape = UIRectangle,
@@ -2615,7 +2617,7 @@ void DisplayLoadingScreen(int step)
 int main(int argc, char **argv)
 {
     SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_WINDOW_UNDECORATED);
-    SetTraceLogLevel(DEVELOPER_MODE ? LOG_WARNING : LOG_NONE);
+    SetTraceLogLevel(LOG_NONE);
     InitWindow(PM_WINDOW_WIDTH, PM_WINDOW_HEIGHT, "RapidEngine");
     SetTargetFPS(FPS_HIGH);
     SetExitKey(KEY_NULL);
@@ -2623,7 +2625,7 @@ int main(int argc, char **argv)
     SetWindowIcon(icon);
     UnloadImage(icon);
     char filePath[MAX_FILE_PATH];
-    strmac(filePath, MAX_FILE_NAME, "%s", argc == 1 ? (DEVELOPER_MODE ? "C:\\Users\\user\\Desktop\\RapidEngine\\Projects\\Example\\Example.cg" : HandleProjectManager()) : argv[1]);
+    strmac(filePath, MAX_FILE_NAME, "%s", argc == 1 ? HandleProjectManager() : argv[1]);
 
     MaximizeWindow();
 
@@ -2700,7 +2702,7 @@ int main(int argc, char **argv)
 
         if (HandleUICollisions(&eng, &graph, &intp, &cgEd, &runtimeGraph, &txEd) && !eng.isViewportFullscreen)
         {
-            if ((prevHoveredUIIndex != eng.hoveredUIElementIndex || IsMouseButtonDown(MOUSE_LEFT_BUTTON) || eng.isSettingsButtonHovered || eng.draggedFileIndex != -1 || eng.isLogMessageHovered || eng.isKeyboardShortcutActivated || eng.logs.hasNewLogMessage) && eng.showSaveWarning != 1 && eng.showSettingsMenu == false)
+            if ((prevHoveredUIIndex != eng.hoveredUIElementIndex || IsMouseButtonDown(MOUSE_LEFT_BUTTON) || eng.isSettingsButtonHovered || eng.isVarHovered || eng.draggedFileIndex != -1 || eng.isLogMessageHovered || eng.isKeyboardShortcutActivated || eng.logs.hasNewLogMessage) && eng.showSaveWarning != 1 && eng.showSettingsMenu == false)
             {
                 BuildUITexture(&eng, &graph, &cgEd, &intp, &runtimeGraph, &txEd);
                 eng.fps = FPS_HIGH;

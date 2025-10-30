@@ -5,7 +5,6 @@
 #include <stdarg.h>
 #include <string.h>
 #include "raylib.h"
-#include "local_config.h"
 #include "resources/resources.h"
 
 #define FPS_DEFAULT 60

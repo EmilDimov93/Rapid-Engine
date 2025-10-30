@@ -51,8 +51,6 @@ typedef struct
     LogLevel logMessageLevels[MAX_LOG_MESSAGES];
     int logMessageCount;
 
-    Vector2 cameraOffset; // unused
-
     int editingNodeNameIndex;
 
     MouseCursor cursor;

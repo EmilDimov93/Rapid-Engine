@@ -190,7 +190,7 @@ static InfoByType NodeInfoByType[] = {
     {NODE_GET_RANDOM_NUMBER, 3, 2, 240, 130, {60, 100, 159, 200}, false, {PIN_FLOW, PIN_NUM, PIN_NUM}, {PIN_FLOW, PIN_NUM}, {"Prev", "Min", "Max"}, {"Next", "Number"}},
     {NODE_GET_SPRITE_POSITION, 2, 3, 220, 130, {60, 100, 159, 200}, false, {PIN_FLOW, PIN_SPRITE_VARIABLE}, {PIN_FLOW, PIN_NUM, PIN_NUM}, {"Prev", "Sprite"}, {"Next", "Sprite X", "Sprite Y"}},
 
-    {NODE_SET_VARIABLE, 3, 2, 140, 130, {60, 100, 159, 200}, false, {PIN_FLOW, PIN_VARIABLE, PIN_UNKNOWN_VALUE}, {PIN_FLOW, PIN_NONE}, {"Prev", "Variable", "Set value"}, {"Next", ""}}, // shouldn't have PIN_NONE
+    {NODE_SET_VARIABLE, 3, 2, 140, 130, {60, 100, 159, 200}, false, {PIN_FLOW, PIN_VARIABLE, PIN_UNKNOWN_VALUE}, {PIN_FLOW, PIN_NONE}, {"Prev", "Variable", "Set value"}, {"Next", ""}},
     {NODE_SET_BACKGROUND, 2, 1, 240, 100, {60, 100, 159, 200}, false, {PIN_FLOW, PIN_COLOR}, {PIN_FLOW}, {"Prev", "Color"}, {"Next"}},
     {NODE_SET_FPS, 2, 1, 140, 100, {60, 100, 159, 200}, false, {PIN_FLOW, PIN_NUM}, {PIN_FLOW}, {"Prev", "FPS"}, {"Next"}},
 
@@ -212,8 +212,8 @@ static InfoByType NodeInfoByType[] = {
     {NODE_FORCE_SPRITE, 5, 1, 160, 190, {40, 110, 70, 200}, false, {PIN_FLOW, PIN_SPRITE_VARIABLE, PIN_NUM, PIN_NUM, PIN_NUM}, {PIN_FLOW}, {"Prev", "Sprite", "Pixels / second", "Angle", "Time"}, {"Next"}},
 
     {NODE_DRAW_PROP_TEXTURE, 0, 0, 260, 36, {0, 0, 0, 255}, false, {0}, {0}, {0}, {0}},                                                                                                                                                              // not implemented
-    {NODE_DRAW_PROP_RECTANGLE, 7, 2, 230, 260, {40, 110, 70, 200}, false, {PIN_FLOW, PIN_NUM, PIN_NUM, PIN_NUM, PIN_NUM, PIN_COLOR, PIN_DROPDOWN_LAYER}, {PIN_FLOW, PIN_NONE}, {"Prev", "Pos X", "Pos Y", "Width", "Height", "Color", "Layer"}, {"Next"}}, // shouldn't have PIN_NONE
-    {NODE_DRAW_PROP_CIRCLE, 6, 2, 230, 240, {40, 110, 70, 200}, false, {PIN_FLOW, PIN_NUM, PIN_NUM, PIN_NUM, PIN_COLOR, PIN_DROPDOWN_LAYER}, {PIN_FLOW, PIN_NONE}, {"Prev", "Pos X", "Pos Y", "Radius", "Color", "Layer"}, {"Next"}},                      // shouldn't have PIN_NONE
+    {NODE_DRAW_PROP_RECTANGLE, 7, 2, 230, 260, {40, 110, 70, 200}, false, {PIN_FLOW, PIN_NUM, PIN_NUM, PIN_NUM, PIN_NUM, PIN_COLOR, PIN_DROPDOWN_LAYER}, {PIN_FLOW, PIN_NONE}, {"Prev", "Pos X", "Pos Y", "Width", "Height", "Color", "Layer"}, {"Next"}},
+    {NODE_DRAW_PROP_CIRCLE, 6, 2, 230, 240, {40, 110, 70, 200}, false, {PIN_FLOW, PIN_NUM, PIN_NUM, PIN_NUM, PIN_COLOR, PIN_DROPDOWN_LAYER}, {PIN_FLOW, PIN_NONE}, {"Prev", "Pos X", "Pos Y", "Radius", "Color", "Layer"}, {"Next"}},
 
     {NODE_COMPARISON, 4, 2, 210, 160, {60, 100, 159, 200}, false, {PIN_FLOW, PIN_DROPDOWN_COMPARISON_OPERATOR, PIN_NUM, PIN_NUM}, {PIN_FLOW, PIN_BOOL}, {"Prev", "Operator", "Value A", "Value B"}, {"Next", "Result"}},
     {NODE_GATE, 4, 2, 180, 160, {60, 100, 159, 200}, false, {PIN_FLOW, PIN_DROPDOWN_GATE, PIN_BOOL, PIN_BOOL}, {PIN_FLOW, PIN_BOOL}, {"Prev", "Gate", "Condition A", "Condition B"}, {"Next", "Result"}},
