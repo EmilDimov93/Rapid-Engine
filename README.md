@@ -32,7 +32,7 @@
 - File management in bottom menu
 - Real-time log for errors and debug messages
 - Variables panel showing live values
-- Top bar for window managment
+- Top bar for window management
 - Settings menu with an option to save preferences
 
 #### ✂️ Hitbox editor
@@ -43,7 +43,7 @@
 #### 🧷 Text editor
 
 - Edit any text or code file
-- Cut, Copy & Paste functions
+- Cut, copy & paste functions
 - Save or open files in your default editor
 
 #### 📚 Project Manager
