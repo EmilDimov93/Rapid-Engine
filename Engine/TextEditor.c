@@ -832,7 +832,7 @@ void HandleTextEditor(TextEditorContext *txEd, Vector2 mousePos, Rectangle viewp
 
     for (int i = 0; i < txEd->rowCount; i++)
     {
-        DrawTextEx(txEd->font, TextFormat("%d", i), (Vector2){x - 42 + 5 * !((int)(i / 10) > 0), y + 2}, 26, 1.0f, GRAY);
+        DrawTextEx(txEd->font, TextFormat("%d", i + 1), (Vector2){x - 42 + 5 * !((int)(i / 10) > 0), y + 2}, 26, 1.0f, GRAY);
         DrawTextEx(txEd->font, txEd->text[i], (Vector2){x, y}, 30, TEXT_EDITOR_TEXT_SPACING, COLOR_TE_FONT);
         y += 34;
         DrawRectangleGradientH(viewportBoundary.x, y - 2, viewportBoundary.width, 1, GRAY_50, GRAY_80);

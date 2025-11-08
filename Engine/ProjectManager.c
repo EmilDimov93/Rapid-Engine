@@ -667,5 +667,12 @@ char *HandleProjectManager()
         }
 
         EndDrawing();
+
+        if(WindowShouldClose()){
+            UnloadFont(font);
+            UnloadFont(fontRE);
+            
+            CloseWindow();
+        }
     }
 }

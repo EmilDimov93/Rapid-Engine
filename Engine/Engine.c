@@ -323,6 +323,11 @@ void PrepareCGFilePath(EngineContext *eng, const char *projectPath)
 
 void SetProjectFolderPath(EngineContext *eng, const char *filePath)
 {
+    if(filePath == NULL){
+        AddToLog(eng, "Failed to open project{E228}", LOG_LEVEL_ERROR);
+        EmergencyExit(eng, &(CGEditorContext){0}, &(InterpreterContext){0}, &(TextEditorContext){0});
+    }
+
     char cwd[MAX_FILE_PATH];
     if (!GetCWD(cwd, sizeof(cwd)))
     {
