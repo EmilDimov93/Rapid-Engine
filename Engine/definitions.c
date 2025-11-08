@@ -1,3 +1,6 @@
+// Copyright 2025 Emil Dimov
+// Licensed under the Apache License, Version 2.0
+
 #include "definitions.h"
 
 char *strmac(char *buf, size_t max_size, const char *format, ...)

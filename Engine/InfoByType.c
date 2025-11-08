@@ -1,3 +1,6 @@
+// Copyright 2025 Emil Dimov
+// Licensed under the Apache License, Version 2.0
+
 #include "InfoByType.h"
 
 const char *menuItems[] = {"Variable", "Event", "Get", "Set", "Flow", "Sprite", "Draw Prop", "Logical", "Debug", "Literal", "Camera", "Sound"};
